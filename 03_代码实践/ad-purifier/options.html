@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>广告净化器 · 设置</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --border: #e3e6eb;
+      --text: #1f2329;
+      --muted: #8a919f;
+      --accent: #fb7299;
+      --ok: #00b578;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    h1 { font-size: 22px; margin: 8px 0 4px; }
+    .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 15px; margin: 0 0 10px; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    label textarea {
+      width: 100%;
+      min-height: 120px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      resize: vertical;
+    }
+    .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-right: 8px;
+    }
+    button:hover { opacity: 0.9; }
+    .status { color: var(--ok); font-size: 13px; min-height: 18px; margin-top: 8px; }
+    pre {
+      background: #1e2227;
+      color: #d5d8de;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 12px;
+      overflow-x: auto;
+      max-height: 240px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .switch { position: relative; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; cursor: pointer;
+      background: #d0d3d9; border-radius: 24px; transition: 0.2s;
+    }
+    .slider::before {
+      content: ""; position: absolute; width: 18px; height: 18px;
+      left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.2s;
+    }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(20px); }
+  </style>
+</head>
+<body>
+  <h1>🧹 广告净化器</h1>
+  <div class="sub">基于规则的实时广告过滤 · B站网页版 MVP · 配置以 JSON 保存在本地（chrome.storage.local）</div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <strong>全局开关</strong>
+        <div class="hint">关闭后停止所有过滤（选择器与请求规则均不生效）</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="enabled" />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>DOM 隐藏规则（CSS 选择器）</h2>
+    <label>
+      <textarea id="selectors" placeholder="每行一个 CSS 选择器，例如：&#10;.ad-report&#10;#bannerAd"></textarea>
+    </label>
+    <p class="hint">作用于 bilibili.com 页面；内置默认选择器始终生效，此处为追加项。站点改版后在此补充新选择器。</p>
+  </div>
+
+  <div class="card">
+    <h2>请求过滤规则（URL 匹配）</h2>
+    <label>
+      <textarea id="requestRules" placeholder="每行一个 urlFilter（子串或 ||domain^ 语法），例如：&#10;doubleclick.net"></textarea>
+    </label>
+    <p class="hint">通过 declarativeNetRequest 拦截匹配的请求。注意：B站广告与内容同源，URL 级过滤效果有限，主要拦截第三方广告网络。</p>
+  </div>
+
+  <div class="card">
+    <h2>配置 JSON（导入 / 导出）</h2>
+    <pre id="jsonView"></pre>
+    <button id="btnSave">保存设置</button>
+    <button class="secondary" id="btnExport">复制 JSON</button>
+    <button class="secondary" id="btnImport">从剪贴板导入</button>
+    <button class="secondary" id="btnReset">恢复默认</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "广告净化器",
+  "version": "0.1.0",
+  "description": "基于规则的实时广告过滤（B站网页版 MVP，个人自用工具）。DOM 隐藏为主 + 请求过滤为辅 + JSON 配置。",
+  "permissions": ["storage", "declarativeNetRequest"],
+  "host_permissions": [
+    "*://*.bilibili.com/*",
+    "*://*.doubleclick.net/*",
+    "*://*.googleadservices.com/*",
+    "*://*.2mdn.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.bilibili.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "广告净化器"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

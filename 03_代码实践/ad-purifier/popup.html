@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      width: 260px;
+      font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin: 0;
+      padding: 14px;
+      background: #f7f8fa;
+    }
+    .title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; }
+    .muted { color: #8a919f; font-size: 12px; margin-top: 4px; }
+    .switch { position: relative; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; cursor: pointer;
+      background: #d0d3d9; border-radius: 24px; transition: 0.2s;
+    }
+    .slider::before {
+      content: ""; position: absolute; width: 18px; height: 18px;
+      left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.2s;
+    }
+    .switch input:checked + .slider { background: #fb7299; }
+    .switch input:checked + .slider::before { transform: translateX(20px); }
+    a {
+      display: block; text-align: center; margin-top: 12px;
+      color: #fb7299; text-decoration: none; font-size: 13px;
+    }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="title">🧹 广告净化器</div>
+  <div class="row">
+    <div>
+      <strong>广告过滤</strong>
+      <div class="muted" id="status">读取中…</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="enabled" />
+      <span class="slider"></span>
+    </label>
+  </div>
+  <a href="#" id="openOptions">打开设置（规则 / JSON 配置）</a>
+  <script src="popup.js"></script>
+</body>
+</html>
