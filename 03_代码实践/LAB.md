@@ -3,4 +3,4 @@
 ## 项目索引
 
 - `广告净化器-可行性评估.md` — 广告净化器（浏览器端广告过滤）可行性评估与建议
-- `ad-purifier/` — 广告净化器浏览器扩展 MVP（B站网页版：DOM 隐藏 + DNR 请求过滤 + JSON 配置，MV3）
+- `ad-purifier/` — 广告净化器浏览器扩展（B站网页版：内置选择器库 + EasyList 规则订阅 + DOM 隐藏 + DNR 请求过滤，MV3；`scripts/test-parser.js` 可离线测试解析器）

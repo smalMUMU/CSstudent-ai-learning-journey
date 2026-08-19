@@ -45,6 +45,13 @@
       padding: 8px;
       resize: vertical;
     }
+    input[type="number"] {
+      width: 110px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
     .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
     button {
       background: var(--accent);
@@ -62,6 +69,7 @@
       margin-right: 8px;
     }
     button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     .status { color: var(--ok); font-size: 13px; min-height: 18px; margin-top: 8px; }
     pre {
       background: #1e2227;
@@ -90,13 +98,13 @@
 </head>
 <body>
   <h1>🧹 广告净化器</h1>
-  <div class="sub">基于规则的实时广告过滤 · B站网页版 MVP · 配置以 JSON 保存在本地（chrome.storage.local）</div>
+  <div class="sub">基于规则的实时广告过滤 · B站网页版 · 配置以 JSON 保存在本地（chrome.storage.local）</div>
 
   <div class="card">
     <div class="row">
       <div>
         <strong>全局开关</strong>
-        <div class="hint">关闭后停止所有过滤（选择器与请求规则均不生效）</div>
+        <div class="hint">关闭后停止所有过滤（隐藏规则与请求规则均不生效，已隐藏的元素恢复显示）</div>
       </div>
       <label class="switch">
         <input type="checkbox" id="enabled" />
@@ -110,7 +118,7 @@
     <label>
       <textarea id="selectors" placeholder="每行一个 CSS 选择器，例如：&#10;.ad-report&#10;#bannerAd"></textarea>
     </label>
-    <p class="hint">作用于 bilibili.com 页面；内置默认选择器始终生效，此处为追加项。站点改版后在此补充新选择器。</p>
+    <p class="hint">作用于 bilibili.com 页面；内置 B站选择器库与 EasyList 订阅规则始终生效，此处为追加项。站点改版后在此补充新选择器。</p>
   </div>
 
   <div class="card">
@@ -118,7 +126,30 @@
     <label>
       <textarea id="requestRules" placeholder="每行一个 urlFilter（子串或 ||domain^ 语法），例如：&#10;doubleclick.net"></textarea>
     </label>
-    <p class="hint">通过 declarativeNetRequest 拦截匹配的请求。注意：B站广告与内容同源，URL 级过滤效果有限，主要拦截第三方广告网络。</p>
+    <p class="hint">通过 declarativeNetRequest 拦截匹配的请求，仅作用于 bilibili.com 页面发起的请求。注意：B站广告与内容同源，URL 级过滤效果有限，主要拦截第三方广告网络。</p>
+  </div>
+
+  <div class="card">
+    <h2>规则订阅（EasyList）</h2>
+    <div class="row">
+      <div>
+        <strong>自动更新</strong>
+        <div class="hint">每 7 天后台拉取最新规则列表（需联网）</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="autoUpdate" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="row">
+      <div>
+        <strong>订阅网络规则上限</strong>
+        <div class="hint">Chrome DNR 动态规则总上限 5000 条；订阅规则按此数量截断（0~4500）</div>
+      </div>
+      <input type="number" id="maxNetworkRules" min="0" max="4500" step="100" />
+    </div>
+    <button id="btnUpdate">立即更新规则</button>
+    <div class="hint" id="subInfo">未加载</div>
   </div>
 
   <div class="card">

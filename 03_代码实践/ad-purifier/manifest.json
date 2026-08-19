@@ -1,14 +1,17 @@
 {
   "manifest_version": 3,
   "name": "广告净化器",
-  "version": "0.1.0",
-  "description": "基于规则的实时广告过滤（B站网页版 MVP，个人自用工具）。DOM 隐藏为主 + 请求过滤为辅 + JSON 配置。",
-  "permissions": ["storage", "declarativeNetRequest"],
+  "version": "0.2.0",
+  "description": "基于规则的实时广告过滤（B站网页版）。内置 B站选择器库 + EasyList 规则订阅 + DOM 隐藏 + DNR 请求过滤。",
+  "permissions": ["storage", "declarativeNetRequest", "unlimitedStorage"],
   "host_permissions": [
     "*://*.bilibili.com/*",
     "*://*.doubleclick.net/*",
     "*://*.googleadservices.com/*",
-    "*://*.2mdn.net/*"
+    "*://*.2mdn.net/*",
+    "https://easylist-downloads.adblockplus.org/*",
+    "https://raw.githubusercontent.com/*",
+    "https://easylist.to/*"
   ],
   "background": {
     "service_worker": "background.js"

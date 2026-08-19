@@ -1,0 +1,44 @@
+! 广告净化器 · 精选第三方广告网络规则
+! 格式：EasyList 网络规则（||domain^），仅覆盖第三方广告网络。
+! 重要说明：B站广告与内容同源（hdslb.com），URL 级过滤对广告主内容无效；
+! 本表仅拦截第三方广告/统计网络，需实测验证后保留或删减。
+! 完整覆盖由 EasyList 订阅提供（选项页 → 立即更新规则），此处为随扩展分发的兜底精选。
+
+! ---- Google 系 ----
+||doubleclick.net^
+||googleadservices.com^
+||googlesyndication.com^
+||2mdn.net^
+||adservice.google.com^
+||adsafeprotected.com^
+||moatads.com^
+
+! ---- 海外广告网络 ----
+||adnxs.com^
+||rubiconproject.com^
+||openx.net^
+||pubmatic.com^
+||criteo.com^
+||criteo.net^
+||taboola.com^
+||outbrain.com^
+||advertising.com^
+||zedo.com^
+||yieldmo.com^
+
+! ---- 移动广告 SDK ----
+||adcolony.com^
+||applovin.com^
+||inmobi.com^
+||vungle.com^
+||chartboost.com^
+||unityads.unity3d.com^
+||pangle.io^                  ! 穿山甲（字节广告 SDK）
+||pangolin-sdk-toutiao.com^   ! 穿山甲域名
+||gdt.qq.com^                 ! 腾讯广点通
+
+! ---- 统计/追踪（净化附加） ----
+||mmstat.com^
+||cnzz.com^
+||51.la^
+||hm.baidu.com^

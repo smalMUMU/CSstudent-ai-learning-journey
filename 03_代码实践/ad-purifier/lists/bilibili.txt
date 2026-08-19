@@ -1,0 +1,33 @@
+! 广告净化器 · B站网页版选择器库
+! 格式：EasyList 元素隐藏规则（##选择器，无作用域 → 解析时自动限定到 bilibili.com）
+! 维护说明：站点改版后选择器会失效，请在本文件或选项页"DOM 隐藏规则"中补充新选择器。
+! 标注"待验证"的条目为命名推测，需在真实页面确认后保留。
+
+! ---- 通用广告容器 ----
+##[id^="creative_"]          ! 广告创意容器
+##.ad-report                 ! 广告卡片（首页/分区/播放页）
+##.ad-report-sub
+##.banner-card               ! 顶部横幅卡片
+###bannerAd                  ! 播放页顶部横幅
+##.ad-floor-exp              ! 楼层广告位
+##.ad-inline                 ! 信息流内嵌广告
+##.ad-pd
+
+! ---- 播放页 ----
+##.video-card-ad             ! 播放页右侧广告（待验证）
+##.video-card-ad-small       ! 播放页右侧小广告（待验证）
+##.gg-box                    ! 播放页推广位（待验证）
+##.ad-live                   ! 直播推广（待验证）
+
+! ---- 首页 / 分区 ----
+##.feed-card-ad              ! 信息流广告卡片（待验证）
+##.recommend-ad              ! 推荐位广告（待验证）
+##.advertise-card            ! 广告卡片（待验证）
+##.ad-card                   ! 通用广告卡（待验证）
+##.slideshow-ad              ! 轮播广告位（待验证）
+##.bili-video-card.ad-report ! 视频卡片广告
+##.bili-video-card[data-ad]  ! 带广告标记的视频卡片（待验证）
+
+! ---- 直播间 ----
+##.live-room-ad              ! 直播间广告（待验证）
+##.web-live-feed-ad          ! 直播信息流广告（待验证）

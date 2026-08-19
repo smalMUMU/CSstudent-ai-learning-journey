@@ -1,99 +1,144 @@
-// 广告净化器 · 内容脚本（DOM 隐藏引擎）
-// 原理：按 CSS 选择器列表隐藏广告元素 + MutationObserver 处理动态注入的广告。
-// 这是 B站网页版 MVP 的主力拦截手段（B站广告与内容同源，URL 级过滤效果有限）。
+// 广告净化器 · 内容脚本（DOM 隐藏引擎 v2）
+// 原理：把「内置 B站选择器库 + EasyList 订阅隐藏规则（按站点匹配）+ 用户自定义选择器」
+//       合并为一条组合选择器（C++ 级匹配），MutationObserver 防抖扫描动态注入的广告。
+// 支持例外规则（#@#）——命中例外的元素不隐藏。
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "config";
+  const CONFIG_KEY = "config";
+  const FILTER_KEY = "filterData";
+  const MAX_COSMETIC = 4000; // 隐藏规则数量上限，防页面卡顿
 
-  // 内置默认选择器（B站网页版广告容器，MVP 起点，站点改版后需更新）
-  const DEFAULT_SELECTORS = [
-    "#bannerAd", // 播放页顶部横幅广告
-    ".ad-report", // 广告卡片（首页/分区/播放页右侧）
-    "[id^='creative_']", // 广告创意容器
-    ".video-card-ad-small", // 播放页右侧小广告
-    ".banner-card", // 顶部横幅卡片
-    ".ad-floor-exp", // 楼层广告位
-  ];
+  // 极简兜底（filterData 未就绪时的最后防线）
+  const FALLBACK_SELECTORS = ["#bannerAd", ".ad-report", "[id^='creative_']"];
 
-  const hiddenElements = new WeakSet();
-  let selectors = [...DEFAULT_SELECTORS];
+  const hidden = new Set(); // 记录本脚本隐藏的元素，禁用时恢复
+  let combinedSelector = "";
+  let exceptionSelector = "";
   let enabled = true;
+  let scanTimer = null;
 
-  // 从配置读取选择器与开关
-  function applyConfig(cfg) {
-    cfg = cfg || {};
-    enabled = cfg.enabled !== false;
-    const custom = (cfg.selectorRules || [])
-      .map((s) => (typeof s === "string" ? s.trim() : ""))
-      .filter(Boolean);
-    selectors = enabled ? [...DEFAULT_SELECTORS, ...custom] : [];
+  // 规则作用域匹配：无作用域 → 全局；有作用域 → 精确或子域匹配
+  function siteMatches(domains) {
+    if (!domains || domains.length === 0) return true;
+    const host = location.hostname;
+    return domains.some((d) => d === host || host.endsWith("." + d));
   }
 
-  // 隐藏单个元素（幂等）
+  // 增量校验合并选择器：单条无效不拖垮整体（非法伪类/格式被丢弃）
+  function combine(selectors) {
+    const ok = [];
+    const frag = document.createDocumentFragment();
+    for (const s of selectors) {
+      try {
+        frag.querySelectorAll([...ok, s].join(","));
+        ok.push(s);
+      } catch (e) {
+        /* 无效选择器，丢弃 */
+      }
+    }
+    return ok.join(",");
+  }
+
+  async function buildRules() {
+    const [cfgData, data] = await Promise.all([
+      chrome.storage.local.get(CONFIG_KEY),
+      chrome.storage.local.get(FILTER_KEY),
+    ]);
+    const cfg = cfgData[CONFIG_KEY] || {};
+    const wasEnabled = enabled;
+    enabled = cfg.enabled !== false;
+
+    if (wasEnabled && !enabled) {
+      restore(); // 关闭开关时恢复已隐藏的元素
+    }
+
+    const custom = (cfg.selectorRules || [])
+      .map((s) => String(s).trim())
+      .filter(Boolean);
+    const fd = data[FILTER_KEY] || { cosmetic: [], exceptions: [] };
+
+    const sels = [];
+    for (const r of fd.cosmetic || []) {
+      if (siteMatches(r.domains)) sels.push(r.selector);
+    }
+    sels.push(...custom, ...FALLBACK_SELECTORS);
+    const uniq = [...new Set(sels)].slice(0, MAX_COSMETIC);
+    combinedSelector = enabled ? combine(uniq) : "";
+
+    const exs = [];
+    for (const r of fd.exceptions || []) {
+      if (siteMatches(r.domains)) exs.push(r.selector);
+    }
+    exceptionSelector = combine(exs);
+  }
+
+  function restore() {
+    for (const el of hidden) {
+      try {
+        el.style.removeProperty("display");
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    hidden.clear();
+  }
+
   function hide(el) {
-    if (!el || hiddenElements.has(el)) return;
-    hiddenElements.add(el);
+    if (!el || hidden.has(el)) return;
+    try {
+      if (exceptionSelector && el.matches(exceptionSelector)) return;
+    } catch (e) {
+      /* ignore */
+    }
+    hidden.add(el);
     el.style.setProperty("display", "none", "important");
   }
 
-  // 判断元素是否命中任一选择器
-  function matchesAny(el) {
-    for (const sel of selectors) {
-      try {
-        if (el.matches && el.matches(sel)) return true;
-      } catch (e) {
-        /* 非法选择器，跳过 */
-      }
-    }
-    return false;
-  }
-
-  // 扫描 root（含自身与后代）
   function scan(root) {
-    if (!enabled || selectors.length === 0 || !root) return;
-    if (root.nodeType === Node.ELEMENT_NODE && matchesAny(root)) hide(root);
-    for (const sel of selectors) {
-      try {
-        root.querySelectorAll(sel).forEach(hide);
-      } catch (e) {
-        /* 非法选择器，跳过 */
+    if (!enabled || !combinedSelector) return;
+    try {
+      if (root.nodeType === Node.ELEMENT_NODE && root.matches(combinedSelector)) {
+        hide(root);
       }
+      root.querySelectorAll(combinedSelector).forEach(hide);
+    } catch (e) {
+      /* ignore */
     }
   }
 
-  // 监听动态注入的广告节点
-  const observer = new MutationObserver((mutations) => {
-    if (!enabled) return;
-    for (const m of mutations) {
-      for (const node of m.addedNodes) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          scan(node);
-        }
-      }
-    }
-  });
+  // 防抖扫描：避免 MutationObserver 高频触发拖慢页面
+  function scheduleScan() {
+    if (scanTimer) return;
+    scanTimer = setTimeout(() => {
+      scanTimer = null;
+      scan(document);
+    }, 150);
+  }
+
+  const observer = new MutationObserver(scheduleScan);
 
   function startObserver() {
-    observer.observe(document.documentElement || document, {
-      childList: true,
-      subtree: true,
-    });
+    if (document.documentElement) {
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    } else {
+      document.addEventListener("DOMContentLoaded", startObserver, { once: true });
+    }
   }
 
-  // 配置变更实时生效
+  async function init() {
+    await buildRules();
+    scan(document);
+    startObserver();
+  }
+
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes[STORAGE_KEY]) {
-      applyConfig(changes[STORAGE_KEY].newValue);
-      scan(document);
+    if (area === "local" && (changes[CONFIG_KEY] || changes[FILTER_KEY])) {
+      buildRules().then(() => scan(document));
     }
   });
 
-  // 初始化
-  chrome.storage.local.get(STORAGE_KEY, (data) => {
-    applyConfig(data[STORAGE_KEY]);
-    scan(document);
-    if (document.documentElement) startObserver();
-  });
   document.addEventListener("DOMContentLoaded", () => scan(document));
+
+  init();
 })();
