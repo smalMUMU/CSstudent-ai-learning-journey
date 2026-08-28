@@ -1,0 +1,14 @@
+import ollama
+
+messages = [{"role":"system","content":"你是一名学习助手"}]
+print("退出请输出：/bye")
+while True:
+    user_question = input("请输入你的问题：")
+    if user_question == "/bye":
+        print("好的我会在这里等你，有什么疑问欢迎随时回来找我🤓")
+        break
+    messages.append({"role":"user","content":user_question})
+    resp = ollama.chat(model = "qwen3:4b", messages = messages)
+    answer = resp["message"]["content"]
+    print("助手：",answer)
+    messages.append({"role":"assistant","content":answer})
