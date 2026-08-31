@@ -12,5 +12,17 @@ def run(user_input):
         msg = call_llm(messages, TOOLS)
         messages.append(msg)
         tool_calls = msg.get("tool_calls")
+        if tool_calls:
+            for tc in tool_calls:
+                name = tc["function"]["name"]
+                args_json = tc["function"]["arguments"]
+                out = run_tool(name, args_json)
+                messages.appemd({
+                    "role": "tool",
+                    "tool_call_id": tc["id"],
+                    "content": out,
+                })
+            continue
+        return msg.get("content")
 
 
