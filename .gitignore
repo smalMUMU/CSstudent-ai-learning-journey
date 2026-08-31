@@ -1,0 +1,8 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+# 依赖
+node_modules/
