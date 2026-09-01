@@ -17,12 +17,14 @@ def run(user_input):
                 name = tc["function"]["name"]
                 args_json = tc["function"]["arguments"]
                 out = run_tool(name, args_json)
-                messages.appemd({
+                messages.append({
                     "role": "tool",
                     "tool_call_id": tc["id"],
                     "content": out,
                 })
             continue
         return msg.get("content")
+if __name__ == "__main__":
+    print(run(input("你:")))
 
 
