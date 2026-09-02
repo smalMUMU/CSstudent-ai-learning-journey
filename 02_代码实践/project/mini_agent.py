@@ -28,3 +28,5 @@ def run(user_input):
 
 if __name__ == "__main__":
     print(run(input("你：")))
+
+#第二遍
