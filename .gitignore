@@ -1,0 +1,30 @@
+# ===== 密钥 / 敏感信息（最重要）=====
+.env
+.env.*
+*.env
+!.env.example
+*.key
+*.pem
+*.p12
+credentials.json
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# ===== Node =====
+node_modules/
+
+# ===== 编辑器 / 系统 =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== 临时文件 =====
+*.tmp
+*.log
