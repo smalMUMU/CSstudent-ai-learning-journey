@@ -133,3 +133,17 @@ if __name__ == "__main__":                          # 只有直接运行时才�
 
 ## 九、一句话总收
 > agent 的骨架 = **工具说明书（TOOLS）+ 调模型的桥（call_llm）+ while 循环（问→回话→要工具就做→回填→再问；有答案就停）**。API 是"程序间的桥"，API Key 是"过桥的通行证"。
+
+---
+
+## 十、进度记录（按日期追加）
+
+### 2026-08-25
+- **完成**：独立写出真实版 `agent.py`（`call_llm` + `tool_calls` 处理 + 回填），全对——从"知道思路"到"真会写"。
+- **理通**：`msg` vs `messages`、`call_llm`、`tool_calls`、`tool_call_id`、`.get()`、缩进逻辑、`continue` vs `return`。
+- **周边**：API / API Key / HTTP / HTTPS / dsh 上下文机制 / gitlink（GitHub"打不开的箭头"）。
+
+### 明日计划
+1. 写 `mini_agent.py`（纯本地、不用 key，巩固"循环+工具+状态"），跑通 `12*7` / `hello`。
+2. 跑通今天写的 `agent.py`（设 `DEEPSEEK_API_KEY` → `python agent.py` → 输 `12*7` / `hello`），验证 **M1**。
+3. 进 **M2**：再加 `now`（报时）工具 + 多轮记忆（能连续多步，如"先算 12*7 再问加 3"）。
