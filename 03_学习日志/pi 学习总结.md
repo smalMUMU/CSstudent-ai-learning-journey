@@ -185,3 +185,35 @@ if __name__ == "__main__":                          # 只有直接运行时才�
 
 ### 五类：函数名
 - `run_tool(...)`（**不是** `tool(...)` / `tun_tool(...)`）——必须是定义时那个确切名字。
+
+---
+
+## 十二、周总结（按周追加）
+
+### 2026-08-25 ~ 2026-09-04 这一周
+> 核心一句话：**从零、亲手、独立地写出了"一个 agent 的骨架"，并理解了它每一块在干嘛。**
+
+**主线：亲手用 Python 写出 agent**
+- 掌握三块核心：`大脑(call_llm) + 循环(while) + 工具(tools)`。
+- `TOOLS` 工具说明书（name/description/parameters）+ `SYSTEM` 系统提示词。
+- `messages` 对话历史（`role`+`content`：system/user/assistant/tool）。
+- `while` 循环：问 AI → `append` → 看 `tool_calls` → 要工具就执行+回填+`continue` → 有答案就 `return`。
+- 关键细节：`msg` vs `messages`、`msg.get("tool_calls")`、`tool_call_id` 对上号、`.get()` 安全取、缩进、`continue` vs `return`。
+- **M2**：加多工具（`now`）+ **多轮记忆**（messages 提到外面 + main 的 while 循环）。
+- 独立写 `agent.py` **4 遍**写到全对。
+
+**副线：Python + 网络基础**
+- `import`/模块化、字典/列表/循环/JSON。
+- **HTTP POST**（urllib + JSON + Bearer 认证）。
+- **API / API Key**（API=程序间的桥，Key=通行证；什么时候才要 Key）。
+- **HTTP vs HTTPS**（明文 vs 加密；身份证/密码等敏感信息的安全常识）。
+
+**周边：工具与安全**
+- **dsh**：使用时间峰谷、省钱时间表、上下文机制（100 万窗口 / 80% 压缩 / 缓存）。
+- **GitHub**：gitlink/子模块"箭头打不开"是怎么回事、怎么解决。
+- **学习资料**：技术白皮书 + Agent 学习资料索引、语法模板卡、我该怎么用 dsh 助手、项目开发提示词。
+
+**学习方法**
+- 正视卡点"知道思路但写不出/记不住" → 用**反复默写 + 错题集 + 理解"为什么"**破解。
+- 坚持**复述法**（能自己讲清楚才算会）。
+- 明白"**能看懂 ≠ 会写**"，最终独立写出完整 agent。
