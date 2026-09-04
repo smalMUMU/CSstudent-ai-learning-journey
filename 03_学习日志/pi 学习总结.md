@@ -147,3 +147,41 @@ if __name__ == "__main__":                          # 只有直接运行时才�
 1. 写 `mini_agent.py`（纯本地、不用 key，巩固"循环+工具+状态"），跑通 `12*7` / `hello`。
 2. 跑通今天写的 `agent.py`（设 `DEEPSEEK_API_KEY` → `python agent.py` → 输 `12*7` / `hello`），验证 **M1**。
 3. 进 **M2**：再加 `now`（报时）工具 + 多轮记忆（能连续多步，如"先算 12*7 再问加 3"）。
+
+### 2026-09-04
+- 重写基础框架（第 4 遍），修掉 4 处错：`call_llm(messages, TOOLS)` 顺序、漏 `messages.append(msg)`、`"tool_calls"` 字段名、`for tc in tool_calls` 遍历。
+- 开始进 **M2**。
+
+---
+
+## 十一、我常犯的错（错题集，写之前先扫一遍）
+
+### 一类：最容易混的"两对"
+| 混 | 是什么 | 怎么用 |
+|---|---|---|
+| `msg` | AI 这轮刚回的那句话（一个字典） | `msg.get("tool_calls")`、`msg.get("content")` |
+| `messages` | 一整本对话历史（列表） | `messages.append(msg)` |
+
+| 混 | 是什么 | 怎么用 |
+|---|---|---|
+| `TOOLS` | 你的**工具说明书**（有哪些工具） | 给 model 看；`[... for t in TOOLS]` 抽名字 |
+| `tool_calls` | **AI 决定要调的那批调用**（带参数/id） | `for tc in tool_calls:` |
+
+### 二类：字段名 / 拼写
+- `"tool_calls"`（**不是** `"tools"`）
+- `"tool_call_id"`（**不是** `"tool_calls_id"`）
+- `"role": "tool"`（`tool` 要加引号）
+- `tc["id"]`（`id` 要加引号）
+
+### 三类：顺序 / 漏写
+- `call_llm(messages, TOOLS)`（先 `messages`，后 `TOOLS`）
+- **漏写** `messages.append(msg)`（必须！尤其带 `tool_calls` 时）
+
+### 四类：结构 / 缩进
+- 开头用 `messages = [...]`（用 `=` 建列表），**不是** `messages.append(...)`；`append` 一次只加一个元素。
+- `continue` 要缩进到 `if tool_calls:` 里面（和 `for` 平级），否则死循环。
+- `return msg.get("content")` 在 `if` 外、`while` 里（AI 直接回答时才走）。
+- 结尾 `if __name__ == "__main__":`（`__main__` 加引号）。
+
+### 五类：函数名
+- `run_tool(...)`（**不是** `tool(...)` / `tun_tool(...)`）——必须是定义时那个确切名字。
