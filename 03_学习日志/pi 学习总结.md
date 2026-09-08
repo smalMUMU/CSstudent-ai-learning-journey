@@ -231,3 +231,30 @@ if __name__ == "__main__":                          # 只有直接运行时才�
 - 正视卡点"知道思路但写不出/记不住" → 用**反复默写 + 错题集 + 理解"为什么"**破解。
 - 坚持**复述法**（能自己讲清楚才算会）。
 - 明白"**能看懂 ≠ 会写**"，最终独立写出完整 agent。
+
+---
+
+## 十三、按日期 · 易错点 & 知识盲区
+
+### 2026-09-04（M2/M3 相关）
+
+**易错点（代码）**
+- `messagges` → `messages`（多打个 g）
+- `for tc in TOOLS` → **`for tc in tool_calls`**（遍历"调用"不是"说明"，老点又犯）
+- `"too_call_id"` → **`"tool_call_id"`**（too 不是 tool）
+- `"contents"` → **`"content"`**（多了 s）
+- `messages.append([{...}])` → **`append({...})`**（append 加"一个元素=字典"，别套 `[ ]`，老点）
+- `run` 开头漏 `messages.append({"role":"user",...})`（用户输入没进记忆）
+- `__main__` 忘了 `while True:`（`break` 在循环外 = SyntaxError）
+- `__main__` 的 `input()` 放外面（应放 `while` 里，每轮重问）
+- `user_iput` 拼错（应为 `user_input`）
+
+**知识盲区（今天才理清的）**
+- **`json` = 数据格式转换**（Python 字典 ↔ JSON 文本），**不是"存记忆"**；`json.loads(args_json)` 把模型参数文本转成字典。
+- **`datetime` = 取当前时间**（`datetime.datetime.now().strftime(...)`），不是"设置/更新"。
+- **`TOOLS` 本质是列表**，像"菜单/说明书清单"给模型看；真正函数是 `def calc/now/read_file`。
+- **`function` = 工具三要素**：`name`(叫什么) / `description`(干嘛，给模型看) / `parameters`(要什么输入)。
+- **`parameters` = 必填输入清单**（不是"标识"）；`required` = 必填项；模型不填必填参数就没法执行。
+- **记忆本质**：局部变量(函数里)用完就扔 / 全局(外面)一直累积。
+- **两个 `while` 是两层**（内层=处理一句话；外层=整场对话）。
+- append 是"往列表末尾加一个元素"，元素类型必须是**字典（消息）**，不能套 `[ ]`。
