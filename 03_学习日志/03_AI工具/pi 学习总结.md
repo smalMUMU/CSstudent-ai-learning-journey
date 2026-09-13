@@ -156,6 +156,20 @@ if __name__ == "__main__":                          # 只有直接运行时才�
 
 ## 十一、我常犯的错（错题集，写之前先扫一遍）
 
+### ★ 浓缩版（写代码前扫一眼，就 7 条）
+```
+① for tc in tool_calls        ← 不是 TOOLS（遍历"调用"，不是"说明"）
+② messages.append(msg)        ← call_llm 之后必须记，别漏
+③ messages.append({...})      ← 加"一个字典"，别套 [ ]
+④ return msg.get("content")   ← 点 . ，不是逗号
+⑤ __main__: while True + input() 放循环里 + /bye 才 break
+⑥ from tools import           ← tools 有 s
+⑦ 拼写: tool_calls / tool_call_id / content / messages
+   （不是 tools / too_call_id / contents / messagges）
+```
+> 一句话记法：**遍历"调用"(tool_calls) → 记两处(append msg / append 工具结果) → 返回用 `.get` → 主循环里 `input` → 拼写别手滑。**
+> 最该盯的 3 个：① `for tc in tool_calls`　② `messages.append(msg)` 别漏　③ `input()` 在 while 里。
+
 ### 一类：最容易混的"两对"
 | 混 | 是什么 | 怎么用 |
 |---|---|---|
