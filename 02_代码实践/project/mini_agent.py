@@ -327,3 +327,41 @@ if __name__ == "__main__":
         if user_input == "/bye":
             break
         print(run(user_input))
+
+
+#回忆与熟悉Agent框架
+from pi_ai import call_llm
+from tools import TOOLS, run_tool
+
+SYSTEM = "你是一个辅助CS学生学习的学习助手，负责辅导学生进行编程学习" + str([t["function"]["name"] for t in TOOLS])
+messages = [
+    {"role": "system", "content": SYSTEM}
+]
+
+def run(user_input):
+    messages.append(
+        {"role": "user","content": user_input}
+    )
+    while True:
+        msg = call_llm(messages, TOOLS)
+        messages.append(msg)
+        tool_calls = msg.get("tool_calls")
+        if tool_calls:
+            for tc in tool_calls:
+                name = tc["function"]["name"]
+                args_json = tc["function"]["arguments"]
+                out = run_tool(name, args_json)
+                messages.append({
+                    "role":"tool",
+                    "tools_call_id": tc["id"],
+                    "content": out
+                })
+            continue
+        return msg.get("content")
+
+if __name__ == "__main__":
+    while True:
+        user_input = input("你：")
+        if user_input == "/bye":
+            break
+        print(run(user_input))
