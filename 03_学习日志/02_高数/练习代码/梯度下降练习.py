@@ -22,8 +22,8 @@ def f(x):
 def g(x):
     n = 2 * (x - 2)
     return n
-alpha = 1.1
-x = 0
+alpha = 0.1
+x = 3
 for i in range(0,51):
     x = x - alpha * g(x)
     print(x)
