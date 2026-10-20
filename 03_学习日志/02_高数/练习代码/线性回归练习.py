@@ -51,3 +51,23 @@ for x in xs:
     y = 3 * x + 2
     ys.append(y)
 print(xs, ys)
+
+def dl_dw(w, b):
+    s = 0
+    for i in len(xs):
+        s += -2 * (ys[i] - w * xs[i] - b) * xs[i]
+    return s
+
+def dl_db(w, b):
+    s = 0
+    for i in len(xs):
+        s += -2 * (ys[i] - w * xs[i] - b)
+    return s
+
+w = 0
+b = 0
+alpha = 0.001
+for i in range(501):
+    w = w - alpha * dl_dw(w, b)
+    b = b - alpha * dl_dw(w, b)
+print(w, b)
