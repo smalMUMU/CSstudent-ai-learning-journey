@@ -45,29 +45,35 @@
 # 代码你自己写，我不代劳 :)
 
 # ---------- 你的代码写在下面 ----------
+# ① 数据
 xs = list(range(8))
 ys = []
 for x in xs:
-    y = 3 * x + 2
-    ys.append(y)
-print(xs, ys)
+    ys.append(3 * x + 2)          # y = 3x + 2（真答案：w=3, b=2）
 
+
+# ② w 的梯度：误差 × x
 def dl_dw(w, b):
     s = 0
-    for i in len(xs):
-        s += -2 * (ys[i] - w * xs[i] - b) * xs[i]
+    for i in range(len(xs)):
+        s += -2 * (ys[i] - (w * xs[i] + b)) * xs[i]
     return s
 
+
+# ③ b 的梯度：就是误差（不乘 x）
 def dl_db(w, b):
     s = 0
-    for i in len(xs):
-        s += -2 * (ys[i] - w * xs[i] - b)
+    for i in range(len(xs)):
+        s += -2 * (ys[i] - (w * xs[i] + b))
     return s
 
+
+# ④ 训练：两个参数一起更新
+alpha = 0.001
 w = 0
 b = 0
-alpha = 0.001
-for i in range(501):
+for i in range(5000):
     w = w - alpha * dl_dw(w, b)
-    b = b - alpha * dl_dw(w, b)
+    b = b - alpha * dl_db(w, b)
+
 print(w, b)
