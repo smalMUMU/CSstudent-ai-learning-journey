@@ -16,11 +16,11 @@
 x = 0
 n = input()
 while True:
-    if x > int(n):
+    if x >= int(n):
         break    #这里先设置一个退出窗口,试探保留n
     user_score = input()     #AI指出来还有空行输入，所以还要加入特判，来判断空行
-    if user_score == " ":
-        print(1)#这一行是不执行，但是我忘记了怎么写不执行输出,先随便写一个输出，不知道怎么解决空行问题，先暂时这样写
+    if user_score == "":
+        continue#这一行是不执行，但是我忘记了怎么写不执行输出,先随便写一个输出，不知道怎么解决空行问题，先暂时这样写
     else:
         print(user_score)
     x += 1
