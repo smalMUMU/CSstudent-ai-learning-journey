@@ -353,7 +353,7 @@ def run(user_input):
                 out = run_tool(name, args_json)
                 messages.append({
                     "role":"tool",
-                    "tools_call_id": tc["id"],
+                    "tool_call_id": tc["id"],
                     "content": out
                 })
             continue
