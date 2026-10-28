@@ -17,6 +17,15 @@ TOOLS = [
         "description": "读取指定文件内容，如 read_file('D:/方案.txt')",
         "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]},
     }},
+    {"type": "function", "function": {
+        "name": "write_file",
+        "description": "把内容写入指定文件（会覆盖原文件）,如 write_file('a.txt','hello')",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
+            "required": ["path", "content"]
+        }
+    }}
 ]
 
 def calc(expr):
@@ -32,6 +41,14 @@ def read_file(path):
     except Exception as e:
         return "读取失败：" + str(e)
 
+def write_file(path, content):
+    try:
+        with open(path, "w", encoding = "utf-8") as f:
+            f.write(content)
+        return "写入成功:" + path
+    except Exception as e:
+        return "写入失败：" + str(e)
+
 def run_tool(name, args_json):
     args = json.loads(args_json) if args_json else {}
     if name == "calc":
@@ -40,6 +57,8 @@ def run_tool(name, args_json):
         return now()
     if name == "read_file":
         return read_file(args["path"])
+    if name == "write_file":
+        return write_file(args["path"], args["content"])
     return "未知工具：" + name
 
 if __name__ == "__main__":
