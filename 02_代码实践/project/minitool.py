@@ -1,5 +1,7 @@
 import json
 import datetime
+import subprocess
+import sys
 
 TOOLS = [
     {"type": "function", "function": {
@@ -10,7 +12,7 @@ TOOLS = [
     {"type": "function", "function": {
         "name": "now",
         "description": "返回当前时间，如'2026-10-27 11:49'",
-        "parameters": {"type": "boject", "properties": {}, "required": []},
+        "parameters": {"type": "object", "properties": {}, "required": []},
     }},
     {"type": "function", "function": {
         "name": "read_file",
@@ -24,8 +26,13 @@ TOOLS = [
             "type": "object",
             "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
             "required": ["path", "content"]
-        }
-    }}
+        },
+    }},
+    {"type": "function", "function": {
+        "name": "run_code",
+        "description": "运行一段python代码并返回输出，如 run_code('print(1 + 2)')",
+        "parameters": {"type": "object", "properties": {"code": {"type": "string"}}, "required": ["code"]},
+    }},
 ]
 
 def calc(expr):
@@ -49,6 +56,17 @@ def write_file(path, content):
     except Exception as e:
         return "写入失败：" + str(e)
 
+def run_code(code):
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output = True, text = True, timeout = 30,
+        )
+        output = (result.stdout or "") + (result.stderr or "")
+        return output.strip() or "(无输出)"
+    except Exception as e:
+        return "运行失败:" + str(e)
+
 def run_tool(name, args_json):
     args = json.loads(args_json) if args_json else {}
     if name == "calc":
@@ -59,6 +77,8 @@ def run_tool(name, args_json):
         return read_file(args["path"])
     if name == "write_file":
         return write_file(args["path"], args["content"])
+    if name == "run_code":
+        return run_code(args["code"])
     return "未知工具：" + name
 
 if __name__ == "__main__":
