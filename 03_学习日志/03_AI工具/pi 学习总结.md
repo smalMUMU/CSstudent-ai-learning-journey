@@ -298,3 +298,20 @@ if __name__ == "__main__":                          # 只有直接运行时才�
 
 **已经比较稳的**
 - `.get()` 更安全（没键返回 None）/ `append(msg)` 必须（会话背景）/ `parameters`(模板) vs `arguments`(填好的) / `"r"`+`encoding` / `subprocess` 隔离 / `input()` 在循环里 / `/bye` 退出。
+
+### 2026-10-30（工程化起步：CLI + 错误处理）
+
+**今天学到的**
+- **`sys` 模块**：和 Python 解释器打交道；`sys.argv` = 命令行参数列表（`argv[0]` 是**脚本名**）。
+- **`sys.argv[1:]`**：切片，**跳过脚本名**，只取用户输入参数。
+- **`" ".join(args)`**：把列表用空格拼成**一个字符串**（`["现在","几点"]`→`"现在 几点"`）。
+- **`cli.py` 的 `main()`**：CLI 入口——**有参数→一次性模式；没参数→交互模式**。
+- **交互循环**：`try/except (EOFError, KeyboardInterrupt)` = **Ctrl+C 优雅退出**；`/bye` 才 break。
+- **`urllib.request`** = 发请求（`Request`/`urlopen`）；**`urllib.error`** = 错误类型（`HTTPError`/`URLError`）。
+- **`os.environ.get("KEY", "")`**：读环境变量；末尾 `""` 是**默认值（没设就给空串）**，**不是"输入样例"**。
+- **工程化第②步（重试）**：`retry` 重试 + `backoff` 退避（等 2/4/6 秒）+ **区分错误**（401 不重试，网络/429 重试）+ `RuntimeError` 友好报错。
+
+**难点 / 盲点（记本子上，明天统一解决）**
+- `os` 之前忘了 → 复习：**`os`=操作系统(文件/环境变量)，`sys`=Python解释器(命令行参数/退出)**。
+- `os.environ.get("KEY", "")` 里的 `""` 以为是"输入样例"，其实是**默认值（没找到给空串）**。
+- `sys.argv[1:]` 的切片读法（跳过 `argv[0]` 脚本名）。
