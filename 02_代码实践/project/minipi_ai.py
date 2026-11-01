@@ -21,7 +21,7 @@ def call_llm(messages, tools=None):
         BASE_URL,
         data = payload,
         headers = {
-            "Authorization": "Bearer" + API_KEY,
+            "Authorization": "Bearer " + API_KEY,
             "Content-Type": "application/json",
         },
     )
@@ -29,9 +29,9 @@ def call_llm(messages, tools=None):
     last_err = None
     for attempt in range(MAX_RETRIES):
         try:
-            with urllib.request.urlopen(req, timeout = 60) as resq:
+            with urllib.request.urlopen(req, timeout = 60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["messages"]
+            return data["choices"][0]["message"]
         except urllib.error.HTTPError as e:
             if e.code == 401:
                 raise RuntimeError("API key 无效或未设置（401）。请检查 DEEPSEEK_API_KEY。")
