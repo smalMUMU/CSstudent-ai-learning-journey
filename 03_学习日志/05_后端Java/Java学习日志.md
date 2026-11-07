@@ -116,7 +116,7 @@
 
 | # | 我写错的样子 | 正确写法 | 为什么 / 一句话记法 | 出处 |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
+| 1 | `import java.until.Scanner;` | `import java.util.Scanner;` | **`util` = utility（工具包），不是 `until`（直到）**。拼错的后果：第一条 error 报"程序包不存在"，后面所有用到 `Scanner` 的地方全变成"找不到符号"（**连锁，不是新错**） | 11-07 `luru11.java` |
 
 ---
 

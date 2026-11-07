@@ -41,6 +41,24 @@
 
 ---
 
+## 九、Java ↔ Python：键盘录入（2026-11-07 记）
+
+| | Python | Java |
+|---|---|---|
+| 导入 | `import math`（**模块**） | `import java.util.Scanner;`（**类**） |
+| 能不能直接用 | 能，函数直接调 | **不行**，`Scanner` 要先 `new` 出对象 |
+| 读一行 | `input()` | `sc.nextLine()` |
+| 读一个数 | `int(input())`：**先读字符串，再转换** | `sc.nextInt()`：**直接给 `int`** |
+| 谁决定类型 | **我自己**（转换函数） | **方法名**（`nextInt` / `nextDouble` / `next`） |
+| 提示语怎么写 | `input("请输入：")` 一个参数搞定 | Scanner **没有提示参数**，得自己先 `print` |
+| 读失败 | `ValueError` | `InputMismatchException` |
+| 分隔规则 | **按行** | `nextInt()` **按空白**（空格/换行都算）；`nextLine()` 才按行 |
+
+> ⭐ **一句话带走**：**Python 的 `input()` 只给你字符串，转不转是你的事；Java 的 `nextInt()` 说好了给 `int`，给不出来就直接炸。**
+> ⚠️ **两个坑的根在这里**：① `nextInt()` 按空白、`nextLine()` 按行 ⇒ 混用会出现"残留换行被读走"；② 提示语要用 `print`（不换行）而不是 `println`（换行后光标跑了）。
+
+---
+
 ## 🔍 5 题自测（每周抽一轮，口头答，不写代码）
 
 > 答不出的，就是这一周要补的那一块。
