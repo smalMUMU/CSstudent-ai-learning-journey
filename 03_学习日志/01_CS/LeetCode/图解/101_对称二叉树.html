@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 101. 对称二叉树 - 交互式算法图解</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    code, pre {
+      font-family: 'Fira Code', monospace;
+    }
+    .node-transition {
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pulse-cyan {
+      box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
+      animation: pulseCyan 1.5s infinite;
+    }
+    .pulse-pink {
+      box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7);
+      animation: pulsePink 1.5s infinite;
+    }
+    @keyframes pulseCyan {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+    }
+    @keyframes pulsePink {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(236, 72, 153, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+    }
+    .highlight-line {
+      background-color: rgba(59, 130, 246, 0.22);
+      border-left: 3px solid #3b82f6;
+    }
+    .mirror-axis {
+      stroke-dasharray: 6 6;
+      animation: dashMove 20s linear infinite;
+    }
+    @keyframes dashMove {
+      to { stroke-dashoffset: -100; }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- 顶部导航栏 -->
+  <header class="border-b border-slate-800 bg-slate-950/70 backdrop-blur px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+    <div class="flex items-center space-x-3">
+      <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold px-2.5 py-1 rounded-md text-xs tracking-wider">
+        LeetCode 101
+      </span>
+      <h1 class="text-lg md:text-xl font-bold bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+        对称二叉树 (Symmetric Tree) 动态图解
+      </h1>
+    </div>
+
+    <!-- 预设用例切换 -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-medium text-slate-400 hidden sm:inline">选择示例：</span>
+      <button onclick="loadPreset('symmetric')" id="btn-symmetric" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600/30 transition">
+        ✅ 完全对称 [1,2,2,3,4,4,3]
+      </button>
+      <button onclick="loadPreset('asymmetric_val')" id="btn-asym-val" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750 transition">
+        ❌ 数值不对称 [1,2,2,null,3,null,3]
+      </button>
+      <button onclick="loadPreset('asymmetric_struct')" id="btn-asym-struct" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750 transition">
+        ❌ 结构不对称 [1,2,2,2,null,2]
+      </button>
+    </div>
+  </header>
+
+  <!-- 主体工作区 -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 p-4 md:p-6 max-w-7xl mx-auto w-full">
+    
+    <!-- 左侧：二叉树主画布 & 动画控制 -->
+    <div class="lg:col-span-7 flex flex-col gap-4">
+      
+      <!-- 画布卡片 -->
+      <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 md:p-5 flex flex-col relative shadow-xl overflow-hidden min-h-[460px]">
+        
+        <!-- 图例与状态标识 -->
+        <div class="flex flex-wrap items-center justify-between gap-3 text-xs mb-2 z-10">
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 ring-2 ring-cyan-300/40"></span>
+              <span class="text-cyan-300 font-medium">节点 a (左半侧)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded-full bg-pink-500 ring-2 ring-pink-300/40"></span>
+              <span class="text-pink-300 font-medium">节点 b (右半侧)</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-slate-400 bg-slate-900 px-2.5 py-1 rounded-full border border-slate-800">
+            <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+            <span id="compare-type-label">准备就绪</span>
+          </div>
+        </div>
+
+        <!-- SVG 绘制区域 -->
+        <div class="flex-1 w-full relative flex items-center justify-center">
+          <svg id="tree-svg" class="w-full h-full min-h-[380px]" viewBox="0 0 600 360" preserveAspectRatio="xMidYMid meet">
+            <!-- 镜像虚线轴 -->
+            <line x1="300" y1="20" x2="300" y2="340" stroke="#475569" stroke-width="1.5" class="mirror-axis" />
+            <text x="308" y="38" fill="#64748b" font-size="11" font-weight="600" letter-spacing="1">镜像对称轴 (Mirror)</text>
+
+            <!-- 动态对比连线 -->
+            <path id="mirror-connection" d="" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="4 4" class="opacity-0 transition-opacity duration-300" />
+
+            <!-- 树边 (Tree Links) -->
+            <g id="edges-layer"></g>
+
+            <!-- 树节点 (Tree Nodes) -->
+            <g id="nodes-layer"></g>
+          </svg>
+        </div>
+
+        <!-- 递归结果通知浮层 -->
+        <div id="result-toast" class="opacity-0 translate-y-3 transition-all duration-300 absolute bottom-4 left-4 right-4 bg-slate-900/90 border rounded-xl p-3 flex items-center justify-between z-20 backdrop-blur">
+          <div class="flex items-center gap-3">
+            <div id="toast-icon" class="w-8 h-8 rounded-lg flex items-center justify-center font-bold"></div>
+            <div>
+              <div id="toast-title" class="font-bold text-sm"></div>
+              <div id="toast-desc" class="text-xs text-slate-400"></div>
+            </div>
+          </div>
+          <span id="toast-badge" class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider"></span>
+        </div>
+      </div>
+
+      <!-- 控制面板 -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        <div class="flex items-center gap-2">
+          <button id="btn-prev" onclick="step(-1)" class="p-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition text-sm flex items-center gap-1.5" title="上一步">
+            <i class="fa-solid fa-backward-step"></i> 上一步
+          </button>
+          <button id="btn-play" onclick="togglePlay()" class="p-2.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold transition text-sm shadow-md shadow-blue-500/20 flex items-center gap-2">
+            <i id="play-icon" class="fa-solid fa-play"></i> 
+            <span id="play-text">自动播放</span>
+          </button>
+          <button id="btn-next" onclick="step(1)" class="p-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition text-sm flex items-center gap-1.5" title="下一步">
+            下一步 <i class="fa-solid fa-forward-step"></i>
+          </button>
+          <button onclick="resetPlayback()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition text-sm" title="重置">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs font-mono text-slate-400">
+          <div class="flex items-center gap-1.5">
+            <span>步数:</span>
+            <span id="step-counter" class="text-cyan-400 font-bold text-sm">0 / 0</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>速度:</span>
+            <input type="range" id="speed-slider" min="600" max="2200" step="200" value="1200" class="w-20 accent-indigo-500 cursor-pointer" title="调整播放间隔">
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心原理解释卡片 -->
+      <div class="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 text-xs space-y-2.5">
+        <div class="flex items-center gap-2 text-indigo-300 font-bold text-sm">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>为什么递归比对是：check(a.left, b.right) 和 check(a.right, b.left)？</span>
+        </div>
+        <p class="text-slate-400 leading-relaxed">
+          二叉树的<strong>镜像对称</strong>要求沿中轴对折后能够重合。因此：
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300 pt-1">
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-start gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>
+            <div>
+              <span class="font-bold text-cyan-300">外侧对齐 (Outer Pair):</span>
+              <p class="text-slate-400 mt-0.5"><code class="text-cyan-200">a.left</code> 与 <code class="text-pink-200">b.right</code> 比对。最左外沿对齐最右外沿。</p>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-purple-500/30 flex items-start gap-2">
+            <span class="w-2 h-2 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>
+            <div>
+              <span class="font-bold text-purple-300">内侧对齐 (Inner Pair):</span>
+              <p class="text-slate-400 mt-0.5"><code class="text-cyan-200">a.right</code> 与 <code class="text-pink-200">b.left</code> 比对。向中轴靠拢的两侧互相比较。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：代码追踪与调用栈 -->
+    <div class="lg:col-span-5 flex flex-col gap-4">
+      
+      <!-- Python 代码面板 -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+        <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs">
+          <span class="font-semibold text-slate-300 flex items-center gap-2">
+            <i class="fa-brands fa-python text-amber-400"></i> Python 递归对照实现
+          </span>
+          <span id="call-status-badge" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">待运行</span>
+        </div>
+        
+        <div class="p-3 text-xs leading-5 overflow-x-auto select-none">
+          <div id="code-line-1" class="px-2.5 py-0.5 rounded text-slate-500">class Solution:</div>
+          <div id="code-line-2" class="px-2.5 py-0.5 rounded text-slate-500 pl-4">def isSymmetric(self, root: TreeNode) -> bool:</div>
+          <div id="code-line-3" class="px-2.5 py-0.5 rounded text-slate-400 pl-8">if not root: return True</div>
+          <div id="code-line-4" class="px-2.5 py-0.5 rounded text-indigo-300 font-semibold pl-8 mt-1">def check(a, b):</div>
+          
+          <!-- Base 1 -->
+          <div id="code-line-5" class="px-2.5 py-0.5 rounded text-slate-300 pl-12 transition-colors">
+            <span class="text-indigo-400">if not</span> a <span class="text-indigo-400">and not</span> b:
+          </div>
+          <div id="code-line-6" class="px-2.5 py-0.5 rounded text-emerald-400 pl-16 transition-colors">
+            <span class="text-indigo-400">return</span> True <span class="text-slate-500 text-[11px]">// 均为空，镜像对称</span>
+          </div>
+
+          <!-- Base 2 -->
+          <div id="code-line-7" class="px-2.5 py-0.5 rounded text-slate-300 pl-12 transition-colors">
+            <span class="text-indigo-400">if not</span> a <span class="text-indigo-400">or not</span> b:
+          </div>
+          <div id="code-line-8" class="px-2.5 py-0.5 rounded text-rose-400 pl-16 transition-colors">
+            <span class="text-indigo-400">return</span> False <span class="text-slate-500 text-[11px]">// 一空一非空，结构不对称</span>
+          </div>
+
+          <!-- Base 3 -->
+          <div id="code-line-9" class="px-2.5 py-0.5 rounded text-slate-300 pl-12 transition-colors">
+            <span class="text-indigo-400">if</span> a.val != b.val:
+          </div>
+          <div id="code-line-10" class="px-2.5 py-0.5 rounded text-rose-400 pl-16 transition-colors">
+            <span class="text-indigo-400">return</span> False <span class="text-slate-500 text-[11px]">// 值不相等，数值不对称</span>
+          </div>
+
+          <!-- Recursive Step -->
+          <div id="code-line-11" class="px-2.5 py-1 rounded text-cyan-300 pl-12 mt-1 border-t border-slate-800/80 transition-colors">
+            <span class="text-indigo-400">return</span> check(a.left, b.right) <span class="text-amber-300">and</span>
+          </div>
+          <div id="code-line-12" class="px-2.5 py-1 rounded text-purple-300 pl-16 transition-colors">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(a.right, b.left)
+          </div>
+
+          <div id="code-line-13" class="px-2.5 py-1 rounded text-slate-300 pl-8 mt-1 border-t border-slate-800/80 transition-colors">
+            <span class="text-indigo-400">return</span> check(root.left, root.right)
+          </div>
+        </div>
+      </div>
+
+      <!-- 当前调用状态与解释 -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2.5 shadow-lg">
+        <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center justify-between">
+          <span>当前步骤解析 (Step Explanation)</span>
+          <span id="current-pair-tag" class="text-cyan-400 font-mono font-normal">等待开始...</span>
+        </h3>
+        <div id="explanation-box" class="text-sm bg-slate-900 border border-slate-800/80 rounded-xl p-3 text-slate-300 leading-relaxed min-h-[72px] flex items-center">
+          点击“下一步”或“自动播放”开始观察比较过程。
+        </div>
+      </div>
+
+      <!-- 递归调用栈 (Call Stack) -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex-1 flex flex-col shadow-lg">
+        <div class="flex items-center justify-between mb-3 text-xs">
+          <span class="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-indigo-400"></i> 递归调用栈 (Call Stack)
+          </span>
+          <span class="text-[11px] text-slate-500 font-mono">栈顶在上方</span>
+        </div>
+        <div id="call-stack-container" class="flex-1 flex flex-col-reverse justify-end gap-1.5 overflow-y-auto max-h-[190px] pr-1">
+          <div class="text-xs text-slate-600 text-center py-6">栈暂为空</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /**
+     * 树结构预设定义
+     * 节点以索引编号：
+     *        0 (root)
+     *      /         \
+     *     1           2
+     *   /   \       /   \
+     *  3     4     5     6
+     */
+    const PRESETS = {
+      symmetric: {
+        title: "完全对称二叉树",
+        nodes: [
+          { id: 0, val: 1, x: 300, y: 55, left: 1, right: 2, exists: true },
+          { id: 1, val: 2, x: 180, y: 140, left: 3, right: 4, exists: true, parent: 0 },
+          { id: 2, val: 2, x: 420, y: 140, left: 5, right: 6, exists: true, parent: 0 },
+          { id: 3, val: 3, x: 110, y: 245, left: null, right: null, exists: true, parent: 1 },
+          { id: 4, val: 4, x: 235, y: 245, left: null, right: null, exists: true, parent: 1 },
+          { id: 5, val: 4, x: 365, y: 245, left: null, right: null, exists: true, parent: 2 },
+          { id: 6, val: 3, x: 490, y: 245, left: null, right: null, exists: true, parent: 2 }
+        ],
+        expected: true
+      },
+      asymmetric_val: {
+        title: "数值不对称二叉树 [1,2,2,null,3,null,3]",
+        nodes: [
+          { id: 0, val: 1, x: 300, y: 55, left: 1, right: 2, exists: true },
+          { id: 1, val: 2, x: 180, y: 140, left: 3, right: 4, exists: true, parent: 0 },
+          { id: 2, val: 2, x: 420, y: 140, left: 5, right: 6, exists: true, parent: 0 },
+          { id: 3, val: null, x: 110, y: 245, left: null, right: null, exists: false, parent: 1 },
+          { id: 4, val: 3, x: 235, y: 245, left: null, right: null, exists: true, parent: 1 },
+          { id: 5, val: null, x: 365, y: 245, left: null, right: null, exists: false, parent: 2 },
+          { id: 6, val: 3, x: 490, y: 245, left: null, right: null, exists: true, parent: 2 }
+        ],
+        expected: false
+      },
+      asymmetric_struct: {
+        title: "结构不对称二叉树 [1,2,2,2,null,2,null]",
+        nodes: [
+          { id: 0, val: 1, x: 300, y: 55, left: 1, right: 2, exists: true },
+          { id: 1, val: 2, x: 180, y: 140, left: 3, right: 4, exists: true, parent: 0 },
+          { id: 2, val: 2, x: 420, y: 140, left: 5, right: 6, exists: true, parent: 0 },
+          { id: 3, val: 2, x: 110, y: 245, left: null, right: null, exists: true, parent: 1 },
+          { id: 4, val: null, x: 235, y: 245, left: null, right: null, exists: false, parent: 1 },
+          { id: 5, val: 2, x: 365, y: 245, left: null, right: null, exists: true, parent: 2 },
+          { id: 6, val: null, x: 490, y: 245, left: null, right: null, exists: false, parent: 2 }
+        ],
+        expected: false
+      }
+    };
+
+    let currentPresetKey = 'symmetric';
+    let steps = [];
+    let currentStepIdx = -1;
+    let timer = null;
+    let isPlaying = false;
+
+    /**
+     * 生成当前树的递归比对执行序列
+     */
+    function generateExecutionSteps(preset) {
+      const nodeList = preset.nodes;
+      const recordedSteps = [];
+      const stack = [];
+
+      function getDesc(id) {
+        if (id === null || id === undefined) return "null";
+        const node = nodeList[id];
+        return (!node || !node.exists) ? "null" : `节点(${node.val})`;
+      }
+
+      function check(aId, bId, relationType) {
+        const aNode = (aId !== null && aId !== undefined) ? nodeList[aId] : null;
+        const bNode = (bId !== null && bId !== undefined) ? nodeList[bId] : null;
+        const aExists = aNode && aNode.exists;
+        const bExists = bNode && bNode.exists;
+
+        const callName = `check(${getDesc(aId)}, ${getDesc(bId)})`;
+        stack.push({ aId, bId, name: callName });
+
+        // 步骤 1：开始进入该调用
+        recordedSteps.push({
+          type: 'enter',
+          aId,
+          bId,
+          relationType,
+          codeLine: 4,
+          stack: [...stack],
+          explanation: `进入 <code>${callName}</code>。对比类型：<strong>${relationType}</strong>。`
+        });
+
+        // 检查 Base Case 1: 均为 null
+        if (!aExists && !bExists) {
+          recordedSteps.push({
+            type: 'base1',
+            aId,
+            bId,
+            relationType,
+            codeLine: 6,
+            stack: [...stack],
+            status: 'match',
+            explanation: `判断：节点 <code>a</code> 和 <code>b</code> 均为 <strong>null</strong>。两者均不存在，满足镜像对称，返回 <span class="text-emerald-400 font-bold">True</span>。`
+          });
+          stack.pop();
+          return true;
+        }
+
+        // 检查 Base Case 2: 一空一非空
+        if (!aExists || !bExists) {
+          const missing = !aExists ? '左侧节点 a 为 null' : '右侧节点 b 为 null';
+          recordedSteps.push({
+            type: 'base2',
+            aId,
+            bId,
+            relationType,
+            codeLine: 8,
+            stack: [...stack],
+            status: 'mismatch',
+            explanation: `判断：<strong>一空一非空 (${missing})</strong>！树的结构破缺，不对称，返回 <span class="text-rose-400 font-bold">False</span>。`
+          });
+          stack.pop();
+          return false;
+        }
+
+        // 检查 Base Case 3: 节点值不相等
+        if (aNode.val !== bNode.val) {
+          recordedSteps.push({
+            type: 'base3',
+            aId,
+            bId,
+            relationType,
+            codeLine: 10,
+            stack: [...stack],
+            status: 'mismatch',
+            explanation: `判断：节点数值不一致！左侧 <code>a.val=${aNode.val}</code>，右侧 <code>b.val=${bNode.val}</code>。不对称，返回 <span class="text-rose-400 font-bold">False</span>。`
+          });
+          stack.pop();
+          return false;
+        }
+
+        // 节点值相等，准备递归
+        recordedSteps.push({
+          type: 'val_match',
+          aId,
+          bId,
+          relationType,
+          codeLine: 9,
+          stack: [...stack],
+          status: 'match',
+          explanation: `数值匹配成功：<code>${aNode.val} == ${bNode.val}</code>。接下来必须同时验证其<strong>外侧子节点</strong>与<strong>内侧子节点</strong>。`
+        });
+
+        // 递归 1：外侧 Outer (a.left 与 b.right)
+        recordedSteps.push({
+          type: 'recurse_outer',
+          aId,
+          bId,
+          relationType: '外侧比对: check(a.left, b.right)',
+          codeLine: 11,
+          stack: [...stack],
+          explanation: `递归分支一：比对<strong>外侧对 (Outer Pair)</strong> <code>check(a.left, b.right)</code>。`
+        });
+        const outerResult = check(aNode.left, bNode.right, "外侧 (Outer)");
+        if (!outerResult) {
+          stack.pop();
+          return false;
+        }
+
+        // 递归 2：内侧 Inner (a.right 与 b.left)
+        recordedSteps.push({
+          type: 'recurse_inner',
+          aId,
+          bId,
+          relationType: '内侧比对: check(a.right, b.left)',
+          codeLine: 12,
+          stack: [...stack],
+          explanation: `外侧已成功验证！递归分支二：比对<strong>内侧对 (Inner Pair)</strong> <code>check(a.right, b.left)</code>。`
+        });
+        const innerResult = check(aNode.right, bNode.left, "内侧 (Inner)");
+        if (!innerResult) {
+          stack.pop();
+          return false;
+        }
+
+        // 两者均满足
+        recordedSteps.push({
+          type: 'sub_success',
+          aId,
+          bId,
+          relationType,
+          codeLine: 11,
+          stack: [...stack],
+          status: 'match',
+          explanation: `节点对 (${aNode.val}, ${bNode.val}) 的左右子树均镜像对称！当前调用返回 <span class="text-emerald-400 font-bold">True</span>。`
+        });
+
+        stack.pop();
+        return true;
+      }
+
+      // 步骤 0：入口
+      recordedSteps.push({
+        type: 'start',
+        aId: 1,
+        bId: 2,
+        relationType: '入口验证 check(root.left, root.right)',
+        codeLine: 13,
+        stack: [],
+        explanation: '算法开始：首先校验根节点 <code>root(val=1)</code> 是否存在，接着发起初次调用 <code>check(root.left, root.right)</code>。'
+      });
+
+      const finalResult = check(nodeList[0].left, nodeList[0].right, "根对称入口");
+
+      // 终结步骤
+      recordedSteps.push({
+        type: 'finish',
+        aId: null,
+        bId: null,
+        finalResult,
+        codeLine: 13,
+        stack: [],
+        explanation: finalResult 
+          ? '🎉 <strong>全树遍历完成：</strong>所有镜像节点对均完美匹配，二叉树为<strong>对称二叉树 (True)</strong>！'
+          : '⚠️ <strong>遍历提前中止：</strong>发现破坏镜像对称的节点对，二叉树<strong>不对称 (False)</strong>！'
+      });
+
+      return recordedSteps;
+    }
+
+    /**
+     * 渲染二叉树 SVG 骨架
+     */
+    function renderTree(preset) {
+      const nodesLayer = document.getElementById('nodes-layer');
+      const edgesLayer = document.getElementById('edges-layer');
+      nodesLayer.innerHTML = '';
+      edgesLayer.innerHTML = '';
+
+      const nodes = preset.nodes;
+
+      // 绘制边 (仅绘制存在的子节点边)
+      nodes.forEach(node => {
+        if (!node.exists) return;
+        ['left', 'right'].forEach(dir => {
+          const childId = node[dir];
+          if (childId !== null && childId !== undefined) {
+            const childNode = nodes[childId];
+            if (childNode && childNode.exists) {
+              const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+              edge.setAttribute('x1', node.x);
+              edge.setAttribute('y1', node.y);
+              edge.setAttribute('x2', childNode.x);
+              edge.setAttribute('y2', childNode.y);
+              edge.setAttribute('stroke', '#334155');
+              edge.setAttribute('stroke-width', '2.5');
+              edge.setAttribute('stroke-linecap', 'round');
+              edge.setAttribute('id', `edge-${node.id}-${childNode.id}`);
+              edgesLayer.appendChild(edge);
+            }
+          }
+        });
+      });
+
+      // 绘制节点
+      nodes.forEach(node => {
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('id', `node-group-${node.id}`);
+        group.setAttribute('class', 'node-transition cursor-pointer');
+
+        if (node.exists) {
+          // 存在的节点背景圆
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', node.x);
+          circle.setAttribute('cy', node.y);
+          circle.setAttribute('r', '22');
+          circle.setAttribute('fill', '#0f172a');
+          circle.setAttribute('stroke', '#475569');
+          circle.setAttribute('stroke-width', '2.5');
+          circle.setAttribute('id', `circle-${node.id}`);
+          circle.setAttribute('class', 'node-transition');
+          group.appendChild(circle);
+
+          // 节点数值
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', node.x);
+          text.setAttribute('y', node.y + 5);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('fill', '#f8fafc');
+          text.setAttribute('font-size', '15');
+          text.setAttribute('font-weight', '700');
+          text.setAttribute('id', `text-${node.id}`);
+          text.textContent = node.val;
+          group.appendChild(text);
+
+          // 节点位置下标 (左/右标记)
+          const tag = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          tag.setAttribute('x', node.x);
+          tag.setAttribute('y', node.y + 34);
+          tag.setAttribute('text-anchor', 'middle');
+          tag.setAttribute('fill', '#64748b');
+          tag.setAttribute('font-size', '10');
+          tag.setAttribute('font-weight', '500');
+          tag.textContent = node.id === 0 ? 'Root' : (node.x < 300 ? '左侧分支' : '右侧分支');
+          group.appendChild(tag);
+        } else {
+          // 占位空节点 (null 虚线框)
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', node.x - 20);
+          rect.setAttribute('y', node.y - 16);
+          rect.setAttribute('width', '40');
+          rect.setAttribute('height', '32');
+          rect.setAttribute('rx', '8');
+          rect.setAttribute('fill', '#090d16');
+          rect.setAttribute('stroke', '#334155');
+          rect.setAttribute('stroke-dasharray', '3 3');
+          rect.setAttribute('stroke-width', '1.5');
+          rect.setAttribute('id', `circle-${node.id}`);
+          group.appendChild(rect);
+
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', node.x);
+          text.setAttribute('y', node.y + 4);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('fill', '#64748b');
+          text.setAttribute('font-size', '11');
+          text.setAttribute('font-weight', '500');
+          text.textContent = 'null';
+          group.appendChild(text);
+        }
+
+        nodesLayer.appendChild(group);
+      });
+    }
+
+    /**
+     * 高亮指定代码行
+     */
+    function highlightCode(lineNum) {
+      for (let i = 1; i <= 13; i++) {
+        const el = document.getElementById(`code-line-${i}`);
+        if (el) el.classList.remove('highlight-line');
+      }
+      if (lineNum) {
+        const target = document.getElementById(`code-line-${lineNum}`);
+        if (target) target.classList.add('highlight-line');
+      }
+    }
+
+    /**
+     * 渲染递归调用栈
+     */
+    function renderCallStack(stackList) {
+      const container = document.getElementById('call-stack-container');
+      if (!stackList || stackList.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-600 text-center py-6">栈暂为空</div>';
+        return;
+      }
+
+      container.innerHTML = stackList.map((item, idx) => {
+        const isTop = idx === stackList.length - 1;
+        return `
+          <div class="p-2 rounded-xl text-xs flex items-center justify-between border ${
+            isTop 
+              ? 'bg-indigo-950/70 border-indigo-500/60 text-indigo-200 shadow-sm font-semibold' 
+              : 'bg-slate-900 border-slate-800 text-slate-400'
+          }">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full ${isTop ? 'bg-indigo-400 animate-pulse' : 'bg-slate-600'}"></span>
+              <span class="font-mono">${item.name}</span>
+            </div>
+            <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded ${isTop ? 'bg-indigo-800/80 text-white' : 'text-slate-600'}">
+              ${isTop ? 'Active' : `#${idx + 1}`}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * 更新画布上对比的节点高亮与连线
+     */
+    function updateVisualPointers(stepData) {
+      const preset = PRESETS[currentPresetKey];
+      const connPath = document.getElementById('mirror-connection');
+
+      // 重置所有圆的动态高亮
+      preset.nodes.forEach(n => {
+        const c = document.getElementById(`circle-${n.id}`);
+        if (c) {
+          if (n.exists) {
+            c.setAttribute('stroke', '#475569');
+            c.setAttribute('stroke-width', '2.5');
+            c.setAttribute('fill', '#0f172a');
+          } else {
+            c.setAttribute('stroke', '#334155');
+          }
+          c.classList.remove('pulse-cyan', 'pulse-pink');
+        }
+      });
+
+      if (!stepData || stepData.type === 'finish' || stepData.aId === null) {
+        connPath.setAttribute('d', '');
+        connPath.style.opacity = '0';
+        return;
+      }
+
+      const aNode = (stepData.aId !== null && stepData.aId !== undefined) ? preset.nodes[stepData.aId] : null;
+      const bNode = (stepData.bId !== null && stepData.bId !== undefined) ? preset.nodes[stepData.bId] : null;
+
+      // a 节点样式 (Cyan)
+      if (aNode) {
+        const cA = document.getElementById(`circle-${aNode.id}`);
+        if (cA) {
+          cA.setAttribute('stroke', '#06b6d4');
+          cA.setAttribute('stroke-width', '3.5');
+          cA.setAttribute('fill', '#083344');
+          cA.classList.add('pulse-cyan');
+        }
+      }
+
+      // b 节点样式 (Pink)
+      if (bNode) {
+        const cB = document.getElementById(`circle-${bNode.id}`);
+        if (cB) {
+          cB.setAttribute('stroke', '#ec4899');
+          cB.setAttribute('stroke-width', '3.5');
+          cB.setAttribute('fill', '#500724');
+          cB.classList.add('pulse-pink');
+        }
+      }
+
+      // 绘制二者之间的镜像对比连线 (平滑曲线)
+      if (aNode && bNode) {
+        const midX = (aNode.x + bNode.x) / 2;
+        const midY = Math.max(aNode.y, bNode.y) + 38;
+        const d = `M ${aNode.x} ${aNode.y} Q ${midX} ${midY} ${bNode.x} ${bNode.y}`;
+        
+        connPath.setAttribute('d', d);
+        connPath.style.opacity = '0.9';
+
+        if (stepData.status === 'match') {
+          connPath.setAttribute('stroke', '#10b981'); // 绿色匹配
+        } else if (stepData.status === 'mismatch') {
+          connPath.setAttribute('stroke', '#f43f5e'); // 红色冲突
+        } else {
+          connPath.setAttribute('stroke', '#38bdf8'); // 蓝色对比中
+        }
+      } else {
+        connPath.setAttribute('d', '');
+        connPath.style.opacity = '0';
+      }
+    }
+
+    /**
+     * 更新底部结果弹窗
+     */
+    function updateToast(stepData) {
+      const toast = document.getElementById('result-toast');
+      const icon = document.getElementById('toast-icon');
+      const title = document.getElementById('toast-title');
+      const desc = document.getElementById('toast-desc');
+      const badge = document.getElementById('toast-badge');
+
+      if (!stepData || stepData.type !== 'finish') {
+        toast.classList.add('opacity-0', 'translate-y-3');
+        return;
+      }
+
+      toast.classList.remove('opacity-0', 'translate-y-3');
+
+      if (stepData.finalResult) {
+        toast.className = toast.className.replace(/border-\w+-\d+/g, '') + ' border-emerald-500/40 bg-slate-900/95';
+        icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center font-bold bg-emerald-500/20 text-emerald-400';
+        icon.innerHTML = '<i class="fa-solid fa-check text-lg"></i>';
+        title.className = 'font-bold text-sm text-emerald-300';
+        title.textContent = '验证通过：该二叉树是对称的！';
+        desc.textContent = 'root.left 与 root.right 满足镜像镜像规则。';
+        badge.className = 'px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        badge.textContent = 'True (Symmetric)';
+      } else {
+        toast.className = toast.className.replace(/border-\w+-\d+/g, '') + ' border-rose-500/40 bg-slate-900/95';
+        icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center font-bold bg-rose-500/20 text-rose-400';
+        icon.innerHTML = '<i class="fa-solid fa-xmark text-lg"></i>';
+        title.className = 'font-bold text-sm text-rose-300';
+        title.textContent = '验证失败：该二叉树不对称！';
+        desc.textContent = '某对镜像节点的结构或值不匹配。';
+        badge.className = 'px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30';
+        badge.textContent = 'False (Asymmetric)';
+      }
+    }
+
+    /**
+     * 呈现指定步骤的视图状态
+     */
+    function renderStep(idx) {
+      if (idx < 0 || idx >= steps.length) return;
+      currentStepIdx = idx;
+      const s = steps[idx];
+
+      // 计数器
+      document.getElementById('step-counter').textContent = `${idx + 1} / ${steps.length}`;
+
+      // 按钮禁用状态
+      document.getElementById('btn-prev').disabled = (idx === 0);
+      document.getElementById('btn-next').disabled = (idx === steps.length - 1);
+
+      // 代码行高亮与状态徽章
+      highlightCode(s.codeLine);
+      const statusBadge = document.getElementById('call-status-badge');
+      if (s.type === 'finish') {
+        statusBadge.textContent = '执行完成';
+        statusBadge.className = 'px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300';
+      } else {
+        statusBadge.textContent = `执行中: L${s.codeLine}`;
+        statusBadge.className = 'px-2 py-0.5 rounded text-[10px] bg-blue-500/20 text-blue-400 font-semibold';
+      }
+
+      // 文本解析说明
+      document.getElementById('explanation-box').innerHTML = s.explanation;
+      document.getElementById('current-pair-tag').textContent = s.relationType || '递归比较中';
+      document.getElementById('compare-type-label').textContent = s.relationType || '就绪';
+
+      // 递归栈
+      renderCallStack(s.stack);
+
+      // SVG 高亮与指示线
+      updateVisualPointers(s);
+
+      // 结果弹窗
+      updateToast(s);
+
+      // 若已经到达最后一步，停止播放
+      if (idx === steps.length - 1 && isPlaying) {
+        togglePlay(false);
+      }
+    }
+
+    /**
+     * 步骤步进
+     */
+    function step(delta) {
+      const nextIdx = currentStepIdx + delta;
+      if (nextIdx >= 0 && nextIdx < steps.length) {
+        renderStep(nextIdx);
+      }
+    }
+
+    /**
+     * 自动播放控制
+     */
+    function togglePlay(forceState) {
+      isPlaying = (forceState !== undefined) ? forceState : !isPlaying;
+      const playBtnText = document.getElementById('play-text');
+      const playIcon = document.getElementById('play-icon');
+
+      if (isPlaying) {
+        playBtnText.textContent = '暂停';
+        playIcon.className = 'fa-solid fa-pause';
+        
+        // 如果在最后一步，则重头播放
+        if (currentStepIdx >= steps.length - 1) {
+          renderStep(0);
+        }
+
+        const speed = parseInt(document.getElementById('speed-slider').value, 10);
+        timer = setInterval(() => {
+          if (currentStepIdx < steps.length - 1) {
+            step(1);
+          } else {
+            togglePlay(false);
+          }
+        }, speed);
+      } else {
+        playBtnText.textContent = '自动播放';
+        playIcon.className = 'fa-solid fa-play';
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+    }
+
+    /**
+     * 重置播放
+     */
+    function resetPlayback() {
+      togglePlay(false);
+      renderStep(0);
+    }
+
+    /**
+     * 载入预设二叉树
+     */
+    function loadPreset(key) {
+      togglePlay(false);
+      currentPresetKey = key;
+
+      // 更新按钮高亮样式
+      const presetBtns = {
+        symmetric: document.getElementById('btn-symmetric'),
+        asymmetric_val: document.getElementById('btn-asym-val'),
+        asymmetric_struct: document.getElementById('btn-asym-struct')
+      };
+
+      Object.entries(presetBtns).forEach(([k, btn]) => {
+        if (k === key) {
+          btn.className = 'preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600/20 text-cyan-300 border border-cyan-500/40 shadow-sm transition';
+        } else {
+          btn.className = 'preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-750 transition';
+        }
+      });
+
+      const preset = PRESETS[key];
+      renderTree(preset);
+      steps = generateExecutionSteps(preset);
+      renderStep(0);
+    }
+
+    // 速度滑块改变事件
+    document.getElementById('speed-slider').addEventListener('input', () => {
+      if (isPlaying) {
+        togglePlay(false);
+        togglePlay(true);
+      }
+    });
+
+    // 初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPreset('symmetric');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 977 - 有序数组的平方 (Squares of a Sorted Array) 算法可视化</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pLeft: '#3b82f6',   // Blue for left
+            pRight: '#10b981',  // Emerald for right
+            pWrite: '#f59e0b',  // Amber for i / write target
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .code-font {
+      font-family: 'Fira Code', monospace;
+    }
+    .card-transition {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-30 px-4 py-3 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 text-white font-bold shadow-md shadow-amber-500/20">
+          977
+        </span>
+        <div>
+          <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+            <span>有序数组的平方</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Easy</span>
+          </h1>
+          <p class="text-xs text-slate-400">双指针向内收敛 (Two-Pointer Convergence) 倒序填充</p>
+        </div>
+      </div>
+
+      <!-- Header actions: Presets & Custom -->
+      <div class="flex items-center gap-2">
+        <button id="btn-custom-modal" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders text-amber-400"></i>
+          <span>自定义测试用例</span>
+        </button>
+        <button id="btn-quick-preset" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-semibold shadow-sm transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shuffle"></i>
+          <span>换一组预设</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto w-full p-4 sm:p-6 flex-1 flex flex-col gap-6">
+
+    <!-- Core Principle Card -->
+    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-sm backdrop-blur flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-slate-200">核心本质：最大平方值必定位于「两端」</div>
+          <div class="text-xs text-slate-400 leading-relaxed mt-0.5">
+            原数组是有序的，负数越小其平方反而越大（位于最左端），正数越大其平方也越大（位于最右端）。因此<strong>最大值只能在两端二选一</strong>。用双指针从两端向中间夹逼，并在新数组 <code class="text-amber-400 bg-amber-950/40 px-1 py-0.5 rounded">res</code> 中<strong>从后向前逆序填入</strong>，即可在 <code class="text-emerald-400 font-mono">O(n)</code> 内完成排序。
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="flex flex-wrap items-center gap-3 text-xs bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 self-stretch md:self-auto justify-around">
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-500/30"></span>
+          <span class="text-slate-300 font-mono font-medium">left (左指针)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30"></span>
+          <span class="text-slate-300 font-mono font-medium">right (右指针)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-amber-500 ring-2 ring-amber-500/30"></span>
+          <span class="text-slate-300 font-mono font-medium">i (写指针)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual Working Area & Code Sync -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Left Column: Visual Arrays & Controls (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-5">
+        
+        <!-- Arrays Display Panel -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+          
+          <div class="flex items-center justify-between mb-4 border-b border-slate-700/60 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-slate-200">双指针运行状态</span>
+              <span id="step-badge" class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-mono">步骤 0 / 0</span>
+            </div>
+            <div id="status-tag" class="text-xs px-2.5 py-0.5 rounded-md font-medium bg-slate-700 text-slate-300">
+              准备就绪
+            </div>
+          </div>
+
+          <!-- Array 1: nums (Original) -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-blue-400 font-mono">nums (原有序数组)</span>
+                <span class="text-xs text-slate-400">(长度: <span id="label-len" class="font-mono text-slate-200">5</span>)</span>
+              </div>
+              <span class="text-[11px] text-slate-400">顶部数字为原值，底部为平方值</span>
+            </div>
+
+            <!-- Pointer track for nums -->
+            <div id="nums-pointer-track" class="grid gap-2 mb-1.5 h-7">
+              <!-- Rendered badges for left / right -->
+            </div>
+
+            <!-- Slots for nums -->
+            <div id="nums-container" class="grid gap-2">
+              <!-- Rendered element slots -->
+            </div>
+
+            <!-- Index track for nums -->
+            <div id="nums-index-track" class="grid gap-2 mt-1">
+              <!-- Rendered indices -->
+            </div>
+          </div>
+
+          <!-- Real-time Comparison Callout -->
+          <div class="relative my-4 flex items-center justify-center">
+            <div class="border-t border-slate-700/70 w-full absolute"></div>
+            <div id="comparison-callout" class="relative z-10 px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-slate-900 border border-slate-700 text-slate-200 shadow-md flex items-center gap-2">
+              <i class="fa-solid fa-scale-balanced text-amber-400"></i>
+              <span>等待比较</span>
+            </div>
+          </div>
+
+          <!-- Array 2: res (Result array, written from right to left) -->
+          <div class="mt-4">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-amber-400 font-mono">res (结果数组)</span>
+                <span class="text-xs text-slate-400">从右往左按降序填入最大平方</span>
+              </div>
+              <span class="text-[11px] text-amber-300/80 font-mono font-semibold">写指针 i</span>
+            </div>
+
+            <!-- Pointer track for res (i) -->
+            <div id="res-pointer-track" class="grid gap-2 mb-1.5 h-7">
+              <!-- Rendered badge for i -->
+            </div>
+
+            <!-- Slots for res -->
+            <div id="res-container" class="grid gap-2">
+              <!-- Rendered result slots -->
+            </div>
+
+            <!-- Index track for res -->
+            <div id="res-index-track" class="grid gap-2 mt-1">
+              <!-- Rendered indices -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Controller Dashboard -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-md flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <button id="btn-reset" class="w-10 h-10 rounded-xl bg-slate-700/70 hover:bg-slate-600 text-slate-200 transition flex items-center justify-center" title="重置到初始步骤">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button id="btn-prev" class="w-10 h-10 rounded-xl bg-slate-700/70 hover:bg-slate-600 text-slate-200 transition flex items-center justify-center" title="上一步 (Previous)">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button id="btn-play" class="h-10 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition flex items-center gap-2 shadow-md shadow-amber-500/20">
+              <i class="fa-solid fa-play" id="play-icon"></i>
+              <span id="play-text">自动播放</span>
+            </button>
+            <button id="btn-next" class="w-10 h-10 rounded-xl bg-slate-700/70 hover:bg-slate-600 text-slate-200 transition flex items-center justify-center" title="下一步 (Next)">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <!-- Speed slider -->
+          <div class="flex items-center gap-3 text-xs text-slate-400">
+            <span>动画速度:</span>
+            <input type="range" id="speed-slider" min="300" max="2000" step="100" value="900" class="w-24 accent-amber-500 cursor-pointer">
+            <span id="speed-label" class="font-mono w-10 text-right">0.9s</span>
+          </div>
+        </div>
+
+        <!-- Explanation Log Box -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-comment-dots text-amber-400"></i> 当前状态详解
+            </span>
+            <span id="vars-snapshot" class="font-mono text-xs text-amber-300">left=?, right=?, i=?</span>
+          </div>
+          <div id="explanation-box" class="bg-slate-900/90 rounded-xl p-3.5 border border-slate-800 text-sm leading-relaxed text-slate-200 min-h-[72px] flex items-center">
+            点击「下一步」或「自动播放」开始演示算法。
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Code Sync & Complexity (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-5">
+        
+        <!-- Python Code Synchronization -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="flex space-x-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+              </div>
+              <span class="text-xs text-slate-300 font-mono font-medium ml-2">solution.py (LeetCode 977)</span>
+            </div>
+            <span class="text-[11px] text-amber-400/90 font-mono">双指针解法</span>
+          </div>
+          
+          <div class="p-3 overflow-x-auto code-font text-xs sm:text-[13px] leading-6 select-none" id="code-container">
+            <div id="line-1" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">1</span><span class="text-purple-400">class</span>&nbsp;<span class="text-yellow-300">Solution</span>:</div>
+            <div id="line-2" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">2</span>&nbsp;&nbsp;<span class="text-purple-400">def</span>&nbsp;<span class="text-blue-400">sortedSquares</span>(self, nums: List[int]) -&gt; List[int]:</div>
+            <div id="line-3" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">3</span>&nbsp;&nbsp;&nbsp;&nbsp;left, right = <span class="text-amber-400">0</span>, len(nums) - <span class="text-amber-400">1</span></div>
+            <div id="line-4" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">4</span>&nbsp;&nbsp;&nbsp;&nbsp;k = len(nums); res = [<span class="text-amber-400">0</span>] * k; i = k - <span class="text-amber-400">1</span></div>
+            <div id="line-5" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">5</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">while</span>&nbsp;left &lt;= right:</div>
+            <div id="line-6" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">6</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">if</span>&nbsp;nums[left] ** <span class="text-amber-400">2</span> &gt;= nums[right] ** <span class="text-amber-400">2</span>:</div>
+            <div id="line-7" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">7</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res[i] = nums[left] ** <span class="text-amber-400">2</span></div>
+            <div id="line-8" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">8</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i -= <span class="text-amber-400">1</span>; left += <span class="text-amber-400">1</span></div>
+            <div id="line-9" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">9</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">else</span>:</div>
+            <div id="line-10" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">10</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res[i] = nums[right] ** <span class="text-amber-400">2</span></div>
+            <div id="line-11" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">11</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i -= <span class="text-amber-400">1</span>; right -= <span class="text-amber-400">1</span></div>
+            <div id="line-12" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">12</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span>&nbsp;res</div>
+          </div>
+        </div>
+
+        <!-- Complexity & Key Takeaway Card -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-amber-400"></i> 算法分析与思考
+          </h3>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <div class="text-slate-400">时间复杂度</div>
+              <div class="text-base font-bold text-emerald-400 font-mono mt-0.5">O(N) 线性遍历</div>
+              <div class="text-[11px] text-slate-500 mt-1">两指针相向移动，恰好处理每个元素 1 次</div>
+            </div>
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <div class="text-slate-400">空间复杂度</div>
+              <div class="text-base font-bold text-blue-400 font-mono mt-0.5">O(1) / O(N)</div>
+              <div class="text-[11px] text-slate-500 mt-1">除了存储题意返回的输出数组外无额外空间</div>
+            </div>
+          </div>
+          <div class="text-xs text-slate-400 bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 space-y-1.5">
+            <div class="font-medium text-slate-300">与第88题（合并两个有序数组）的异曲同工之妙：</div>
+            <p class="leading-relaxed text-[11px]">
+              两题的核心技巧都是<strong>「倒序写入」</strong>！第88题在原数组尾部空槽从大到小合并；本题则是在结果数组末尾从大到小写入最大平方，省去了常规暴力排序的 <code class="font-mono text-amber-300">O(N log N)</code> 开销。
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Custom Input Modal -->
+  <div id="custom-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-amber-400"></i> 自定义测试用例
+        </h3>
+        <button id="modal-close" class="text-slate-400 hover:text-white transition text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 py-4 text-xs">
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">
+            nums 数组 (以逗号分隔，需保持升序，允许负数):
+          </label>
+          <input type="text" id="input-nums" value="-4, -1, 0, 3, 10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:border-amber-500 focus:outline-none">
+          <span class="text-[11px] text-slate-500 mt-1 block">示例：-7, -3, 2, 3, 11 或 -5, -3, -2, -1</span>
+        </div>
+
+        <div id="modal-error" class="text-rose-400 text-xs hidden bg-rose-950/40 border border-rose-800 p-2.5 rounded-lg">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+        <button id="modal-cancel" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium">取消</button>
+        <button id="modal-submit" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-500/20">应用测试用例</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-xl border border-slate-700 shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2">
+    <i class="fa-solid fa-circle-info text-amber-400" id="toast-icon"></i>
+    <span id="toast-message">提示内容</span>
+  </div>
+
+  <!-- Script Logic -->
+  <script>
+    // Presets
+    const PRESETS = [
+      [-4, -1, 0, 3, 10],
+      [-7, -3, 2, 3, 11],
+      [-5, -3, -2, -1],
+      [1, 2, 3, 4],
+      [-3, -3, 0, 2, 2]
+    ];
+    let currentPresetIdx = 0;
+
+    let currentNums = [-4, -1, 0, 3, 10];
+    let steps = [];
+    let currentStepIdx = 0;
+    let isPlaying = false;
+    let timer = null;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      text.textContent = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2400);
+    }
+
+    /**
+     * Generate step timeline for LeetCode 977
+     */
+    function generateSteps(numsArr) {
+      const recorded = [];
+      const n = numsArr.length;
+      let left = 0;
+      let right = n - 1;
+      let i = n - 1;
+      const res = Array(n).fill(null); // null means empty slot
+
+      // Initial state
+      recorded.push({
+        nums: [...numsArr],
+        res: [...res],
+        left,
+        right,
+        i,
+        activeLine: 3,
+        actionType: 'init',
+        highlightTarget: { left, right, i },
+        comparison: '初始化双指针与结果数组',
+        description: `初始化双指针：<span class="text-blue-400 font-mono">left = 0</span> 指向首端，<span class="text-emerald-400 font-mono">right = ${right}</span> 指向尾端。新数组长度为 ${n}，写指针 <span class="text-amber-400 font-mono">i = ${i}</span> 指向结果末尾。`
+      });
+
+      while (left <= right) {
+        const sqLeft = numsArr[left] ** 2;
+        const sqRight = numsArr[right] ** 2;
+
+        // Step 1: Compare the two ends
+        recorded.push({
+          nums: [...numsArr],
+          res: [...res],
+          left,
+          right,
+          i,
+          activeLine: 6,
+          actionType: 'compare',
+          highlightTarget: { left, right, i },
+          sqLeft,
+          sqRight,
+          comparison: `${numsArr[left]}² (${sqLeft}) vs ${numsArr[right]}² (${sqRight})`,
+          description: `比较两端平方：左端 <code class="text-blue-400 font-mono">nums[${left}]² = ${sqLeft}</code>，右端 <code class="text-emerald-400 font-mono">nums[${right}]² = ${sqRight}</code>。`
+        });
+
+        if (sqLeft >= sqRight) {
+          // Left square is larger or equal
+          res[i] = sqLeft;
+          recorded.push({
+            nums: [...numsArr],
+            res: [...res],
+            left,
+            right,
+            i,
+            activeLine: 7,
+            actionType: 'write_left',
+            writtenIndex: i,
+            writtenVal: sqLeft,
+            fromPointer: 'left',
+            sqLeft,
+            sqRight,
+            comparison: `${sqLeft} ≥ ${sqRight} → 填入 ${sqLeft}`,
+            description: `因左端平方更大（${sqLeft} ≥ ${sqRight}），将 <span class="font-mono text-amber-400 font-bold">${sqLeft}</span> 填入 <code class="font-mono text-amber-300">res[${i}]</code>。`
+          });
+
+          i--;
+          left++;
+
+          recorded.push({
+            nums: [...numsArr],
+            res: [...res],
+            left,
+            right,
+            i,
+            activeLine: 8,
+            actionType: 'shift',
+            comparison: `移动指针`,
+            description: `写指针向前移 <code class="font-mono text-amber-300">i = ${i}</code>，左指针向右移 <code class="font-mono text-blue-300">left = ${left}</code>。`
+          });
+        } else {
+          // Right square is strictly larger
+          res[i] = sqRight;
+          recorded.push({
+            nums: [...numsArr],
+            res: [...res],
+            left,
+            right,
+            i,
+            activeLine: 10,
+            actionType: 'write_right',
+            writtenIndex: i,
+            writtenVal: sqRight,
+            fromPointer: 'right',
+            sqLeft,
+            sqRight,
+            comparison: `${sqLeft} < ${sqRight} → 填入 ${sqRight}`,
+            description: `因右端平方更大（${sqRight} > ${sqLeft}），将 <span class="font-mono text-amber-400 font-bold">${sqRight}</span> 填入 <code class="font-mono text-amber-300">res[${i}]</code>。`
+          });
+
+          i--;
+          right--;
+
+          recorded.push({
+            nums: [...numsArr],
+            res: [...res],
+            left,
+            right,
+            i,
+            activeLine: 11,
+            actionType: 'shift',
+            comparison: `移动指针`,
+            description: `写指针向前移 <code class="font-mono text-amber-300">i = ${i}</code>，右指针向左移 <code class="font-mono text-emerald-300">right = ${right}</code>。`
+          });
+        }
+      }
+
+      // Final complete state
+      recorded.push({
+        nums: [...numsArr],
+        res: [...res],
+        left,
+        right,
+        i,
+        activeLine: 12,
+        actionType: 'finish',
+        comparison: 'left > right，计算完成',
+        description: `双指针相交结束循环 (<span class="font-mono text-slate-300">left &gt; right</span>)。结果数组已按非递减顺序完全排好：<span class="font-mono text-emerald-300 font-bold">[${res.join(', ')}]</span>。`
+      });
+
+      return recorded;
+    }
+
+    /**
+     * Render the active step
+     */
+    function renderStep() {
+      const step = steps[currentStepIdx];
+      if (!step) return;
+
+      const len = step.nums.length;
+
+      // Update counters & headers
+      document.getElementById('label-len').textContent = len;
+      document.getElementById('step-badge').textContent = `步骤 ${currentStepIdx + 1} / ${steps.length}`;
+      document.getElementById('vars-snapshot').textContent = `left = ${step.left}, right = ${step.right}, i = ${step.i}`;
+      document.getElementById('explanation-box').innerHTML = step.description;
+      document.getElementById('comparison-callout').innerHTML = `<i class="fa-solid fa-scale-balanced text-amber-400"></i> <span>${step.comparison}</span>`;
+
+      // Status tag
+      const statusTag = document.getElementById('status-tag');
+      if (step.actionType === 'init') {
+        statusTag.textContent = '初始化';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-slate-700 text-slate-300';
+      } else if (step.actionType === 'compare') {
+        statusTag.textContent = '两端平方对比中';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-sky-500/20 text-sky-300 border border-sky-500/30';
+      } else if (step.actionType.startsWith('write')) {
+        statusTag.textContent = '写入较大平方';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      } else if (step.actionType === 'finish') {
+        statusTag.textContent = '排序完成 ✓';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      } else {
+        statusTag.textContent = '指针收敛步进';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30';
+      }
+
+      const gridColStyle = `repeat(${Math.max(1, len)}, minmax(0, 1fr))`;
+
+      // 1. Render nums track
+      const numsPointerTrack = document.getElementById('nums-pointer-track');
+      const numsBox = document.getElementById('nums-container');
+      const numsIdxTrack = document.getElementById('nums-index-track');
+
+      numsPointerTrack.style.gridTemplateColumns = gridColStyle;
+      numsBox.style.gridTemplateColumns = gridColStyle;
+      numsIdxTrack.style.gridTemplateColumns = gridColStyle;
+
+      numsPointerTrack.innerHTML = '';
+      numsBox.innerHTML = '';
+      numsIdxTrack.innerHTML = '';
+
+      for (let idx = 0; idx < len; idx++) {
+        const isLeft = (idx === step.left && step.left <= step.right);
+        const isRight = (idx === step.right && step.left <= step.right);
+
+        let pointerBadge = '';
+        if (isLeft && isRight) {
+          pointerBadge = `
+            <div class="flex items-center justify-center gap-1">
+              <span class="bg-blue-600 text-white font-bold font-mono text-[10px] px-1 py-0.5 rounded shadow">L</span>
+              <span class="bg-emerald-600 text-white font-bold font-mono text-[10px] px-1 py-0.5 rounded shadow">R</span>
+            </div>
+          `;
+        } else if (isLeft) {
+          pointerBadge = `<span class="bg-blue-600 text-white font-bold font-mono text-[10px] px-1.5 py-0.5 rounded shadow">left</span>`;
+        } else if (isRight) {
+          pointerBadge = `<span class="bg-emerald-600 text-white font-bold font-mono text-[10px] px-1.5 py-0.5 rounded shadow">right</span>`;
+        }
+
+        numsPointerTrack.innerHTML += `
+          <div class="flex items-end justify-center h-full">
+            ${pointerBadge}
+          </div>
+        `;
+
+        const val = step.nums[idx];
+        const valSq = val ** 2;
+        const isConsumed = (idx < step.left || idx > step.right);
+
+        let cardBg = 'bg-slate-900/90 text-slate-200 border-slate-700';
+        if (isConsumed) {
+          cardBg = 'bg-slate-900/30 text-slate-600 border-slate-800 opacity-40 line-through';
+        } else if (isLeft && isRight) {
+          cardBg = 'bg-gradient-to-b from-blue-950/60 to-emerald-950/60 border-amber-400 ring-2 ring-amber-400/40 text-amber-200';
+        } else if (isLeft) {
+          cardBg = 'bg-blue-950/50 text-blue-200 border-blue-500 ring-2 ring-blue-500/40 scale-105';
+        } else if (isRight) {
+          cardBg = 'bg-emerald-950/50 text-emerald-200 border-emerald-500 ring-2 ring-emerald-500/40 scale-105';
+        }
+
+        numsBox.innerHTML += `
+          <div class="card-transition h-16 rounded-xl border flex flex-col items-center justify-center select-none shadow-sm ${cardBg}">
+            <div class="font-mono font-bold text-sm sm:text-base leading-none">${val}</div>
+            <div class="text-[10px] font-mono text-slate-400 mt-1">²=${valSq}</div>
+          </div>
+        `;
+
+        numsIdxTrack.innerHTML += `
+          <div class="text-center font-mono text-[10px] text-slate-500 select-none">
+            ${idx}
+          </div>
+        `;
+      }
+
+      // 2. Render res track
+      const resPointerTrack = document.getElementById('res-pointer-track');
+      const resBox = document.getElementById('res-container');
+      const resIdxTrack = document.getElementById('res-index-track');
+
+      resPointerTrack.style.gridTemplateColumns = gridColStyle;
+      resBox.style.gridTemplateColumns = gridColStyle;
+      resIdxTrack.style.gridTemplateColumns = gridColStyle;
+
+      resPointerTrack.innerHTML = '';
+      resBox.innerHTML = '';
+      resIdxTrack.innerHTML = '';
+
+      for (let idx = 0; idx < len; idx++) {
+        const isWritePointer = (idx === step.i && step.i >= 0 && step.actionType !== 'finish');
+        const pointerBadge = isWritePointer
+          ? `<span class="bg-amber-500 text-slate-950 font-black font-mono text-[10px] px-2 py-0.5 rounded shadow">i</span>`
+          : '';
+
+        resPointerTrack.innerHTML += `
+          <div class="flex items-end justify-center h-full">
+            ${pointerBadge}
+          </div>
+        `;
+
+        const val = step.res[idx];
+        const hasVal = (val !== null && val !== undefined);
+        const isWrittenJustNow = (step.writtenIndex === idx);
+
+        let cardBg = 'bg-slate-900/40 text-slate-600 border-dashed border-slate-800';
+        if (isWrittenJustNow) {
+          cardBg = 'bg-amber-950/50 text-amber-300 border-amber-400 ring-2 ring-amber-400/50 scale-105';
+        } else if (hasVal) {
+          cardBg = 'bg-slate-900/90 text-emerald-400 border-slate-700 font-semibold';
+        } else if (isWritePointer) {
+          cardBg = 'bg-amber-950/20 border-dashed border-amber-500/80 text-amber-500/50';
+        }
+
+        resBox.innerHTML += `
+          <div class="card-transition h-14 rounded-xl border flex flex-col items-center justify-center font-mono font-bold text-sm sm:text-base select-none shadow-sm ${cardBg}">
+            ${hasVal ? val : (isWritePointer ? '?' : '')}
+          </div>
+        `;
+
+        resIdxTrack.innerHTML += `
+          <div class="text-center font-mono text-[10px] text-slate-500 select-none">
+            ${idx}
+          </div>
+        `;
+      }
+
+      // 3. Highlight code
+      for (let l = 1; l <= 12; l++) {
+        const lineEl = document.getElementById(`line-${l}`);
+        if (!lineEl) continue;
+        if (l === step.activeLine) {
+          lineEl.className = 'px-2 py-0.5 rounded flex bg-amber-500/20 border-l-2 border-amber-400 font-semibold text-white';
+        } else {
+          lineEl.className = 'px-2 py-0.5 rounded flex text-slate-300 hover:bg-slate-800/40';
+        }
+      }
+
+      // Button states
+      document.getElementById('btn-prev').disabled = (currentStepIdx === 0);
+      document.getElementById('btn-prev').classList.toggle('opacity-40', currentStepIdx === 0);
+      document.getElementById('btn-prev').classList.toggle('cursor-not-allowed', currentStepIdx === 0);
+
+      document.getElementById('btn-next').disabled = (currentStepIdx === steps.length - 1);
+      document.getElementById('btn-next').classList.toggle('opacity-40', currentStepIdx === steps.length - 1);
+      document.getElementById('btn-next').classList.toggle('cursor-not-allowed', currentStepIdx === steps.length - 1);
+    }
+
+    function nextStep() {
+      if (currentStepIdx < steps.length - 1) {
+        currentStepIdx++;
+        renderStep();
+      } else {
+        stopAutoPlay();
+      }
+    }
+
+    function prevStep() {
+      if (currentStepIdx > 0) {
+        currentStepIdx--;
+        renderStep();
+      }
+    }
+
+    function resetSteps() {
+      stopAutoPlay();
+      currentStepIdx = 0;
+      renderStep();
+    }
+
+    function toggleAutoPlay() {
+      if (isPlaying) {
+        stopAutoPlay();
+      } else {
+        startAutoPlay();
+      }
+    }
+
+    function startAutoPlay() {
+      if (currentStepIdx >= steps.length - 1) {
+        currentStepIdx = 0;
+        renderStep();
+      }
+      isPlaying = true;
+      document.getElementById('play-icon').className = 'fa-solid fa-pause';
+      document.getElementById('play-text').textContent = '暂停播放';
+
+      const speed = parseInt(document.getElementById('speed-slider').value, 10);
+      timer = setInterval(() => {
+        if (currentStepIdx < steps.length - 1) {
+          nextStep();
+        } else {
+          stopAutoPlay();
+        }
+      }, speed);
+    }
+
+    function stopAutoPlay() {
+      isPlaying = false;
+      if (timer) clearInterval(timer);
+      timer = null;
+      document.getElementById('play-icon').className = 'fa-solid fa-play';
+      document.getElementById('play-text').textContent = '自动播放';
+    }
+
+    function loadTestCase(nums) {
+      stopAutoPlay();
+      currentNums = [...nums];
+      steps = generateSteps(currentNums);
+      currentStepIdx = 0;
+      renderStep();
+    }
+
+    // Controls
+    document.getElementById('btn-next').addEventListener('click', () => {
+      stopAutoPlay();
+      nextStep();
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      stopAutoPlay();
+      prevStep();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', resetSteps);
+    document.getElementById('btn-play').addEventListener('click', toggleAutoPlay);
+
+    // Speed Slider
+    const speedSlider = document.getElementById('speed-slider');
+    const speedLabel = document.getElementById('speed-label');
+    speedSlider.addEventListener('input', (e) => {
+      const val = e.target.value;
+      speedLabel.textContent = (val / 1000).toFixed(1) + 's';
+      if (isPlaying) {
+        stopAutoPlay();
+        startAutoPlay();
+      }
+    });
+
+    // Preset Toggle
+    document.getElementById('btn-quick-preset').addEventListener('click', () => {
+      currentPresetIdx = (currentPresetIdx + 1) % PRESETS.length;
+      loadTestCase(PRESETS[currentPresetIdx]);
+      showToast(`已载入预设用例 #${currentPresetIdx + 1}`);
+    });
+
+    // Custom Modal
+    const modal = document.getElementById('custom-modal');
+    const btnCustom = document.getElementById('btn-custom-modal');
+    const btnCloseModal = document.getElementById('modal-close');
+    const btnCancelModal = document.getElementById('modal-cancel');
+    const btnSubmitModal = document.getElementById('modal-submit');
+    const modalError = document.getElementById('modal-error');
+
+    btnCustom.addEventListener('click', () => {
+      document.getElementById('input-nums').value = currentNums.join(', ');
+      modalError.classList.add('hidden');
+      modal.classList.remove('hidden');
+    });
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    btnCloseModal.addEventListener('click', closeModal);
+    btnCancelModal.addEventListener('click', closeModal);
+
+    btnSubmitModal.addEventListener('click', () => {
+      const raw = document.getElementById('input-nums').value.trim();
+      if (!raw) {
+        modalError.textContent = '请输入数字数组。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      const arr = raw.split(',').map(s => s.trim()).filter(s => s !== '').map(Number);
+      if (arr.some(isNaN)) {
+        modalError.textContent = '输入包含非法数字，请以英文逗号分隔纯数字。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      const isSorted = arr.every((v, idx) => idx === 0 || v >= arr[idx - 1]);
+      if (!isSorted) {
+        modalError.textContent = '根据 LeetCode 977 题目定义，输入数组 nums 必须事先按非递减顺序排序。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      if (arr.length === 0) {
+        modalError.textContent = '数组不能为空。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      closeModal();
+      loadTestCase(arr);
+      showToast('自定义用例已生效！');
+    });
+
+    // Keyboard support
+    window.addEventListener('keydown', (e) => {
+      if (modal.classList.contains('hidden')) {
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          nextStep();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prevStep();
+        }
+      }
+    });
+
+    window.onload = function () {
+      loadTestCase(currentNums);
+    };
+  </script>
+</body>
+</html>

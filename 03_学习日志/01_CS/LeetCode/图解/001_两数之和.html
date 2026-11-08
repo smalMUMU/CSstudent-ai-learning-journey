@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 1 - 两数之和 (Two Sum) 哈希表算法交互图解</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#6366f1',
+            accent: '#f59e0b',
+            success: '#10b981',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .code-font {
+      font-family: 'Fira Code', monospace;
+    }
+    .elem-transition {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes pulse-match {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      50% { transform: scale(1.06); box-shadow: 0 0 20px 4px rgba(16, 185, 129, 0.4); }
+    }
+    .matched-pulse {
+      animation: pulse-match 1.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-30 px-4 py-3 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-emerald-400 text-white font-extrabold shadow-md shadow-indigo-500/20">
+          1
+        </span>
+        <div>
+          <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+            <span>两数之和</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Easy</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">哈希表 HashMap / Dict</span>
+          </h1>
+          <p class="text-xs text-slate-400">单遍扫描 + 逆向查表 (One-pass Hash Table)</p>
+        </div>
+      </div>
+
+      <!-- Header actions: Presets & Custom -->
+      <div class="flex items-center gap-2">
+        <button id="btn-custom-modal" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders text-indigo-400"></i>
+          <span>自定义用例</span>
+        </button>
+        <button id="btn-quick-preset" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shuffle"></i>
+          <span>切换预设用例</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto w-full p-4 sm:p-6 flex-1 flex flex-col gap-6">
+
+    <!-- Intuition / Metaphor Card -->
+    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-sm backdrop-blur flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <i class="fa-solid fa-puzzle-piece"></i>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-slate-200">核心图解：不盲目向后找，而是向“备忘录”回看</div>
+          <div class="text-xs text-slate-400 leading-relaxed mt-0.5">
+            暴力双循环是“我拿着每个数，往后挨个找谁能凑成 target”（耗时 <code class="text-rose-400 font-mono">O(n²)</code>）。
+            哈希表做法是：<strong>每走到一个数 <code class="text-indigo-400 font-mono">x</code>，立刻计算它需要的拼图碎片 <code class="text-amber-400 font-mono">need = target - x</code></strong>。如果这个碎片已经在字典 <code class="text-emerald-400 font-mono">seen</code> 登记过，说明两数成功会师！没找到就把自己登记进字典备查。
+          </div>
+        </div>
+      </div>
+
+      <!-- Target summary tag -->
+      <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-700/80 px-4 py-2.5 rounded-xl self-stretch md:self-auto justify-center">
+        <span class="text-xs text-slate-400 font-medium">目标值 Target:</span>
+        <span id="target-badge" class="text-lg font-bold font-mono text-amber-400">9</span>
+      </div>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Left Column: Visual Array + Hash Map + Controls (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-5">
+        
+        <!-- Primary Visual Canvas Card -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col gap-6">
+          
+          <!-- State banner -->
+          <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-slate-200">运行时状态</span>
+              <span id="step-badge" class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-mono">步骤 0 / 0</span>
+            </div>
+            <div id="status-tag" class="text-xs px-2.5 py-0.5 rounded-md font-medium bg-slate-700 text-slate-300">
+              准备就绪
+            </div>
+          </div>
+
+          <!-- Section 1: Array nums View -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-indigo-400 font-mono">nums 数组</span>
+                <span class="text-xs text-slate-400">(遍历当前项: <span class="text-indigo-300 font-mono font-bold" id="current-i-badge">i = -</span>)</span>
+              </div>
+              <span class="text-[11px] text-slate-400">蓝标为当前指针 <span class="font-mono text-indigo-400 font-semibold">i</span></span>
+            </div>
+
+            <!-- Pointer Track for nums -->
+            <div id="nums-pointer-track" class="grid gap-2 mb-1.5 h-7">
+              <!-- Rendered pointer i -->
+            </div>
+
+            <!-- Slots for nums -->
+            <div id="nums-container" class="grid gap-2">
+              <!-- Rendered values -->
+            </div>
+
+            <!-- Index Track -->
+            <div id="nums-index-track" class="grid gap-2 mt-1">
+              <!-- Rendered indices -->
+            </div>
+          </div>
+
+          <!-- Section 2: Calculation & Lookup Formula Banner -->
+          <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-inner">
+            <div class="flex items-center gap-2 text-xs">
+              <span class="text-slate-400 font-medium">当前计算:</span>
+              <span id="formula-display" class="font-mono font-semibold text-sm text-slate-200">
+                等待开始...
+              </span>
+            </div>
+            <div id="lookup-result-tag" class="text-xs font-mono px-3 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400">
+              need in seen? -
+            </div>
+          </div>
+
+          <!-- Section 3: Hash Map / Dictionary: seen { value -> index } -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-emerald-400 font-mono">哈希表 seen</span>
+                <span class="text-xs text-slate-400">{ 元素值(Key) : 原数组下标(Value) }</span>
+              </div>
+              <span class="text-[11px] text-slate-400 font-mono">O(1) 瞬时查找</span>
+            </div>
+
+            <!-- Hash Map Visual Box -->
+            <div id="hashmap-container" class="min-h-[110px] bg-slate-900/60 border border-slate-700/70 rounded-xl p-3 flex flex-wrap gap-2.5 items-center justify-start">
+              <span class="text-xs text-slate-500 italic p-2">seen = {} （暂未存入任何数据）</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Controller Dashboard -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-md flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <button id="btn-reset" class="w-10 h-10 rounded-xl bg-slate-700/70 hover:bg-slate-600 text-slate-200 transition flex items-center justify-center" title="重置到初始步骤">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button id="btn-prev" class="w-10 h-10 rounded-xl bg-slate-700/70 hover:bg-slate-600 text-slate-200 transition flex items-center justify-center" title="上一步 (Previous)">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button id="btn-play" class="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-2 shadow-md shadow-indigo-600/30">
+              <i class="fa-solid fa-play" id="play-icon"></i>
+              <span id="play-text">自动播放</span>
+            </button>
+            <button id="btn-next" class="w-10 h-10 rounded-xl bg-slate-700/70 hover:bg-slate-600 text-slate-200 transition flex items-center justify-center" title="下一步 (Next)">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <!-- Speed slider -->
+          <div class="flex items-center gap-3 text-xs text-slate-400">
+            <span>播放速度:</span>
+            <input type="range" id="speed-slider" min="300" max="2200" step="100" value="1000" class="w-24 accent-indigo-500 cursor-pointer">
+            <span id="speed-label" class="font-mono w-10 text-right">1.0s</span>
+          </div>
+        </div>
+
+        <!-- Explanation Log Box -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-comment-dots text-indigo-400"></i> 当前状态详解
+            </span>
+            <span id="vars-snapshot" class="font-mono text-xs text-indigo-300">i=?, x=?, need=?</span>
+          </div>
+          <div id="explanation-box" class="bg-slate-900/90 rounded-xl p-3.5 border border-slate-800 text-sm leading-relaxed text-slate-200 min-h-[72px] flex items-center">
+            点击「下一步」或「自动播放」开始演示算法。
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Code Sync & Complexity (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-5">
+        
+        <!-- Python Code Synchronization Panel -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="flex space-x-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+              </div>
+              <span class="text-xs text-slate-300 font-mono font-medium ml-2">solution.py (LeetCode 1)</span>
+            </div>
+            <span class="text-[11px] text-emerald-400 font-mono">Hash Map / Dict 解法</span>
+          </div>
+          
+          <div class="p-3 overflow-x-auto code-font text-xs sm:text-[13px] leading-6 select-none" id="code-container">
+            <div id="line-1" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">1</span><span class="text-purple-400">class</span>&nbsp;<span class="text-yellow-300">Solution</span>:</div>
+            <div id="line-2" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">2</span>&nbsp;&nbsp;<span class="text-purple-400">def</span>&nbsp;<span class="text-blue-400">twoSum</span>(self, nums: list[int], target: int) -&gt; list[int]:</div>
+            <div id="line-3" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">3</span>&nbsp;&nbsp;&nbsp;&nbsp;seen = {}</div>
+            <div id="line-4" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">4</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">for</span>&nbsp;i, x&nbsp;<span class="text-purple-400">in</span>&nbsp;<span class="text-yellow-300">enumerate</span>(nums):</div>
+            <div id="line-5" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">5</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;need = target - x</div>
+            <div id="line-6" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">6</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">if</span>&nbsp;need&nbsp;<span class="text-purple-400">in</span>&nbsp;seen:</div>
+            <div id="line-7" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">7</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span>&nbsp;[seen[need], i]</div>
+            <div id="line-8" class="px-2 py-0.5 rounded transition-colors flex"><span class="w-6 text-slate-600 select-none">8</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen[x] = i</div>
+          </div>
+        </div>
+
+        <!-- Complexity & Analysis Card -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-indigo-400"></i> 算法分析与对比
+          </h3>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <div class="text-slate-400">时间复杂度</div>
+              <div class="text-base font-bold text-emerald-400 font-mono mt-0.5">O(N) 线性扫描</div>
+              <div class="text-[11px] text-slate-500 mt-1">仅需遍历一次数组，哈希查找为 O(1)</div>
+            </div>
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <div class="text-slate-400">空间复杂度</div>
+              <div class="text-base font-bold text-blue-400 font-mono mt-0.5">O(N) 空间换时间</div>
+              <div class="text-[11px] text-slate-500 mt-1">哈希表最多存放 N 个元素的映射</div>
+            </div>
+          </div>
+          
+          <div class="text-xs text-slate-400 bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 space-y-1.5">
+            <div class="font-medium text-slate-300">为什么 Key 存数字，Value 存下标？</div>
+            <p class="leading-relaxed text-[11px]">
+              因为我们手头有需要的数值 <code class="font-mono text-amber-300">need</code>，题目要求最终返回的是<strong>下标</strong>。字典以元素值为键，让我们能以 <code class="font-mono text-emerald-400">O(1)</code> 的超高速度根据数值直接取出其历史下标 <code class="font-mono text-indigo-300">seen[need]</code>。
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Custom Input Modal -->
+  <div id="custom-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-400"></i> 自定义测试用例
+        </h3>
+        <button id="modal-close" class="text-slate-400 hover:text-white transition text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 py-4 text-xs">
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">
+            nums 数组 (以逗号分隔，支持任意顺序与正负数):
+          </label>
+          <input type="text" id="input-nums" value="2, 7, 11, 15" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:border-indigo-500 focus:outline-none">
+          <span class="text-[11px] text-slate-500 mt-1 block">示例：2, 7, 11, 15 或 3, 2, 4 或 3, 3</span>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">
+            目标值 target:
+          </label>
+          <input type="number" id="input-target" value="9" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:border-indigo-500 focus:outline-none">
+        </div>
+
+        <div id="modal-error" class="text-rose-400 text-xs hidden bg-rose-950/40 border border-rose-800 p-2.5 rounded-lg">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+        <button id="modal-cancel" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium">取消</button>
+        <button id="modal-submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-600/30">应用测试用例</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-xl border border-slate-700 shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2">
+    <i class="fa-solid fa-circle-info text-indigo-400" id="toast-icon"></i>
+    <span id="toast-message">提示内容</span>
+  </div>
+
+  <!-- Script Logic -->
+  <script>
+    // Presets
+    const PRESETS = [
+      { nums: [2, 7, 11, 15], target: 9, note: "示例 1: 首次在下标 1 配对成功 (2 + 7 = 9)" },
+      { nums: [3, 2, 4], target: 6, note: "示例 2: 2 和 4 组合 (2 + 4 = 6)" },
+      { nums: [3, 3], target: 6, note: "示例 3: 相同元素处理 (3 + 3 = 6)" },
+      { nums: [1, 5, 8, 3, 7], target: 10, note: "示例 4: 数组中有 3 和 7 (3 + 7 = 10)" },
+      { nums: [-3, 4, 3, 90], target: 0, note: "示例 5: 负数与零组合 (-3 + 3 = 0)" }
+    ];
+    let currentPresetIdx = 0;
+
+    let currentNums = [2, 7, 11, 15];
+    let currentTarget = 9;
+    let steps = [];
+    let currentStepIdx = 0;
+    let isPlaying = false;
+    let timer = null;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      text.textContent = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2400);
+    }
+
+    /**
+     * Generate step timeline for LeetCode 1
+     */
+    function generateSteps(numsArr, targetVal) {
+      const recorded = [];
+      const seen = {}; // key: val -> value: index
+
+      // Step 0: Init
+      recorded.push({
+        nums: [...numsArr],
+        target: targetVal,
+        seen: {},
+        i: -1,
+        x: null,
+        need: null,
+        activeLine: 3,
+        actionType: 'init',
+        lookupFound: null,
+        matchIndices: null,
+        description: `初始化哈希表 <code class="font-mono text-emerald-300">seen = {}</code>，目标值 target = <span class="font-mono text-amber-400 font-bold">${targetVal}</span>。准备开始单遍循环扫描。`
+      });
+
+      for (let i = 0; i < numsArr.length; i++) {
+        const x = numsArr[i];
+        const need = targetVal - x;
+
+        // Step 1: Enumerate i, x
+        recorded.push({
+          nums: [...numsArr],
+          target: targetVal,
+          seen: { ...seen },
+          i: i,
+          x: x,
+          need: null,
+          activeLine: 4,
+          actionType: 'visit',
+          lookupFound: null,
+          matchIndices: null,
+          description: `指针移动到下标 <span class="font-mono text-indigo-400 font-bold">i = ${i}</span>，获取当前数值 <code class="font-mono text-indigo-300">x = ${x}</code>。`
+        });
+
+        // Step 2: Compute need
+        recorded.push({
+          nums: [...numsArr],
+          target: targetVal,
+          seen: { ...seen },
+          i: i,
+          x: x,
+          need: need,
+          activeLine: 5,
+          actionType: 'calc_need',
+          lookupFound: null,
+          matchIndices: null,
+          description: `计算差值碎片：<code class="font-mono text-amber-300">need = target - x = ${targetVal} - (${x}) = ${need}</code>。`
+        });
+
+        // Step 3: Check if need in seen
+        const hasNeed = (need in seen);
+        recorded.push({
+          nums: [...numsArr],
+          target: targetVal,
+          seen: { ...seen },
+          i: i,
+          x: x,
+          need: need,
+          activeLine: 6,
+          actionType: 'lookup',
+          lookupFound: hasNeed,
+          matchIndices: hasNeed ? [seen[need], i] : null,
+          description: hasNeed
+            ? `查询哈希表：<code class="font-mono text-emerald-400">need (${need}) in seen</code> <strong>命中！</strong> 之前在下标 <span class="font-mono text-emerald-300 font-bold">${seen[need]}</span> 已经见过该元素！`
+            : `查询哈希表：<code class="font-mono text-slate-300">need (${need}) in seen</code> <strong>未命中</strong>（此前未遇到过 ${need}）。`
+        });
+
+        if (hasNeed) {
+          // Step 4: Return result!
+          recorded.push({
+            nums: [...numsArr],
+            target: targetVal,
+            seen: { ...seen },
+            i: i,
+            x: x,
+            need: need,
+            activeLine: 7,
+            actionType: 'finish_success',
+            lookupFound: true,
+            matchIndices: [seen[need], i],
+            description: `成功配对！返回答案下标列表：<span class="font-mono text-emerald-300 font-bold">[${seen[need]}, ${i}]</span>。（对应数值：${numsArr[seen[need]]} + ${x} = ${targetVal}）`
+          });
+          return recorded;
+        }
+
+        // Step 5: Put seen[x] = i
+        seen[x] = i;
+        recorded.push({
+          nums: [...numsArr],
+          target: targetVal,
+          seen: { ...seen },
+          i: i,
+          x: x,
+          need: need,
+          activeLine: 8,
+          actionType: 'insert_dict',
+          insertedKey: x,
+          insertedVal: i,
+          lookupFound: false,
+          matchIndices: null,
+          description: `将当前元素记录在备忘录中：<code class="font-mono text-indigo-300">seen[${x}] = ${i}</code>，以备后续元素配对查询。`
+        });
+      }
+
+      // If no solution found
+      recorded.push({
+        nums: [...numsArr],
+        target: targetVal,
+        seen: { ...seen },
+        i: numsArr.length,
+        x: null,
+        need: null,
+        activeLine: 4,
+        actionType: 'not_found',
+        lookupFound: false,
+        matchIndices: null,
+        description: `扫描结束，数组中未找到任何两数相加等于 ${targetVal}。`
+      });
+
+      return recorded;
+    }
+
+    /**
+     * Render UI for current step
+     */
+    function renderStep() {
+      const step = steps[currentStepIdx];
+      if (!step) return;
+
+      const len = step.nums.length;
+
+      // Update basic labels
+      document.getElementById('target-badge').textContent = step.target;
+      document.getElementById('step-badge').textContent = `步骤 ${currentStepIdx + 1} / ${steps.length}`;
+      document.getElementById('current-i-badge').textContent = step.i >= 0 && step.i < len ? step.i : '-';
+      document.getElementById('vars-snapshot').textContent = `i = ${step.i >= 0 && step.i < len ? step.i : '-'}, x = ${step.x !== null ? step.x : '-'}, need = ${step.need !== null ? step.need : '-'}`;
+      document.getElementById('explanation-box').innerHTML = step.description;
+
+      // Formula display
+      const formulaEl = document.getElementById('formula-display');
+      if (step.actionType === 'init') {
+        formulaEl.innerHTML = `<span class="text-slate-400">等待迭代扫描 nums 数组...</span>`;
+      } else if (step.need !== null) {
+        formulaEl.innerHTML = `
+          <span>need = ${step.target} - (${step.x}) = </span>
+          <span class="text-amber-400 font-bold px-1.5 py-0.5 bg-amber-950/60 rounded border border-amber-500/40">${step.need}</span>
+        `;
+      } else if (step.x !== null) {
+        formulaEl.innerHTML = `<span>当前元素 x = ${step.x}，准备计算 need...</span>`;
+      } else {
+        formulaEl.innerHTML = `<span class="text-slate-400">-</span>`;
+      }
+
+      // Lookup Tag
+      const lookupTag = document.getElementById('lookup-result-tag');
+      if (step.actionType === 'lookup' || step.actionType === 'finish_success') {
+        if (step.lookupFound) {
+          lookupTag.className = 'text-xs font-mono px-3 py-1 rounded-lg border border-emerald-500 bg-emerald-950/60 text-emerald-300 font-bold';
+          lookupTag.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${step.need} 在 seen 中!`;
+        } else {
+          lookupTag.className = 'text-xs font-mono px-3 py-1 rounded-lg border border-slate-700 bg-slate-800 text-rose-300 font-medium';
+          lookupTag.innerHTML = `<i class="fa-solid fa-xmark mr-1"></i> ${step.need} 不在 seen 中`;
+        }
+      } else if (step.actionType === 'insert_dict') {
+        lookupTag.className = 'text-xs font-mono px-3 py-1 rounded-lg border border-indigo-500/50 bg-indigo-950/40 text-indigo-300 font-medium';
+        lookupTag.innerHTML = `<i class="fa-solid fa-plus mr-1"></i> 存入 seen[${step.insertedKey}] = ${step.insertedVal}`;
+      } else {
+        lookupTag.className = 'text-xs font-mono px-3 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-500';
+        lookupTag.innerHTML = `need in seen? 等待检验`;
+      }
+
+      // Status tag
+      const statusTag = document.getElementById('status-tag');
+      if (step.actionType === 'init') {
+        statusTag.textContent = '初始化';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-slate-700 text-slate-300';
+      } else if (step.actionType === 'visit') {
+        statusTag.textContent = '读取元素';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30';
+      } else if (step.actionType === 'calc_need') {
+        statusTag.textContent = '计算拼图 need';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      } else if (step.actionType === 'lookup') {
+        statusTag.textContent = step.lookupFound ? '匹配成功！' : '字典查无此数';
+        statusTag.className = step.lookupFound 
+          ? 'text-xs px-2.5 py-0.5 rounded-md font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+          : 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-slate-700 text-slate-300';
+      } else if (step.actionType === 'insert_dict') {
+        statusTag.textContent = '登记至哈希表';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
+      } else if (step.actionType === 'finish_success') {
+        statusTag.textContent = '找到答案 [已返回] ✓';
+        statusTag.className = 'text-xs px-2.5 py-0.5 rounded-md font-bold bg-emerald-500/30 text-emerald-200 border border-emerald-400';
+      }
+
+      // 1. Render nums array
+      const gridColStyle = `repeat(${Math.max(1, len)}, minmax(0, 1fr))`;
+      const numsPointerTrack = document.getElementById('nums-pointer-track');
+      const numsBox = document.getElementById('nums-container');
+      const numsIdxTrack = document.getElementById('nums-index-track');
+
+      numsPointerTrack.style.gridTemplateColumns = gridColStyle;
+      numsBox.style.gridTemplateColumns = gridColStyle;
+      numsIdxTrack.style.gridTemplateColumns = gridColStyle;
+
+      numsPointerTrack.innerHTML = '';
+      numsBox.innerHTML = '';
+      numsIdxTrack.innerHTML = '';
+
+      const isFinished = (step.actionType === 'finish_success');
+      const matchIdxs = step.matchIndices || [];
+
+      for (let idx = 0; idx < len; idx++) {
+        const isCurrentI = (idx === step.i);
+        const isMatched = matchIdxs.includes(idx);
+
+        // Pointer
+        let pointerHtml = '';
+        if (isCurrentI) {
+          pointerHtml = `<span class="bg-indigo-600 text-white font-bold font-mono text-[10px] px-2 py-0.5 rounded shadow">i</span>`;
+        } else if (isMatched) {
+          pointerHtml = `<span class="bg-emerald-600 text-white font-bold font-mono text-[10px] px-1.5 py-0.5 rounded shadow">配对</span>`;
+        }
+
+        numsPointerTrack.innerHTML += `
+          <div class="flex items-end justify-center h-full">
+            ${pointerHtml}
+          </div>
+        `;
+
+        // Card
+        let cardBg = 'bg-slate-900/90 text-slate-200 border-slate-700';
+        if (isMatched && isFinished) {
+          cardBg = 'bg-emerald-950/70 border-emerald-400 text-emerald-200 font-extrabold ring-2 ring-emerald-400 matched-pulse';
+        } else if (isCurrentI) {
+          cardBg = 'bg-indigo-950/60 border-indigo-500 text-indigo-100 ring-2 ring-indigo-500/50 scale-105';
+        } else if (idx < step.i) {
+          cardBg = 'bg-slate-900/40 text-slate-400 border-slate-800';
+        }
+
+        numsBox.innerHTML += `
+          <div class="elem-transition h-14 rounded-xl border flex flex-col items-center justify-center font-mono font-bold text-base select-none shadow-sm ${cardBg}">
+            ${step.nums[idx]}
+          </div>
+        `;
+
+        // Index
+        numsIdxTrack.innerHTML += `
+          <div class="text-center font-mono text-[10px] text-slate-500 select-none">
+            ${idx}
+          </div>
+        `;
+      }
+
+      // 2. Render Hash Map: seen
+      const hashMapContainer = document.getElementById('hashmap-container');
+      const seenEntries = Object.entries(step.seen);
+
+      if (seenEntries.length === 0) {
+        hashMapContainer.innerHTML = `<span class="text-xs text-slate-500 italic p-2">seen = {} （空字典，尚未记录元素）</span>`;
+      } else {
+        hashMapContainer.innerHTML = '';
+        seenEntries.forEach(([key, valIdx]) => {
+          const numKey = Number(key);
+          const isJustInserted = (step.actionType === 'insert_dict' && step.insertedKey === numKey);
+          const isNeedMatch = (step.lookupFound && step.need === numKey);
+
+          let entryStyle = 'bg-slate-800/90 border-slate-700 text-slate-200';
+          if (isNeedMatch) {
+            entryStyle = 'bg-emerald-950/80 border-emerald-400 ring-2 ring-emerald-400/60 text-emerald-200 scale-105';
+          } else if (isJustInserted) {
+            entryStyle = 'bg-indigo-950/80 border-indigo-500 ring-2 ring-indigo-500/50 text-indigo-200 scale-105';
+          }
+
+          hashMapContainer.innerHTML += `
+            <div class="elem-transition px-3 py-2 rounded-xl border flex items-center gap-2 shadow-sm ${entryStyle}">
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">key:</span>
+                <span class="font-mono font-bold text-sm text-amber-300">${key}</span>
+              </div>
+              <span class="text-slate-600 font-mono">→</span>
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">idx:</span>
+                <span class="font-mono font-bold text-sm text-indigo-300">${valIdx}</span>
+              </div>
+              ${isNeedMatch ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded ml-1">MATCH!</span>' : ''}
+              ${isJustInserted ? '<span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-medium px-1 py-0.5 rounded ml-1">NEW</span>' : ''}
+            </div>
+          `;
+        });
+      }
+
+      // 3. Highlight code
+      for (let l = 1; l <= 8; l++) {
+        const lineEl = document.getElementById(`line-${l}`);
+        if (!lineEl) continue;
+        if (l === step.activeLine) {
+          lineEl.className = 'px-2 py-0.5 rounded flex bg-indigo-500/25 border-l-2 border-indigo-400 font-semibold text-white';
+        } else {
+          lineEl.className = 'px-2 py-0.5 rounded flex text-slate-300 hover:bg-slate-800/40';
+        }
+      }
+
+      // Button states
+      document.getElementById('btn-prev').disabled = (currentStepIdx === 0);
+      document.getElementById('btn-prev').classList.toggle('opacity-40', currentStepIdx === 0);
+      document.getElementById('btn-prev').classList.toggle('cursor-not-allowed', currentStepIdx === 0);
+
+      document.getElementById('btn-next').disabled = (currentStepIdx === steps.length - 1);
+      document.getElementById('btn-next').classList.toggle('opacity-40', currentStepIdx === steps.length - 1);
+      document.getElementById('btn-next').classList.toggle('cursor-not-allowed', currentStepIdx === steps.length - 1);
+    }
+
+    function nextStep() {
+      if (currentStepIdx < steps.length - 1) {
+        currentStepIdx++;
+        renderStep();
+      } else {
+        stopAutoPlay();
+      }
+    }
+
+    function prevStep() {
+      if (currentStepIdx > 0) {
+        currentStepIdx--;
+        renderStep();
+      }
+    }
+
+    function resetSteps() {
+      stopAutoPlay();
+      currentStepIdx = 0;
+      renderStep();
+    }
+
+    function toggleAutoPlay() {
+      if (isPlaying) {
+        stopAutoPlay();
+      } else {
+        startAutoPlay();
+      }
+    }
+
+    function startAutoPlay() {
+      if (currentStepIdx >= steps.length - 1) {
+        currentStepIdx = 0;
+        renderStep();
+      }
+      isPlaying = true;
+      document.getElementById('play-icon').className = 'fa-solid fa-pause';
+      document.getElementById('play-text').textContent = '暂停播放';
+
+      const speed = parseInt(document.getElementById('speed-slider').value, 10);
+      timer = setInterval(() => {
+        if (currentStepIdx < steps.length - 1) {
+          nextStep();
+        } else {
+          stopAutoPlay();
+        }
+      }, speed);
+    }
+
+    function stopAutoPlay() {
+      isPlaying = false;
+      if (timer) clearInterval(timer);
+      timer = null;
+      document.getElementById('play-icon').className = 'fa-solid fa-play';
+      document.getElementById('play-text').textContent = '自动播放';
+    }
+
+    function loadTestCase(nums, target) {
+      stopAutoPlay();
+      currentNums = [...nums];
+      currentTarget = target;
+      steps = generateSteps(currentNums, currentTarget);
+      currentStepIdx = 0;
+      renderStep();
+    }
+
+    // Event bindings
+    document.getElementById('btn-next').addEventListener('click', () => {
+      stopAutoPlay();
+      nextStep();
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      stopAutoPlay();
+      prevStep();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', resetSteps);
+    document.getElementById('btn-play').addEventListener('click', toggleAutoPlay);
+
+    // Speed slider
+    const speedSlider = document.getElementById('speed-slider');
+    const speedLabel = document.getElementById('speed-label');
+    speedSlider.addEventListener('input', (e) => {
+      const val = e.target.value;
+      speedLabel.textContent = (val / 1000).toFixed(1) + 's';
+      if (isPlaying) {
+        stopAutoPlay();
+        startAutoPlay();
+      }
+    });
+
+    // Preset switcher
+    document.getElementById('btn-quick-preset').addEventListener('click', () => {
+      currentPresetIdx = (currentPresetIdx + 1) % PRESETS.length;
+      const p = PRESETS[currentPresetIdx];
+      loadTestCase(p.nums, p.target);
+      showToast(p.note);
+    });
+
+    // Modal
+    const modal = document.getElementById('custom-modal');
+    const btnCustom = document.getElementById('btn-custom-modal');
+    const btnCloseModal = document.getElementById('modal-close');
+    const btnCancelModal = document.getElementById('modal-cancel');
+    const btnSubmitModal = document.getElementById('modal-submit');
+    const modalError = document.getElementById('modal-error');
+
+    btnCustom.addEventListener('click', () => {
+      document.getElementById('input-nums').value = currentNums.join(', ');
+      document.getElementById('input-target').value = currentTarget;
+      modalError.classList.add('hidden');
+      modal.classList.remove('hidden');
+    });
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    btnCloseModal.addEventListener('click', closeModal);
+    btnCancelModal.addEventListener('click', closeModal);
+
+    btnSubmitModal.addEventListener('click', () => {
+      const raw = document.getElementById('input-nums').value.trim();
+      const targetStr = document.getElementById('input-target').value.trim();
+
+      if (!raw || targetStr === '') {
+        modalError.textContent = '请输入完整的数组和 target 目标值。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      const arr = raw.split(',').map(s => s.trim()).filter(s => s !== '').map(Number);
+      const tgt = Number(targetStr);
+
+      if (arr.some(isNaN) || isNaN(tgt)) {
+        modalError.textContent = '输入包含非法数字，请检查输入格式。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      if (arr.length < 2) {
+        modalError.textContent = '数组至少需要 2 个元素。';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      closeModal();
+      loadTestCase(arr, tgt);
+      showToast('自定义用例已成功载入！');
+    });
+
+    // Keyboard support
+    window.addEventListener('keydown', (e) => {
+      if (modal.classList.contains('hidden')) {
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          nextStep();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prevStep();
+        }
+      }
+    });
+
+    window.onload = function () {
+      loadTestCase(currentNums, currentTarget);
+    };
+  </script>
+</body>
+</html>
