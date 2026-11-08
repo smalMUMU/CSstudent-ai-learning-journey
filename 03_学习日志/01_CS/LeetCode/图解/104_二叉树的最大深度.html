@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 104 二叉树的最大深度 - 交互式可视化教学工具</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'Fira Code', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.8)); }
+      50% { filter: drop-shadow(0 0 16px rgba(129, 140, 248, 1)); }
+    }
+    .node-active-glow {
+      animation: pulseGlow 1.5s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased select-none">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-4 py-3 sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-bold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            LeetCode 104: 二叉树的最大深度
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Easy 经典</span>
+          </h1>
+        </div>
+        <p class="text-xs text-slate-400">分治递归深度解析 · 深度值自底向上冒泡计算 (1 + max(left, right))</p>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2">
+      <button id="soundToggleBtn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="开关音效">
+        <svg id="soundIconOn" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <svg id="soundIconOff" class="w-4 h-4 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+        <span id="soundText">音效开</span>
+      </button>
+
+      <button id="guideModalBtn" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>核心公式</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Algorithm Mode Selector & Presets Bar -->
+  <div class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+    <!-- Traversal Mode Pills -->
+    <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+      <span class="text-slate-400 font-medium whitespace-nowrap mr-1">解法选择:</span>
+      <button data-mode="user_dfs" class="mode-btn px-2.5 py-1.5 rounded-lg font-medium bg-indigo-600 text-white shadow-sm border border-indigo-500/50 transition">
+        用户原代码 (分治后序 DFS: 1 + max(L, R))
+      </button>
+      <button data-mode="bfs" class="mode-btn px-2.5 py-1.5 rounded-lg font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition">
+        广度优先 BFS (按层计数: depth += 1)
+      </button>
+      <button data-mode="top_down_dfs" class="mode-btn px-2.5 py-1.5 rounded-lg font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition">
+        前序 DFS (自顶向下传递当前层数)
+      </button>
+    </div>
+
+    <!-- Tree Presets and Custom Input -->
+    <div class="flex items-center gap-2 ml-auto">
+      <span class="text-slate-400 font-medium whitespace-nowrap">预设用例:</span>
+      <div class="flex items-center gap-1">
+        <button data-preset="leetcode1" class="preset-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition active:scale-95" title="[3, 9, 20, null, null, 15, 7]">
+          官方例1 (深度3)
+        </button>
+        <button data-preset="leetcode2" class="preset-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition active:scale-95" title="[1, null, 2]">
+          官方例2 (深度2)
+        </button>
+        <button data-preset="skewed" class="preset-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition active:scale-95" title="[1, 2, null, 3, null, 4]">
+          单链倾斜树 (深度4)
+        </button>
+        <button data-preset="balanced" class="preset-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition active:scale-95" title="[1, 2, 3, 4, 5, 6, 7]">
+          满二叉树 (深度3)
+        </button>
+      </div>
+
+      <!-- Custom Input Toggle -->
+      <div class="relative flex items-center">
+        <input id="customTreeInput" type="text" placeholder="[3,9,20,null,null,15,7]" value="[3, 9, 20, null, null, 15, 7]" class="w-36 sm:w-44 px-2 py-1 bg-slate-950 border border-slate-700 rounded-l text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono-code" />
+        <button id="applyCustomTreeBtn" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-r font-medium border border-l-0 border-indigo-500 text-xs transition">
+          构建
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-20 right-5 z-50 transform transition-all duration-300 opacity-0 pointer-events-none translate-y-[-10px] bg-rose-900/90 text-rose-100 border border-rose-700 px-4 py-2 rounded-lg text-xs shadow-xl flex items-center gap-2">
+    <svg class="w-4 h-4 text-rose-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span id="toastMsg">输入格式有误</span>
+  </div>
+
+  <!-- Main Grid Content -->
+  <main class="flex-1 p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-7xl mx-auto w-full">
+
+    <!-- Left: Canvas Area (7 cols on lg) -->
+    <section class="lg:col-span-7 flex flex-col gap-3">
+      <!-- Tree Visualizer Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-1 flex flex-col relative overflow-hidden shadow-xl min-h-[480px]">
+        <!-- Top bar inside canvas -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">二叉树深度计算过程</span>
+          </div>
+
+          <!-- Stats Badges -->
+          <div class="flex items-center gap-2 text-xs">
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+              当前计算深度: <strong id="calculatedDepthBadge" class="text-amber-400">0</strong>
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+              最终最大深度: <strong id="maxDepthBadge" class="text-emerald-400">-</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 pb-2 border-b border-slate-800/80 mb-2">
+          <div class="flex items-center gap-1">
+            <span class="w-3 h-3 rounded-full bg-slate-700 border border-slate-500"></span>
+            <span>待访问</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="w-3 h-3 rounded-full bg-indigo-600 border border-indigo-300 ring-2 ring-indigo-400/50"></span>
+            <span class="text-indigo-300 font-medium">当前活跃节点</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="w-3 h-3 rounded-full bg-emerald-600 border border-emerald-400"></span>
+            <span class="text-emerald-300 font-medium">深度已求出</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="w-4 h-2 rounded bg-amber-500"></span>
+            <span class="text-amber-300 font-medium">最大深度关键路径</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="w-3 h-3 rounded border border-dashed border-rose-400/70 bg-rose-950/40 text-[9px] flex items-center justify-center text-rose-300">0</span>
+            <span class="text-rose-300/80">空节点返回 0</span>
+          </div>
+        </div>
+
+        <!-- SVG Tree Container -->
+        <div id="treeCanvasWrapper" class="relative flex-1 w-full flex items-center justify-center bg-slate-950/60 rounded-xl border border-slate-800/60 overflow-hidden">
+          <svg id="treeSvg" class="w-full h-full min-h-[380px]" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <!-- Level background guide lines -->
+              <pattern id="gridPattern" width="600" height="70" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="69" x2="600" y2="69" stroke="#1e293b" stroke-dasharray="4 4" stroke-width="1" />
+              </pattern>
+              <!-- Glowing filters -->
+              <filter id="glow-active" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#818cf8" flood-opacity="0.9" />
+              </filter>
+              <filter id="glow-critical" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#f59e0b" flood-opacity="0.9" />
+              </filter>
+            </defs>
+            <rect width="600" height="380" fill="url(#gridPattern)" opacity="0.6" />
+            <g id="depthGuidesGroup"></g>
+            <g id="edgesGroup"></g>
+            <g id="nodesGroup"></g>
+            <g id="annotationsGroup"></g>
+          </svg>
+
+          <!-- Watermark hint -->
+          <div class="absolute bottom-2 right-3 text-[11px] text-slate-500 pointer-events-none">
+            子树最大深度 + 根节点自身 (1 + max(L, R))
+          </div>
+        </div>
+
+        <!-- Bottom Playback Controller Panel -->
+        <div class="mt-3 pt-3 border-t border-slate-800 flex flex-col gap-2">
+          <!-- Step scrubber & count -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono-code text-indigo-400 whitespace-nowrap" id="stepCounterLabel">
+              步骤: 0 / 0
+            </span>
+            <input id="stepScrubber" type="range" min="0" max="0" value="0" class="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 focus:outline-none" />
+            <span id="stepPhaseBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 whitespace-nowrap">
+              未开始
+            </span>
+          </div>
+
+          <!-- Buttons & Speed Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-2 mt-1">
+            <div class="flex items-center gap-1.5">
+              <!-- Reset -->
+              <button id="resetBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1 transition active:scale-95" title="回到初始状态">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>重置</span>
+              </button>
+
+              <!-- Prev -->
+              <button id="prevBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1 transition active:scale-95 disabled:opacity-40 disabled:pointer-events-none" title="上一步">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>上一步</span>
+              </button>
+
+              <!-- Play / Pause -->
+              <button id="playPauseBtn" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition active:scale-95">
+                <svg id="playIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg id="pauseIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="playBtnText">自动播放</span>
+              </button>
+
+              <!-- Next -->
+              <button id="nextBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1 transition active:scale-95 disabled:opacity-40 disabled:pointer-events-none" title="下一步 (单步执行)">
+                <span>下一步</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Speed selector -->
+            <div class="flex items-center gap-1 text-xs">
+              <span class="text-slate-400 text-[11px]">播放速度:</span>
+              <button data-speed="1500" class="speed-btn px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 text-[11px] transition">0.5x</button>
+              <button data-speed="800" class="speed-btn px-2 py-1 rounded bg-indigo-600 text-white border border-indigo-500 text-[11px] font-medium transition">1.0x</button>
+              <button data-speed="400" class="speed-btn px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 text-[11px] transition">2.0x</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Code Trace & Call Stack (5 cols on lg) -->
+    <section class="lg:col-span-5 flex flex-col gap-3">
+
+      <!-- Tabs Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-xl">
+        <!-- Tabs Header -->
+        <div class="flex border-b border-slate-800 bg-slate-950/40 px-2 pt-2 gap-1 text-xs">
+          <button id="tabBtnCode" class="tab-btn px-3 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            <span>Python 代码追踪</span>
+          </button>
+          <button id="tabBtnStack" class="tab-btn px-3 py-2 font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span id="stackTabTitle">调用栈与返回值</span>
+            <span id="stackBadgeCount" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-900/60 text-indigo-300 border border-indigo-700/60">0</span>
+          </button>
+          <button id="tabBtnTheory" class="tab-btn px-3 py-2 font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span>算法对比与精髓</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Python Code Panel -->
+        <div id="tabPanelCode" class="p-3 flex-1 flex flex-col font-mono-code text-xs leading-relaxed overflow-y-auto">
+          <!-- Real-time Variables Status Pill -->
+          <div id="varInspector" class="mb-2 p-2 rounded-lg bg-slate-950 border border-slate-800 text-[11px] flex flex-wrap items-center justify-between gap-1 text-slate-300">
+            <div><span class="text-slate-500">当前节点:</span> <code id="varNode" class="text-indigo-300 font-bold">None</code></div>
+            <div><span class="text-slate-500">left:</span> <code id="varLeft" class="text-emerald-400">?</code></div>
+            <div><span class="text-slate-500">right:</span> <code id="varRight" class="text-amber-400">?</code></div>
+            <div><span class="text-slate-500">返回值:</span> <code id="varReturn" class="text-indigo-400 font-bold">?</code></div>
+          </div>
+
+          <!-- Code Lines Container -->
+          <div id="codeLinesContainer" class="bg-slate-950 rounded-xl p-2.5 border border-slate-800/80 space-y-0.5 select-text overflow-x-auto">
+            <!-- Dynamically injected with line highlight -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Call Stack Panel -->
+        <div id="tabPanelStack" class="p-3 flex-1 flex flex-col hidden overflow-y-auto">
+          <div class="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-800 mb-2">
+            <span id="stackDescription">活动栈帧 (观察子树深度返回值逐层向上返回)</span>
+            <span class="text-[11px] text-indigo-400">深度: <strong id="stackDepth">0</strong></span>
+          </div>
+
+          <div id="stackContainer" class="flex-1 flex flex-col-reverse justify-start gap-2 py-1 min-h-[200px]">
+            <!-- Stack frames dynamically pushed/popped here -->
+            <div class="text-center text-slate-500 text-xs py-8">栈当前为空 (点击“下一步”或“自动播放”开始)</div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Key Insights / Theory Panel -->
+        <div id="tabPanelTheory" class="p-4 flex-1 flex flex-col hidden overflow-y-auto space-y-3 text-xs text-slate-300">
+          <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/50">
+            <h4 class="font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
+              <span>💡 什么是“分治思想 (Divide & Conquer)”？</span>
+            </h4>
+            <p class="text-slate-300 leading-relaxed">
+              要求以某个节点为根的树的最大深度，可以拆解为两个子问题：
+              <br/>1. 求左子树的最大深度 <code class="text-emerald-300">left</code>；
+              <br/>2. 求右子树的最大深度 <code class="text-amber-300">right</code>；
+              <br/>3. 当前树的最大深度就是两边较深者加上当前根节点自身：<code class="text-indigo-300 font-bold">1 + max(left, right)</code>。
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
+            <h4 class="font-bold text-emerald-300 mb-1 flex items-center gap-1.5">
+              <span>🌊 BFS 层序遍历为什么也是天然的解法？</span>
+            </h4>
+            <p class="text-slate-300 leading-relaxed">
+              广度优先搜索是一层一层向下扩散的。每当队列遍历完当前层的所有节点，树的深度计数器就 <code class="text-emerald-400 font-bold">depth += 1</code>。当队列为空时，累加的数值就是整棵树的最大深度。
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <h4 class="font-bold text-slate-200 mb-1">⏱️ 时空复杂度分析</h4>
+            <ul class="space-y-1 text-slate-400">
+              <li>• <strong>时间复杂度:</strong> <code class="text-emerald-400">O(N)</code>，二叉树中的每个节点都被访问一次。</li>
+              <li>• <strong>空间复杂度:</strong> <code class="text-indigo-400">O(H)</code>，递归调用的栈空间取决于树的高度 $H$。最好情况（完全平衡树）为 $O(\log N)$，最坏情况（单支倾斜树）为 $O(N)$。</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Real-time Step Explanation Box (Always visible at bottom) -->
+        <div class="p-3 bg-slate-950/90 border-t border-slate-800">
+          <div class="flex items-center gap-1.5 text-xs text-indigo-400 font-semibold mb-1">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>当前执行剖析:</span>
+          </div>
+          <p id="stepExplanation" class="text-xs text-slate-200 leading-relaxed min-h-[40px]">
+            点击“自动播放”或“下一步”，逐步观察分治法自底向上的深度计算与冒泡传递。
+          </p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Formula Guide Modal -->
+  <div id="guideModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>📐 二叉树深度递归递推公式</span>
+        </h3>
+        <button id="closeGuideModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="py-4 space-y-3 text-xs text-slate-300 leading-relaxed">
+        <p>
+          二叉树最大深度的本质是**后序遍历 (Post-order Traversal)** 的经典应用：
+        </p>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono-code text-indigo-300">
+          height(node) = 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(当 node is None)<br/>
+          height(node) = 1 + max(height(node.left), height(node.right)) (当 node 存在)
+        </div>
+        <p>
+          在执行过程中：
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-400 pl-2">
+          <li><strong>Base Case</strong>：空节点不存在任何层级，深度为 0。</li>
+          <li><strong>分 (Divide)</strong>：将大树拆解为左、右两棵子树分别求深度。</li>
+          <li><strong>治与合 (Combine)</strong>：取出左右子树深度的较大者，加上当前节点自身占有的 1 层高度，返回给父节点。</li>
+        </ul>
+      </div>
+      <div class="pt-2 flex justify-end">
+        <button id="confirmGuideModalBtn" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition">
+          明白了，开始体验
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Implementation -->
+  <script>
+    (function() {
+      // -------------------------------------------------------------
+      // Web Audio API Synthesizer
+      // -------------------------------------------------------------
+      let soundEnabled = true;
+      let audioCtx = null;
+
+      function playTone(freq, type, duration, gainVal = 0.08) {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {
+          // ignore audio failure
+        }
+      }
+
+      function soundEnter() { playTone(440.00, 'sine', 0.1, 0.04); } // A4
+      function soundReturn() { playTone(659.25, 'triangle', 0.15, 0.08); } // E5
+      function soundCompute() { playTone(880.00, 'sine', 0.18, 0.09); } // A5
+      function soundNull() { playTone(261.63, 'sawtooth', 0.08, 0.02); } // C4
+
+      // -------------------------------------------------------------
+      // Code Templates
+      // -------------------------------------------------------------
+      const CODE_TEMPLATES = {
+        user_dfs: [
+          { line: 1, text: "# LeetCode 104. Maximum Depth of Binary Tree" },
+          { line: 2, text: "class Solution:" },
+          { line: 3, text: "    def maxDepth(self, root: TreeNode | None) -> int:" },
+          { line: 4, text: "        def dfs(node):" },
+          { line: 5, text: "            if not node:" },
+          { line: 6, text: "                return 0                       # 空节点深度为 0" },
+          { line: 7, text: "            left = dfs(node.left)            # ① 递归求左子树深度" },
+          { line: 8, text: "            right = dfs(node.right)          # ② 递归求右子树深度" },
+          { line: 9, text: "            return 1 + max(left, right)      # ③ 根节点 + 较深子树" },
+          { line: 10, text: "        return dfs(root)" }
+        ],
+        bfs: [
+          { line: 1, text: "# 广度优先 BFS (按层迭代)" },
+          { line: 2, text: "class Solution:" },
+          { line: 3, text: "    def maxDepth(self, root: TreeNode | None) -> int:" },
+          { line: 4, text: "        if not root: return 0" },
+          { line: 5, text: "        queue = collections.deque([root])" },
+          { line: 6, text: "        depth = 0" },
+          { line: 7, text: "        while queue:" },
+          { line: 8, text: "            depth += 1                         # 进入新的一层" },
+          { line: 9, text: "            for _ in range(len(queue)):        # 遍历当前层全部节点" },
+          { line: 10, text: "                node = queue.popleft()" },
+          { line: 11, text: "                if node.left: queue.append(node.left)" },
+          { line: 12, text: "                if node.right: queue.append(node.right)" },
+          { line: 13, text: "        return depth" }
+        ],
+        top_down_dfs: [
+          { line: 1, text: "# 前序 DFS (自顶向下传递当前层数)" },
+          { line: 2, text: "class Solution:" },
+          { line: 3, text: "    def maxDepth(self, root: TreeNode | None) -> int:" },
+          { line: 4, text: "        ans = 0" },
+          { line: 5, text: "        def dfs(node, cur_depth):" },
+          { line: 6, text: "            nonlocal ans" },
+          { line: 7, text: "            if not node: return" },
+          { line: 8, text: "            ans = max(ans, cur_depth)         # 更新已发现的最大深度" },
+          { line: 9, text: "            dfs(node.left, cur_depth + 1)" },
+          { line: 10, text: "            dfs(node.right, cur_depth + 1)" },
+          { line: 11, text: "        dfs(root, 1)" },
+          { line: 12, text: "        return ans" }
+        ]
+      };
+
+      // -------------------------------------------------------------
+      // Tree Data Structures and Presets
+      // -------------------------------------------------------------
+      const PRESETS = {
+        leetcode1: [3, 9, 20, null, null, 15, 7],
+        leetcode2: [1, null, 2],
+        skewed: [1, 2, null, 3, null, 4],
+        balanced: [1, 2, 3, 4, 5, 6, 7]
+      };
+
+      class TreeNode {
+        constructor(id, val) {
+          this.id = id;
+          this.val = val;
+          this.left = null;
+          this.right = null;
+        }
+      }
+
+      function buildTreeFromArray(arr) {
+        if (!arr || arr.length === 0 || arr[0] === null || arr[0] === undefined) return null;
+        let idCounter = 1;
+        const root = new TreeNode(idCounter++, arr[0]);
+        const queue = [root];
+        let i = 1;
+        while (queue.length > 0 && i < arr.length) {
+          const curr = queue.shift();
+          if (i < arr.length) {
+            if (arr[i] !== null && arr[i] !== undefined) {
+              curr.left = new TreeNode(idCounter++, arr[i]);
+              queue.push(curr.left);
+            }
+            i++;
+          }
+          if (i < arr.length) {
+            if (arr[i] !== null && arr[i] !== undefined) {
+              curr.right = new TreeNode(idCounter++, arr[i]);
+              queue.push(curr.right);
+            }
+            i++;
+          }
+        }
+        return root;
+      }
+
+      function cloneTree(node) {
+        if (!node) return null;
+        const copy = new TreeNode(node.id, node.val);
+        copy.left = cloneTree(node.left);
+        copy.right = cloneTree(node.right);
+        return copy;
+      }
+
+      function getTreeDepth(node) {
+        if (!node) return 0;
+        return 1 + Math.max(getTreeDepth(node.left), getTreeDepth(node.right));
+      }
+
+      // -------------------------------------------------------------
+      // Step Generator
+      // -------------------------------------------------------------
+      function generateExecutionSteps(initialRoot, mode) {
+        const steps = [];
+        if (!initialRoot) {
+          steps.push({
+            currentLine: 5,
+            activeNodeId: null,
+            computedDepths: {}, // nodeId -> depth
+            criticalEdgeKeys: [],
+            callStack: [],
+            treeSnapshot: null,
+            explanation: "输入根节点为空 (root is None)，树的最大深度为 0。",
+            phase: "结束",
+            varInspector: { node: "None", left: "0", right: "0", ret: "0" },
+            calculatedDepth: 0,
+            finalMaxDepth: 0
+          });
+          return steps;
+        }
+
+        const workingTree = cloneTree(initialRoot);
+        const computedDepths = {}; // nodeId -> depth
+        const criticalEdgeKeys = new Set();
+        let frameIdCounter = 1;
+
+        if (mode === 'user_dfs') {
+          // Main call: dfs(root)
+          steps.push({
+            currentLine: 10,
+            activeNodeId: workingTree.id,
+            computedDepths: { ...computedDepths },
+            criticalEdgeKeys: Array.from(criticalEdgeKeys),
+            callStack: [],
+            treeSnapshot: workingTree,
+            explanation: `开始执行主函数：调用 dfs(root)，传入根节点 [${workingTree.val}]。`,
+            phase: "函数启动",
+            varInspector: { node: `TreeNode(${workingTree.val})`, left: "?", right: "?", ret: "?" },
+            calculatedDepth: 0,
+            finalMaxDepth: "-"
+          });
+
+          const stack = [];
+
+          function dfs(node, parentVal = null, branch = '') {
+            const frame = {
+              id: frameIdCounter++,
+              val: node ? node.val : 'None',
+              nodeId: node ? node.id : null,
+              desc: node ? `dfs(node=${node.val})` : `dfs(None) [${parentVal}的${branch}]`,
+              left: "?",
+              right: "?",
+              ret: "?"
+            };
+            stack.push(frame);
+
+            // Step 1: enter function
+            steps.push({
+              currentLine: 4,
+              activeNodeId: node ? node.id : null,
+              nullIndicator: node ? null : { parentVal, branch },
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: node ? `进入函数 dfs(node=${node.val})，栈帧压入调用栈。` : `调用 dfs(None)，处理 [${parentVal}] 的空${branch}。`,
+              phase: "进入DFS",
+              varInspector: { node: node ? `TreeNode(${node.val})` : "None", left: "?", right: "?", ret: "?" },
+              calculatedDepth: 0,
+              finalMaxDepth: "-"
+            });
+
+            // Step 2: if not node
+            steps.push({
+              currentLine: 5,
+              activeNodeId: node ? node.id : null,
+              nullIndicator: node ? null : { parentVal, branch },
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: node ? `检查条件: if not node -> 当前节点存在 (val=${node.val})，继续向下求解。` : `检查条件: if not node -> 当前节点为空 (None)，触发基准条件 (Base Case)！`,
+              phase: "检查基条件",
+              varInspector: { node: node ? `TreeNode(${node.val})` : "None", left: "?", right: "?", ret: "?" },
+              calculatedDepth: 0,
+              finalMaxDepth: "-"
+            });
+
+            if (!node) {
+              frame.ret = 0;
+              steps.push({
+                currentLine: 6,
+                activeNodeId: null,
+                nullIndicator: { parentVal, branch },
+                computedDepths: { ...computedDepths },
+                criticalEdgeKeys: Array.from(criticalEdgeKeys),
+                callStack: JSON.parse(JSON.stringify(stack)),
+                treeSnapshot: workingTree,
+                explanation: `遇到 None 节点，直接 return 0，表示空子树的高度为 0。`,
+                phase: "空节点返回",
+                isReturn: true,
+                varInspector: { node: "None", left: "0", right: "0", ret: "0" },
+                calculatedDepth: 0,
+                finalMaxDepth: "-"
+              });
+              stack.pop();
+              return 0;
+            }
+
+            // Step 3: left = dfs(node.left)
+            steps.push({
+              currentLine: 7,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `在节点 [${node.val}] 处，准备递归计算左子树深度：调用 dfs(node.left)。`,
+              phase: "探寻左子树",
+              varInspector: { node: `TreeNode(${node.val})`, left: "?", right: "?", ret: "?" },
+              calculatedDepth: 0,
+              finalMaxDepth: "-"
+            });
+
+            const leftDepth = dfs(node.left, node.val, '左孩子');
+            frame.left = leftDepth;
+
+            // Step 4: Left return received
+            steps.push({
+              currentLine: 7,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `左子树计算完成！得到 left = ${leftDepth}。`,
+              phase: "左子树就绪",
+              varInspector: { node: `TreeNode(${node.val})`, left: `${leftDepth}`, right: "?", ret: "?" },
+              calculatedDepth: leftDepth,
+              finalMaxDepth: "-"
+            });
+
+            // Step 5: right = dfs(node.right)
+            steps.push({
+              currentLine: 8,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `在节点 [${node.val}] 处，准备递归计算右子树深度：调用 dfs(node.right)。`,
+              phase: "探寻右子树",
+              varInspector: { node: `TreeNode(${node.val})`, left: `${leftDepth}`, right: "?", ret: "?" },
+              calculatedDepth: leftDepth,
+              finalMaxDepth: "-"
+            });
+
+            const rightDepth = dfs(node.right, node.val, '右孩子');
+            frame.right = rightDepth;
+
+            // Step 6: Right return received
+            steps.push({
+              currentLine: 8,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `右子树计算完成！得到 right = ${rightDepth}。`,
+              phase: "右子树就绪",
+              varInspector: { node: `TreeNode(${node.val})`, left: `${leftDepth}`, right: `${rightDepth}`, ret: "?" },
+              calculatedDepth: Math.max(leftDepth, rightDepth),
+              finalMaxDepth: "-"
+            });
+
+            // Step 7: return 1 + max(left, right)
+            const myDepth = 1 + Math.max(leftDepth, rightDepth);
+            frame.ret = myDepth;
+            computedDepths[node.id] = myDepth;
+
+            if (leftDepth >= rightDepth && node.left) {
+              criticalEdgeKeys.add(`${node.id}->${node.left.id}`);
+            } else if (rightDepth > leftDepth && node.right) {
+              criticalEdgeKeys.add(`${node.id}->${node.right.id}`);
+            }
+
+            steps.push({
+              currentLine: 9,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `【汇总深度】节点 [${node.val}]：max(${leftDepth}, ${rightDepth}) + 1 (自身) = ${myDepth}！将 ${myDepth} 向上返回给父调用。`,
+              phase: "计算当前深度",
+              isCompute: true,
+              varInspector: { node: `TreeNode(${node.val})`, left: `${leftDepth}`, right: `${rightDepth}`, ret: `${myDepth}` },
+              calculatedDepth: myDepth,
+              finalMaxDepth: (node.id === workingTree.id) ? myDepth : "-"
+            });
+
+            stack.pop();
+            return myDepth;
+          }
+
+          const totalMaxDepth = dfs(workingTree);
+
+          // Final step
+          steps.push({
+            currentLine: 10,
+            activeNodeId: workingTree.id,
+            computedDepths: { ...computedDepths },
+            criticalEdgeKeys: Array.from(criticalEdgeKeys),
+            callStack: [],
+            treeSnapshot: workingTree,
+            explanation: `二叉树遍历全部结束！根节点 [${workingTree.val}] 返回整棵树的最大深度为 ${totalMaxDepth}。`,
+            phase: "全部完成",
+            varInspector: { node: `TreeNode(${workingTree.val})`, left: "-", right: "-", ret: `${totalMaxDepth}` },
+            calculatedDepth: totalMaxDepth,
+            finalMaxDepth: totalMaxDepth
+          });
+
+        } else if (mode === 'bfs') {
+          // BFS level by level
+          const queue = [workingTree];
+          let depth = 0;
+
+          steps.push({
+            currentLine: 5,
+            activeNodeId: workingTree.id,
+            computedDepths: {},
+            criticalEdgeKeys: [],
+            callStack: queue.map(n => ({ id: n.id, val: n.val, desc: `Node(${n.val})` })),
+            treeSnapshot: workingTree,
+            explanation: `初始化队列: queue = collections.deque([root])，根节点 [${workingTree.val}] 入队。`,
+            phase: "队列初始化",
+            varInspector: { node: `TreeNode(${workingTree.val})`, left: "-", right: "-", ret: "-" },
+            calculatedDepth: 0,
+            finalMaxDepth: "-"
+          });
+
+          while (queue.length > 0) {
+            depth += 1;
+            const levelSize = queue.length;
+
+            steps.push({
+              currentLine: 8,
+              activeNodeId: null,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: Array.from(criticalEdgeKeys),
+              callStack: queue.map(n => ({ id: n.id, val: n.val, desc: `Node(${n.val})` })),
+              treeSnapshot: workingTree,
+              explanation: `进入第 ${depth} 层：执行 depth += 1 (当前深度 = ${depth})。本层共有 ${levelSize} 个节点。`,
+              phase: "层级递增",
+              varInspector: { node: "-", left: "-", right: "-", ret: `${depth}` },
+              calculatedDepth: depth,
+              finalMaxDepth: "-"
+            });
+
+            for (let i = 0; i < levelSize; i++) {
+              const curr = queue.shift();
+              computedDepths[curr.id] = depth;
+
+              steps.push({
+                currentLine: 10,
+                activeNodeId: curr.id,
+                computedDepths: { ...computedDepths },
+                criticalEdgeKeys: Array.from(criticalEdgeKeys),
+                callStack: queue.map(n => ({ id: n.id, val: n.val, desc: `Node(${n.val})` })),
+                treeSnapshot: workingTree,
+                explanation: `弹出队首节点 [${curr.val}]，位于第 ${depth} 层。`,
+                phase: "处理本层节点",
+                varInspector: { node: `TreeNode(${curr.val})`, left: curr.left ? `${curr.left.val}` : "None", right: curr.right ? `${curr.right.val}` : "None", ret: `${depth}` },
+                calculatedDepth: depth,
+                finalMaxDepth: "-"
+              });
+
+              if (curr.left) {
+                queue.push(curr.left);
+                steps.push({
+                  currentLine: 11,
+                  activeNodeId: curr.id,
+                  computedDepths: { ...computedDepths },
+                  criticalEdgeKeys: Array.from(criticalEdgeKeys),
+                  callStack: queue.map(n => ({ id: n.id, val: n.val, desc: `Node(${n.val})` })),
+                  treeSnapshot: workingTree,
+                  explanation: `左孩子 [${curr.left.val}] 入队，属于下一层。`,
+                  phase: "下层节点入队",
+                  varInspector: { node: `TreeNode(${curr.val})`, left: `${curr.left.val}`, right: "-", ret: `${depth}` },
+                  calculatedDepth: depth,
+                  finalMaxDepth: "-"
+                });
+              }
+
+              if (curr.right) {
+                queue.push(curr.right);
+                steps.push({
+                  currentLine: 12,
+                  activeNodeId: curr.id,
+                  computedDepths: { ...computedDepths },
+                  criticalEdgeKeys: Array.from(criticalEdgeKeys),
+                  callStack: queue.map(n => ({ id: n.id, val: n.val, desc: `Node(${n.val})` })),
+                  treeSnapshot: workingTree,
+                  explanation: `右孩子 [${curr.right.val}] 入队，属于下一层。`,
+                  phase: "下层节点入队",
+                  varInspector: { node: `TreeNode(${curr.val})`, left: "-", right: `${curr.right.val}`, ret: `${depth}` },
+                  calculatedDepth: depth,
+                  finalMaxDepth: "-"
+                });
+              }
+            }
+          }
+
+          steps.push({
+            currentLine: 13,
+            activeNodeId: null,
+            computedDepths: { ...computedDepths },
+            criticalEdgeKeys: [],
+            callStack: [],
+            treeSnapshot: workingTree,
+            explanation: `队列已清空，BFS 逐层扫描完毕！最终统计的最大深度为 ${depth}。`,
+            phase: "全部完成",
+            varInspector: { node: "-", left: "-", right: "-", ret: `${depth}` },
+            calculatedDepth: depth,
+            finalMaxDepth: depth
+          });
+
+        } else if (mode === 'top_down_dfs') {
+          // Preorder top-down
+          let maxAns = 0;
+          const stack = [];
+
+          function dfsTopDown(node, curDepth) {
+            const frame = {
+              id: frameIdCounter++,
+              val: node ? node.val : 'None',
+              nodeId: node ? node.id : null,
+              desc: node ? `dfs(node=${node.val}, depth=${curDepth})` : `dfs(None)`
+            };
+            stack.push(frame);
+
+            steps.push({
+              currentLine: 5,
+              activeNodeId: node ? node.id : null,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: [],
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: node ? `访问节点 [${node.val}]，自顶向下传入当前深度 cur_depth = ${curDepth}。` : `遇到 None 节点。`,
+              phase: "前序访问",
+              varInspector: { node: node ? `TreeNode(${node.val})` : "None", left: "-", right: "-", ret: `${maxAns}` },
+              calculatedDepth: curDepth,
+              finalMaxDepth: maxAns
+            });
+
+            if (!node) {
+              steps.push({
+                currentLine: 7,
+                activeNodeId: null,
+                computedDepths: { ...computedDepths },
+                criticalEdgeKeys: [],
+                callStack: JSON.parse(JSON.stringify(stack)),
+                treeSnapshot: workingTree,
+                explanation: `None 节点直接返回。`,
+                phase: "空节点返回",
+                varInspector: { node: "None", left: "-", right: "-", ret: `${maxAns}` },
+                calculatedDepth: curDepth - 1,
+                finalMaxDepth: maxAns
+              });
+              stack.pop();
+              return;
+            }
+
+            computedDepths[node.id] = curDepth;
+            maxAns = Math.max(maxAns, curDepth);
+
+            steps.push({
+              currentLine: 8,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: [],
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `更新全局答案: ans = max(${maxAns}, ${curDepth}) = ${maxAns}。`,
+              phase: "更新最大深度",
+              varInspector: { node: `TreeNode(${node.val})`, left: "-", right: "-", ret: `${maxAns}` },
+              calculatedDepth: curDepth,
+              finalMaxDepth: maxAns
+            });
+
+            // Recurse left
+            steps.push({
+              currentLine: 9,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: [],
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `深入左子树: dfs(node.left, ${curDepth + 1})。`,
+              phase: "进入左子树",
+              varInspector: { node: `TreeNode(${node.val})`, left: "-", right: "-", ret: `${maxAns}` },
+              calculatedDepth: curDepth + 1,
+              finalMaxDepth: maxAns
+            });
+            dfsTopDown(node.left, curDepth + 1);
+
+            // Recurse right
+            steps.push({
+              currentLine: 10,
+              activeNodeId: node.id,
+              computedDepths: { ...computedDepths },
+              criticalEdgeKeys: [],
+              callStack: JSON.parse(JSON.stringify(stack)),
+              treeSnapshot: workingTree,
+              explanation: `深入右子树: dfs(node.right, ${curDepth + 1})。`,
+              phase: "进入右子树",
+              varInspector: { node: `TreeNode(${node.val})`, left: "-", right: "-", ret: `${maxAns}` },
+              calculatedDepth: curDepth + 1,
+              finalMaxDepth: maxAns
+            });
+            dfsTopDown(node.right, curDepth + 1);
+
+            stack.pop();
+          }
+
+          dfsTopDown(workingTree, 1);
+
+          steps.push({
+            currentLine: 12,
+            activeNodeId: workingTree.id,
+            computedDepths: { ...computedDepths },
+            criticalEdgeKeys: [],
+            callStack: [],
+            treeSnapshot: workingTree,
+            explanation: `前序遍历自顶向下遍历完成！最终获得的最大深度为 ${maxAns}。`,
+            phase: "全部完成",
+            varInspector: { node: `TreeNode(${workingTree.val})`, left: "-", right: "-", ret: `${maxAns}` },
+            calculatedDepth: maxAns,
+            finalMaxDepth: maxAns
+          });
+        }
+
+        return steps;
+      }
+
+      // -------------------------------------------------------------
+      // SVG Layout & Rendering Engine
+      // -------------------------------------------------------------
+      function computeLayout(treeRoot, svgWidth = 600, svgHeight = 360) {
+        if (!treeRoot) return { positions: {}, edges: [], depthGuides: [] };
+
+        const depth = getTreeDepth(treeRoot);
+        const yGap = depth > 3 ? (svgHeight - 100) / (depth - 1) : 75;
+        const topY = 55;
+
+        const positions = {};
+        const edges = [];
+        const depthGuides = [];
+
+        for (let d = 1; d <= Math.max(depth, 3); d++) {
+          const y = topY + (d - 1) * yGap;
+          depthGuides.push({ depth: d, y });
+        }
+
+        function layoutNode(node, level, leftX, rightX) {
+          if (!node) return;
+          const x = (leftX + rightX) / 2;
+          const y = topY + level * yGap;
+          positions[node.id] = { x, y, val: node.val, id: node.id, level: level + 1 };
+
+          if (node.left) {
+            edges.push({ from: node.id, to: node.left.id, type: 'left', key: `${node.id}->${node.left.id}` });
+            layoutNode(node.left, level + 1, leftX, x);
+          }
+          if (node.right) {
+            edges.push({ from: node.id, to: node.right.id, type: 'right', key: `${node.id}->${node.right.id}` });
+            layoutNode(node.right, level + 1, x, rightX);
+          }
+        }
+
+        layoutNode(treeRoot, 0, 40, svgWidth - 40);
+        return { positions, edges, depthGuides };
+      }
+
+      function renderTreeSvg(treeRoot, activeNodeId, computedDepths, criticalEdgeKeys, nullIndicator) {
+        const depthGuidesGroup = document.getElementById('depthGuidesGroup');
+        const edgesGroup = document.getElementById('edgesGroup');
+        const nodesGroup = document.getElementById('nodesGroup');
+        const annotationsGroup = document.getElementById('annotationsGroup');
+
+        depthGuidesGroup.innerHTML = '';
+        edgesGroup.innerHTML = '';
+        nodesGroup.innerHTML = '';
+        annotationsGroup.innerHTML = '';
+
+        if (!treeRoot) {
+          nodesGroup.innerHTML = `
+            <text x="300" y="190" text-anchor="middle" fill="#64748b" font-size="14" font-family="sans-serif">
+              空树 (Empty Tree / None)
+            </text>
+          `;
+          return;
+        }
+
+        const { positions, edges, depthGuides } = computeLayout(treeRoot, 600, 360);
+        const criticalSet = new Set(criticalEdgeKeys || []);
+
+        // 1. Draw Depth Level Guides
+        depthGuides.forEach(g => {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', '10');
+          line.setAttribute('y1', g.y);
+          line.setAttribute('x2', '590');
+          line.setAttribute('y2', g.y);
+          line.setAttribute('stroke', '#1e293b');
+          line.setAttribute('stroke-dasharray', '4 4');
+          line.setAttribute('stroke-width', '1');
+          depthGuidesGroup.appendChild(line);
+
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', '24');
+          label.setAttribute('y', g.y - 6);
+          label.setAttribute('fill', '#475569');
+          label.setAttribute('font-size', '10');
+          label.setAttribute('font-weight', '600');
+          label.textContent = `层级 (Depth) ${g.depth}`;
+          depthGuidesGroup.appendChild(label);
+        });
+
+        // 2. Draw Edges
+        edges.forEach(edge => {
+          const from = positions[edge.from];
+          const to = positions[edge.to];
+          if (!from || !to) return;
+
+          const isCritical = criticalSet.has(edge.key);
+          const strokeColor = isCritical ? '#f59e0b' : '#334155';
+          const strokeWidth = isCritical ? '3.5' : '2';
+
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', from.x);
+          line.setAttribute('y1', from.y);
+          line.setAttribute('x2', to.x);
+          line.setAttribute('y2', to.y);
+          line.setAttribute('stroke', strokeColor);
+          line.setAttribute('stroke-width', strokeWidth);
+          line.setAttribute('stroke-linecap', 'round');
+          if (isCritical) {
+            line.setAttribute('filter', 'url(#glow-critical)');
+          }
+          edgesGroup.appendChild(line);
+        });
+
+        // 3. Draw Nodes
+        const radius = 22;
+        Object.values(positions).forEach(pos => {
+          const isActive = (pos.id === activeNodeId);
+          const depthVal = computedDepths ? computedDepths[pos.id] : undefined;
+          const hasDepth = (depthVal !== undefined);
+
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          g.setAttribute('class', 'node-item transition-all duration-300');
+
+          // Node Circle
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', pos.x);
+          circle.setAttribute('cy', pos.y);
+          circle.setAttribute('r', radius);
+
+          if (isActive) {
+            circle.setAttribute('fill', '#4f46e5'); // indigo-600
+            circle.setAttribute('stroke', '#818cf8'); // indigo-400
+            circle.setAttribute('stroke-width', '3.5');
+            circle.setAttribute('filter', 'url(#glow-active)');
+          } else if (hasDepth) {
+            circle.setAttribute('fill', '#059669'); // emerald-600
+            circle.setAttribute('stroke', '#34d399'); // emerald-400
+            circle.setAttribute('stroke-width', '2.5');
+          } else {
+            circle.setAttribute('fill', '#1e293b'); // slate-800
+            circle.setAttribute('stroke', '#475569'); // slate-600
+            circle.setAttribute('stroke-width', '2');
+          }
+          g.appendChild(circle);
+
+          // Node Value
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', pos.x);
+          text.setAttribute('y', pos.y + 5);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('fill', '#ffffff');
+          text.setAttribute('font-size', '13');
+          text.setAttribute('font-weight', '700');
+          text.setAttribute('font-family', 'Inter, sans-serif');
+          text.textContent = pos.val;
+          g.appendChild(text);
+
+          // Depth Result Tag on bottom right of node
+          if (hasDepth) {
+            const badgeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            badgeG.setAttribute('transform', `translate(${pos.x + 10}, ${pos.y - 18})`);
+            const badgeBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            badgeBg.setAttribute('x', '0');
+            badgeBg.setAttribute('y', '0');
+            badgeBg.setAttribute('width', '26');
+            badgeBg.setAttribute('height', '16');
+            badgeBg.setAttribute('rx', '8');
+            badgeBg.setAttribute('fill', '#f59e0b'); // amber-500
+            badgeG.appendChild(badgeBg);
+
+            const badgeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            badgeText.setAttribute('x', '13');
+            badgeText.setAttribute('y', '12');
+            badgeText.setAttribute('text-anchor', 'middle');
+            badgeText.setAttribute('fill', '#000000');
+            badgeText.setAttribute('font-size', '10');
+            badgeText.setAttribute('font-weight', '800');
+            badgeText.textContent = `H=${depthVal}`;
+            badgeG.appendChild(badgeText);
+
+            g.appendChild(badgeG);
+          }
+
+          nodesGroup.appendChild(g);
+        });
+
+        // 4. Null indicator when recursion hits None
+        if (nullIndicator && nullIndicator.parentVal) {
+          const parentEntry = Object.values(positions).find(p => p.val === nullIndicator.parentVal);
+          if (parentEntry) {
+            const isLeft = nullIndicator.branch === '左孩子';
+            const nullX = parentEntry.x + (isLeft ? -45 : 45);
+            const nullY = parentEntry.y + 60;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', parentEntry.x);
+            line.setAttribute('y1', parentEntry.y);
+            line.setAttribute('x2', nullX);
+            line.setAttribute('y2', nullY);
+            line.setAttribute('stroke', '#f43f5e');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('stroke-dasharray', '3 3');
+            annotationsGroup.appendChild(line);
+
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', nullX - 24);
+            rect.setAttribute('y', nullY - 12);
+            rect.setAttribute('width', '48');
+            rect.setAttribute('height', '24');
+            rect.setAttribute('rx', '6');
+            rect.setAttribute('fill', '#881337');
+            rect.setAttribute('stroke', '#fb7185');
+            rect.setAttribute('stroke-width', '1.5');
+            rect.setAttribute('stroke-dasharray', '2 2');
+            annotationsGroup.appendChild(rect);
+
+            const nullText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            nullText.setAttribute('x', nullX);
+            nullText.setAttribute('y', nullY + 4);
+            nullText.setAttribute('fill', '#ffe4e6');
+            nullText.setAttribute('font-size', '10');
+            nullText.setAttribute('font-weight', '700');
+            nullText.setAttribute('text-anchor', 'middle');
+            nullText.textContent = 'None→0';
+            annotationsGroup.appendChild(nullText);
+          }
+        }
+      }
+
+      // -------------------------------------------------------------
+      // Application State & Controller
+      // -------------------------------------------------------------
+      let currentMode = 'user_dfs';
+      let currentTreeArray = PRESETS.leetcode1;
+      let initialTreeRoot = buildTreeFromArray(currentTreeArray);
+      let steps = [];
+      let currentStepIndex = 0;
+      let isPlaying = false;
+      let playTimer = null;
+      let playSpeedMs = 800;
+
+      // DOM Elements
+      const codeLinesContainer = document.getElementById('codeLinesContainer');
+      const stepScrubber = document.getElementById('stepScrubber');
+      const stepCounterLabel = document.getElementById('stepCounterLabel');
+      const stepPhaseBadge = document.getElementById('stepPhaseBadge');
+      const stepExplanation = document.getElementById('stepExplanation');
+      const calculatedDepthBadge = document.getElementById('calculatedDepthBadge');
+      const maxDepthBadge = document.getElementById('maxDepthBadge');
+      const stackContainer = document.getElementById('stackContainer');
+      const stackDepth = document.getElementById('stackDepth');
+      const stackBadgeCount = document.getElementById('stackBadgeCount');
+      const varNode = document.getElementById('varNode');
+      const varLeft = document.getElementById('varLeft');
+      const varRight = document.getElementById('varRight');
+      const varReturn = document.getElementById('varReturn');
+      const playIcon = document.getElementById('playIcon');
+      const pauseIcon = document.getElementById('pauseIcon');
+      const playBtnText = document.getElementById('playBtnText');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const customTreeInput = document.getElementById('customTreeInput');
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const stackDescription = document.getElementById('stackDescription');
+      const stackTabTitle = document.getElementById('stackTabTitle');
+
+      function showToast(msg) {
+        toastMsg.textContent = msg;
+        toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+        }, 2500);
+      }
+
+      function renderCodeTemplate(activeLine = null) {
+        const lines = CODE_TEMPLATES[currentMode];
+        codeLinesContainer.innerHTML = '';
+        lines.forEach(item => {
+          const isCurrent = (item.line === activeLine);
+          const row = document.createElement('div');
+          row.className = `flex items-center px-2 py-0.5 rounded transition-colors ${isCurrent ? 'bg-indigo-950/90 border-l-4 border-indigo-500 font-semibold text-white' : 'text-slate-400 hover:text-slate-200'}`;
+
+          const num = document.createElement('span');
+          num.className = `w-6 text-right pr-3 select-none text-[11px] ${isCurrent ? 'text-indigo-400 font-bold' : 'text-slate-600'}`;
+          num.textContent = item.line;
+
+          const code = document.createElement('span');
+          code.className = `flex-1 whitespace-pre ${isCurrent ? 'text-indigo-200' : ''}`;
+          code.textContent = item.text;
+
+          row.appendChild(num);
+          row.appendChild(code);
+          codeLinesContainer.appendChild(row);
+        });
+      }
+
+      function renderCallStack(frames) {
+        stackContainer.innerHTML = '';
+        const count = frames ? frames.length : 0;
+        stackDepth.textContent = count;
+        stackBadgeCount.textContent = count;
+
+        if (currentMode === 'bfs') {
+          stackTabTitle.textContent = "队列状态 (Queue)";
+          stackDescription.textContent = "按层入队 FIFO 队列状态 (队首 -> 队尾)";
+        } else {
+          stackTabTitle.textContent = "调用栈与返回值";
+          stackDescription.textContent = "活动栈帧 (观察子树深度返回值逐层向上返回)";
+        }
+
+        if (!frames || frames.length === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'text-center text-slate-500 text-xs py-8';
+          emptyDiv.textContent = currentMode === 'bfs' ? '队列当前为空' : '栈当前为空 (递归完全返回)';
+          stackContainer.appendChild(emptyDiv);
+          return;
+        }
+
+        frames.forEach((frame, idx) => {
+          const frameDiv = document.createElement('div');
+          frameDiv.className = 'p-2 rounded-lg bg-slate-950 border border-indigo-900/60 flex items-center justify-between text-xs transition-all shadow-sm';
+          if (idx === frames.length - 1) {
+            frameDiv.className += ' border-indigo-500 bg-indigo-950/60 ring-1 ring-indigo-500/50';
+          }
+
+          const left = document.createElement('div');
+          left.className = 'flex items-center gap-2';
+
+          const tag = document.createElement('span');
+          tag.className = 'px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-mono-code';
+          tag.textContent = currentMode === 'bfs' ? `Q[${idx}]` : `#${idx + 1}`;
+
+          const name = document.createElement('span');
+          name.className = 'font-mono-code font-medium text-slate-200';
+          name.textContent = frame.desc || `dfs(node=${frame.val})`;
+
+          left.appendChild(tag);
+          left.appendChild(name);
+
+          const right = document.createElement('div');
+          right.className = 'flex items-center gap-2 text-[10px] font-mono-code';
+
+          if (currentMode === 'user_dfs') {
+            const retSpan = document.createElement('span');
+            retSpan.className = frame.ret !== '?' ? 'text-amber-400 font-bold' : 'text-slate-500';
+            retSpan.textContent = `ret=${frame.ret || '?'}`;
+            right.appendChild(retSpan);
+          }
+
+          const statusSpan = document.createElement('span');
+          statusSpan.className = idx === frames.length - 1 ? 'text-indigo-400 font-semibold' : 'text-slate-600';
+          statusSpan.textContent = idx === frames.length - 1 ? (currentMode === 'bfs' ? '当前' : '栈顶活跃') : '挂起';
+          right.appendChild(statusSpan);
+
+          frameDiv.appendChild(left);
+          frameDiv.appendChild(right);
+          stackContainer.appendChild(frameDiv);
+        });
+      }
+
+      function applyStep(index) {
+        if (!steps || steps.length === 0) return;
+        currentStepIndex = Math.max(0, Math.min(index, steps.length - 1));
+        const step = steps[currentStepIndex];
+
+        // 1. Controls
+        stepScrubber.value = currentStepIndex;
+        stepCounterLabel.textContent = `步骤: ${currentStepIndex + 1} / ${steps.length}`;
+        stepPhaseBadge.textContent = step.phase || '执行中';
+        stepExplanation.textContent = step.explanation;
+
+        prevBtn.disabled = (currentStepIndex === 0);
+        nextBtn.disabled = (currentStepIndex === steps.length - 1);
+
+        // 2. Code highlight & Variables
+        renderCodeTemplate(step.currentLine);
+        varNode.textContent = step.varInspector.node;
+        varLeft.textContent = step.varInspector.left;
+        varRight.textContent = step.varInspector.right;
+        varReturn.textContent = step.varInspector.ret;
+
+        // 3. Tree Canvas
+        renderTreeSvg(step.treeSnapshot, step.activeNodeId, step.computedDepths, step.criticalEdgeKeys, step.nullIndicator);
+        calculatedDepthBadge.textContent = step.calculatedDepth;
+        maxDepthBadge.textContent = step.finalMaxDepth;
+
+        // 4. Call Stack
+        renderCallStack(step.callStack);
+
+        // 5. Sound feedback
+        if (step.isCompute) {
+          soundCompute();
+        } else if (step.isReturn) {
+          soundNull();
+        } else if (step.phase === '进入DFS') {
+          soundEnter();
+        }
+
+        // Auto pause on last step
+        if (currentStepIndex >= steps.length - 1 && isPlaying) {
+          pausePlayback();
+        }
+      }
+
+      function initSimulator() {
+        pausePlayback();
+        initialTreeRoot = buildTreeFromArray(currentTreeArray);
+        steps = generateExecutionSteps(initialTreeRoot, currentMode);
+        stepScrubber.max = Math.max(0, steps.length - 1);
+        applyStep(0);
+      }
+
+      function playPlayback() {
+        if (currentStepIndex >= steps.length - 1) {
+          currentStepIndex = 0;
+        }
+        isPlaying = true;
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        playBtnText.textContent = '暂停';
+
+        if (playTimer) clearInterval(playTimer);
+        playTimer = setInterval(() => {
+          if (currentStepIndex < steps.length - 1) {
+            applyStep(currentStepIndex + 1);
+          } else {
+            pausePlayback();
+          }
+        }, playSpeedMs);
+      }
+
+      function pausePlayback() {
+        isPlaying = false;
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = '自动播放';
+        if (playTimer) {
+          clearInterval(playTimer);
+          playTimer = null;
+        }
+      }
+
+      // -------------------------------------------------------------
+      // Event Handlers Setup
+      // -------------------------------------------------------------
+      document.getElementById('playPauseBtn').addEventListener('click', () => {
+        if (isPlaying) {
+          pausePlayback();
+        } else {
+          playPlayback();
+        }
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        pausePlayback();
+        if (currentStepIndex < steps.length - 1) {
+          applyStep(currentStepIndex + 1);
+        }
+      });
+
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        pausePlayback();
+        if (currentStepIndex > 0) {
+          applyStep(currentStepIndex - 1);
+        }
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        pausePlayback();
+        applyStep(0);
+      });
+
+      stepScrubber.addEventListener('input', (e) => {
+        pausePlayback();
+        applyStep(parseInt(e.target.value, 10));
+      });
+
+      // Mode Buttons
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.mode-btn').forEach(b => {
+            b.className = 'mode-btn px-2.5 py-1.5 rounded-lg font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition';
+          });
+          btn.className = 'mode-btn px-2.5 py-1.5 rounded-lg font-medium bg-indigo-600 text-white shadow-sm border border-indigo-500/50 transition';
+          currentMode = btn.getAttribute('data-mode');
+          initSimulator();
+        });
+      });
+
+      // Presets
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-preset');
+          if (PRESETS[key]) {
+            currentTreeArray = PRESETS[key];
+            customTreeInput.value = JSON.stringify(currentTreeArray).replace(/null/g, 'null');
+            initSimulator();
+          }
+        });
+      });
+
+      // Custom tree input
+      document.getElementById('applyCustomTreeBtn').addEventListener('click', () => {
+        const val = customTreeInput.value.trim();
+        try {
+          const parsed = JSON.parse(val);
+          if (!Array.isArray(parsed)) {
+            showToast('请输入有效的数组，例如 [3, 9, 20, null, null, 15, 7]');
+            return;
+          }
+          if (parsed.length > 31) {
+            showToast('二叉树节点最多支持 31 个，以保持最佳可视化展示');
+            return;
+          }
+          currentTreeArray = parsed;
+          initSimulator();
+        } catch (err) {
+          showToast('JSON 解析错误，请检查逗号与方括号格式');
+        }
+      });
+
+      // Speed Buttons
+      document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.speed-btn').forEach(b => {
+            b.className = 'speed-btn px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 text-[11px] transition';
+          });
+          btn.className = 'speed-btn px-2 py-1 rounded bg-indigo-600 text-white border border-indigo-500 text-[11px] font-medium transition';
+          playSpeedMs = parseInt(btn.getAttribute('data-speed'), 10);
+          if (isPlaying) {
+            playPlayback();
+          }
+        });
+      });
+
+      // Tabs
+      const tabBtnCode = document.getElementById('tabBtnCode');
+      const tabBtnStack = document.getElementById('tabBtnStack');
+      const tabBtnTheory = document.getElementById('tabBtnTheory');
+      const tabPanelCode = document.getElementById('tabPanelCode');
+      const tabPanelStack = document.getElementById('tabPanelStack');
+      const tabPanelTheory = document.getElementById('tabPanelTheory');
+
+      function switchTab(activeBtn, activePanel) {
+        [tabBtnCode, tabBtnStack, tabBtnTheory].forEach(b => {
+          b.className = 'tab-btn px-3 py-2 font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-1.5';
+        });
+        [tabPanelCode, tabPanelStack, tabPanelTheory].forEach(p => p.classList.add('hidden'));
+
+        activeBtn.className = 'tab-btn px-3 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition flex items-center gap-1.5';
+        activePanel.classList.remove('hidden');
+      }
+
+      tabBtnCode.addEventListener('click', () => switchTab(tabBtnCode, tabPanelCode));
+      tabBtnStack.addEventListener('click', () => switchTab(tabBtnStack, tabPanelStack));
+      tabBtnTheory.addEventListener('click', () => switchTab(tabBtnTheory, tabPanelTheory));
+
+      // Sound Toggle
+      const soundToggleBtn = document.getElementById('soundToggleBtn');
+      const soundIconOn = document.getElementById('soundIconOn');
+      const soundIconOff = document.getElementById('soundIconOff');
+      const soundText = document.getElementById('soundText');
+
+      soundToggleBtn.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+          soundIconOn.classList.remove('hidden');
+          soundIconOff.classList.add('hidden');
+          soundText.textContent = '音效开';
+        } else {
+          soundIconOn.classList.add('hidden');
+          soundIconOff.classList.remove('hidden');
+          soundText.textContent = '音效关';
+        }
+      });
+
+      // Guide Modal
+      const guideModal = document.getElementById('guideModal');
+      document.getElementById('guideModalBtn').addEventListener('click', () => {
+        guideModal.classList.remove('hidden');
+      });
+      document.getElementById('closeGuideModalBtn').addEventListener('click', () => {
+        guideModal.classList.add('hidden');
+      });
+      document.getElementById('confirmGuideModalBtn').addEventListener('click', () => {
+        guideModal.classList.add('hidden');
+      });
+
+      // Initialize
+      renderCodeTemplate();
+      initSimulator();
+    })();
+  </script>
+</body>
+</html>
