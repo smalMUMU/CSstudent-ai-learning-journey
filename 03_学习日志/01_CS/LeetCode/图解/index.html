@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetCode 交互图解 · 目录</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --card: #131c2e;
+    --card-hover: #18243a;
+    --line: #22304a;
+    --text: #e6edf7;
+    --muted: #8a9bb5;
+    --accent: #5b8cff;
+    --accent-soft: rgba(91, 140, 255, 0.12);
+    --green: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px 72px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { margin-bottom: 36px; }
+  h1 {
+    font-size: 26px;
+    margin: 0 0 8px;
+    letter-spacing: 0.5px;
+  }
+  .sub { color: var(--muted); font-size: 14px; margin: 0; }
+  .hint {
+    margin-top: 18px;
+    padding: 12px 16px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+  a.card {
+    display: block;
+    padding: 20px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .num {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 2px 9px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .title { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+  .desc { font-size: 13px; color: var(--muted); margin: 0; }
+  footer {
+    margin-top: 44px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  footer strong { color: var(--green); font-weight: 600; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    background: #1b2740;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>LeetCode 交互图解</h1>
+    <p class="sub">点开任意一张，一步一步走完整个算法过程。</p>
+    <div class="hint">
+      每张图都支持 <code>上一步</code> / <code>下一步</code> / <code>自动播放</code>；
+      左边看数据怎么变，右边看对应哪一行代码。
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <a class="card" href="001_两数之和.html">
+      <span class="num">001</span>
+      <p class="title">两数之和</p>
+      <p class="desc">哈希表 · 一边走一边翻账本，看 <code>seen</code> 字典怎么一条条长出来</p>
+    </a>
+
+    <a class="card" href="088_合并两个有序数组.html">
+      <span class="num">088</span>
+      <p class="title">合并两个有序数组</p>
+      <p class="desc">逆向三指针 · 从后往前填，三个指针各在哪一格</p>
+    </a>
+
+    <a class="card" href="101_对称二叉树.html">
+      <span class="num">101</span>
+      <p class="title">对称二叉树</p>
+      <p class="desc">双节点递归 · 外侧对内侧对交叉比，配镜像连线和调用栈</p>
+    </a>
+
+    <a class="card" href="977_有序数组的平方.html">
+      <span class="num">977</span>
+      <p class="title">有序数组的平方</p>
+      <p class="desc">双指针 · 两端挑大的，倒着填进结果数组</p>
+    </a>
+
+  </div>
+
+  <footer>
+    <p><strong>看图的正确顺序：</strong>先自己做一遍题 → 卡住了再打开 → 一步一步点（别直接拖到最后）→ 关掉，自己写一遍。</p>
+    <p>图是"看懂"用的，不是"会写"的替代品。页面上 AC 了不算数。</p>
+  </footer>
+
+</div>
+</body>
+</html>
