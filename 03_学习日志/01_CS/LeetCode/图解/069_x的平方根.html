@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 69 - x 的平方根 (mySqrt) 交互式可视化</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .code-font {
+      font-family: 'Fira Code', monospace;
+    }
+    .line-highlight {
+      background-color: rgba(245, 158, 11, 0.2);
+      border-left: 4px solid #f59e0b;
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 pb-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-100 text-emerald-800">LeetCode 69</span>
+          <h1 class="text-2xl font-bold text-slate-900">x 的平方根 (mySqrt) · 二分查找交互式动画</h1>
+        </div>
+        <p class="text-sm text-slate-500 mt-1">
+          单步跟踪二分查找区间收缩全过程，直观理解为什么循环结束返回 <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-800 font-mono">right</code>
+        </p>
+      </div>
+
+      <!-- Quick Preset Buttons & Input -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-medium text-slate-500">预设用例:</span>
+        <button type="button" class="preset-btn px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-medium transition" data-val="8">x = 8 (典型)</button>
+        <button type="button" class="preset-btn px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-medium transition" data-val="4">x = 4 (完全平方)</button>
+        <button type="button" class="preset-btn px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-medium transition" data-val="16">x = 16</button>
+        <button type="button" class="preset-btn px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-medium transition" data-val="1">x = 1 (边界)</button>
+        <button type="button" class="preset-btn px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-medium transition" data-val="0">x = 0 (边界)</button>
+        <button type="button" class="preset-btn px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-medium transition" data-val="26">x = 26</button>
+      </div>
+    </header>
+
+    <!-- Control Toolbar -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <label for="input-x" class="text-sm font-semibold text-slate-700">目标数 x :</label>
+        <input id="input-x" type="number" min="0" max="36" value="8" class="w-20 px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+        <button id="btn-apply-x" type="button" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+          重设目标
+        </button>
+        <span class="text-xs text-slate-400">(支持 0 ~ 36 演示)</span>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="flex items-center gap-2">
+        <button id="btn-first" type="button" title="回到起点" class="p-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+        </button>
+        <button id="btn-prev" type="button" title="上一步" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          上一步
+        </button>
+        <button id="btn-play" type="button" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5 shadow-sm transition">
+          <svg id="icon-play" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
+          <span id="text-play">自动播放</span>
+        </button>
+        <button id="btn-next" type="button" title="下一步" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1 transition">
+          下一步
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+        <button id="btn-last" type="button" title="直接看结果" class="p-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+
+      <!-- Speed & Progress -->
+      <div class="flex items-center gap-4 text-xs text-slate-600">
+        <div class="flex items-center gap-1.5">
+          <span>速度:</span>
+          <select id="select-speed" class="border border-slate-200 rounded px-2 py-1 bg-white text-xs focus:outline-none">
+            <option value="1500">慢速 (1.5s)</option>
+            <option value="1000" selected>正常 (1.0s)</option>
+            <option value="500">快速 (0.5s)</option>
+          </select>
+        </div>
+        <div class="font-medium bg-slate-100 px-2.5 py-1 rounded-md text-slate-700">
+          步骤: <span id="step-counter" class="font-bold text-indigo-600">1</span> / <span id="total-steps">1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Visual Stage: Number Array & Pointers -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">当前搜索空间与指针状态</h2>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="inline-flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="font-medium text-emerald-800">left (左边界)</span>
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span class="font-medium text-amber-800">mid (中点)</span>
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+            <span class="font-medium text-indigo-800">right (右边界)</span>
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded bg-slate-200 border border-slate-300"></span>
+            <span class="text-slate-400">已排除区间</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Number Strip Container -->
+      <div id="number-strip-container" class="overflow-x-auto pb-4 pt-8 px-2 scrollbar-thin">
+        <div id="number-strip" class="flex gap-2 min-w-max">
+          <!-- Dynamically generated cards -->
+        </div>
+      </div>
+
+      <!-- Live Comparison Banner -->
+      <div id="comparison-banner" class="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div class="flex items-center gap-4">
+          <div class="font-mono text-slate-700">
+            <span class="text-slate-500">当前中点:</span>
+            <span id="cmp-mid" class="font-bold text-amber-600">mid = ?</span>
+          </div>
+          <div class="font-mono text-slate-700">
+            <span class="text-slate-500">平方计算:</span>
+            <span id="cmp-calc" class="font-bold text-slate-900">mid² = ?</span>
+          </div>
+          <div class="font-mono text-slate-700">
+            <span class="text-slate-500">与目标 x 比较:</span>
+            <span id="cmp-res" class="font-bold px-2 py-0.5 rounded text-xs bg-slate-200 text-slate-700">等待计算</span>
+          </div>
+        </div>
+        <div id="action-summary" class="text-xs font-semibold text-slate-700">
+          初始化搜索范围 [0, x]
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-Column Split: Code View + State Inspector -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+      <!-- Left: Code Pane with Active Line Indicator (7 cols) -->
+      <div class="lg:col-span-7 bg-slate-900 text-slate-100 rounded-xl shadow-sm p-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+              <span class="text-xs font-mono text-slate-400 ml-2">solution.py (你的代码)</span>
+            </div>
+            <span class="text-xs text-slate-500 font-mono">Python 3</span>
+          </div>
+
+          <div id="code-lines" class="code-font text-xs md:text-sm leading-relaxed space-y-0.5">
+            <div id="line-1" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">1</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100"><span class="text-emerald-400">left</span> = 0</span>
+            </div>
+            <div id="line-2" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">2</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100"><span class="text-indigo-400">right</span> = x</span>
+            </div>
+            <div id="line-3" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">3</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100"><span class="text-rose-400">while</span> <span class="text-emerald-400">left</span> &lt;= <span class="text-indigo-400">right</span>:</span>
+            </div>
+            <div id="line-4" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">4</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-4"><span class="text-amber-400">mid</span> = (<span class="text-emerald-400">left</span> + <span class="text-indigo-400">right</span>) // 2</span>
+            </div>
+            <div id="line-5" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">5</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-4"><span class="text-rose-400">if</span> <span class="text-amber-400">mid</span> * <span class="text-amber-400">mid</span> &gt; x:</span>
+            </div>
+            <div id="line-6" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">6</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-8"><span class="text-indigo-400">right</span> = <span class="text-amber-400">mid</span> - 1</span>
+            </div>
+            <div id="line-7" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">7</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-4"><span class="text-rose-400">elif</span> <span class="text-amber-400">mid</span> * <span class="text-amber-400">mid</span> &lt; x:</span>
+            </div>
+            <div id="line-8" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">8</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-8"><span class="text-emerald-400">left</span> = <span class="text-amber-400">mid</span> + 1</span>
+            </div>
+            <div id="line-9" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">9</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-4"><span class="text-rose-400">else</span>:</span>
+            </div>
+            <div id="line-10" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">10</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100 pl-8"><span class="text-cyan-400 font-bold">return</span> <span class="text-amber-400">mid</span></span>
+            </div>
+            <div id="line-11" class="px-2 py-0.5 rounded flex items-center transition-colors">
+              <span class="w-6 text-slate-600 select-none text-right mr-3 text-xs">11</span>
+              <span class="w-4 text-amber-400 font-bold select-none text-xs indicator hidden">➔</span>
+              <span class="text-slate-100"><span class="text-cyan-400 font-bold">return</span> <span class="text-indigo-400 font-bold">right</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+          <span>当前执行行: <strong id="current-line-desc" class="text-amber-400">准备执行</strong></span>
+          <span class="text-slate-500 font-mono">时间复杂度: O(log x)</span>
+        </div>
+      </div>
+
+      <!-- Right: Variable Watch & Step Explanation (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        <!-- Variable Inspector -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">变量监视器 (Variables Watch)</h3>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-[11px]">目标值 x</div>
+              <div id="var-x" class="text-lg font-bold font-mono text-slate-900">8</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
+              <div class="text-emerald-700 text-[11px] font-semibold">left</div>
+              <div id="var-left" class="text-lg font-bold font-mono text-emerald-800">0</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200">
+              <div class="text-indigo-700 text-[11px] font-semibold">right</div>
+              <div id="var-right" class="text-lg font-bold font-mono text-indigo-800">8</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+              <div class="text-amber-700 text-[11px] font-semibold">mid</div>
+              <div id="var-mid" class="text-lg font-bold font-mono text-amber-800">-</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-[11px]">mid * mid</div>
+              <div id="var-midsq" class="text-lg font-bold font-mono text-slate-900">-</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-[11px]">循环条件 left &lt;= right</div>
+              <div id="var-cond" class="text-lg font-bold font-mono text-emerald-600">True</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step Explanation -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">当前步骤解析</h3>
+          </div>
+          <div id="step-detail-box" class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200 min-h-[90px]">
+            正在初始化二分查找参数...
+          </div>
+          
+          <div id="final-result-box" class="mt-3 p-3 rounded-lg bg-emerald-50 border border-emerald-300 hidden">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              <div>
+                <div class="font-bold text-emerald-900 text-sm">计算完成！答案为 <span id="res-ans" class="text-base text-emerald-700 underline font-mono">2</span></div>
+                <div id="res-math" class="text-[11px] text-emerald-800 mt-0.5">因为 2² = 4 ≤ 8 &lt; 3² = 9，向下取整平方根为 2。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Principle QA Card: Why return right? -->
+    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-5 mb-6">
+      <div class="flex items-center gap-2 mb-3">
+        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <h3 class="text-sm font-bold text-indigo-950">核心面试重点剖析：为什么最终返回 right，而不是 left？</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
+        <div class="bg-white/80 backdrop-blur p-3.5 rounded-lg border border-indigo-100">
+          <div class="font-bold text-indigo-900 mb-1">1. 退出循环的状态</div>
+          <p class="leading-relaxed text-slate-600">
+            循环条件是 <code class="bg-indigo-50 px-1 py-0.5 rounded font-mono text-indigo-800">while left &lt;= right</code>。当循环结束时，必然满足：
+            <br>
+            <strong class="font-mono text-purple-700">left = right + 1</strong> (即 <code class="font-mono">right &lt; left</code>)。
+          </p>
+        </div>
+        <div class="bg-white/80 backdrop-blur p-3.5 rounded-lg border border-indigo-100">
+          <div class="font-bold text-indigo-900 mb-1">2. 区间的不变量保证</div>
+          <p class="leading-relaxed text-slate-600">
+            在整个查找过程中，我们维护着：
+            <br>
+            所有已排除的左侧满足 <code class="font-mono text-emerald-700">k² ≤ x</code>，所有已排除的右侧满足 <code class="font-mono text-rose-700">k² &gt; x</code>。
+          </p>
+        </div>
+        <div class="bg-white/80 backdrop-blur p-3.5 rounded-lg border border-indigo-100">
+          <div class="font-bold text-indigo-900 mb-1">3. 结论：向下取整刚好是 right</div>
+          <p class="leading-relaxed text-slate-600">
+            因此结束时，<strong class="font-mono text-indigo-800">right² ≤ x &lt; left²</strong>。<code class="font-mono text-indigo-800">right</code> 恰好是平方不超过 x 的<strong>最大整数</strong>，也就是要求的向下取整平方根 ⌊√x⌋！
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step-by-Step History Log -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-slate-800">执行历史记录 (Step Log)</h3>
+        <span class="text-xs text-slate-400">点击任意行可跳转至该步骤</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+            <tr>
+              <th class="py-2 px-3">步骤</th>
+              <th class="py-2 px-3">对应代码行</th>
+              <th class="py-2 px-3">left</th>
+              <th class="py-2 px-3">right</th>
+              <th class="py-2 px-3">mid</th>
+              <th class="py-2 px-3">mid² 与 x</th>
+              <th class="py-2 px-3">决策与影响</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody" class="divide-y divide-slate-100 font-mono">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Simulation Generator
+      function generateSteps(x) {
+        const steps = [];
+        let left = 0;
+        let right = x;
+
+        // Step 0: Init
+        steps.push({
+          line: 1,
+          lineDesc: "left = 0",
+          left: 0,
+          right: right,
+          mid: null,
+          midSquared: null,
+          cond: true,
+          action: "初始化 left = 0",
+          decision: "init",
+          explanation: `初始化左指针 left = 0，表示平方根可能的最小整数值为 0。`
+        });
+
+        steps.push({
+          line: 2,
+          lineDesc: "right = x",
+          left: 0,
+          right: x,
+          mid: null,
+          midSquared: null,
+          cond: true,
+          action: `初始化 right = ${x}`,
+          decision: "init",
+          explanation: `初始化右指针 right = ${x}。在整个区间 [0, ${x}] 内进行二分查找。`
+        });
+
+        let finished = false;
+        let loopCount = 0;
+
+        while (left <= right && loopCount < 40) {
+          loopCount++;
+          // Step: Check while condition
+          steps.push({
+            line: 3,
+            lineDesc: "while left <= right:",
+            left: left,
+            right: right,
+            mid: null,
+            midSquared: null,
+            cond: true,
+            action: `检查循环条件: ${left} <= ${right} 成立`,
+            decision: "check_loop",
+            explanation: `检查循环条件 left <= right (${left} <= ${right})，条件满足，继续二分查找。`
+          });
+
+          // Step: calculate mid
+          const mid = Math.floor((left + right) / 2);
+          const midSq = mid * mid;
+
+          steps.push({
+            line: 4,
+            lineDesc: "mid = (left + right) // 2",
+            left: left,
+            right: right,
+            mid: mid,
+            midSquared: null,
+            cond: true,
+            action: `计算中点 mid = (${left} + ${right}) // 2 = ${mid}`,
+            decision: "calc_mid",
+            explanation: `计算当前搜索区间 [${left}, ${right}] 的中间值 mid = (${left} + ${right}) // 2 = ${mid}。`
+          });
+
+          // Step: Compare mid * mid with x
+          if (midSq > x) {
+            steps.push({
+              line: 5,
+              lineDesc: "if mid * mid > x:",
+              left: left,
+              right: right,
+              mid: mid,
+              midSquared: midSq,
+              cond: true,
+              action: `比较: mid² (${midSq}) > x (${x}) 成立`,
+              decision: "greater_check",
+              explanation: `计算 mid² = ${mid} × ${mid} = ${midSq}。因为 ${midSq} > ${x}，猜大了！说明 ${mid} 及其右边的数都不可能是答案。`
+            });
+
+            right = mid - 1;
+            steps.push({
+              line: 6,
+              lineDesc: "right = mid - 1",
+              left: left,
+              right: right,
+              mid: mid,
+              midSquared: midSq,
+              cond: left <= right,
+              action: `收缩右边界: right = ${mid} - 1 = ${right}`,
+              decision: "shrink_right",
+              explanation: `排除大于等于 ${mid} 的区间，将右边界更新为 right = mid - 1 = ${right}。新的搜索区间为 [${left}, ${right}]。`
+            });
+          } else if (midSq < x) {
+            steps.push({
+              line: 7,
+              lineDesc: "elif mid * mid < x:",
+              left: left,
+              right: right,
+              mid: mid,
+              midSquared: midSq,
+              cond: true,
+              action: `比较: mid² (${midSq}) < x (${x}) 成立`,
+              decision: "less_check",
+              explanation: `计算 mid² = ${mid} × ${mid} = ${midSq}。因为 ${midSq} < ${x}，猜小了！说明候选答案可能大于或等于 ${mid}。`
+            });
+
+            left = mid + 1;
+            steps.push({
+              line: 8,
+              lineDesc: "left = mid + 1",
+              left: left,
+              right: right,
+              mid: mid,
+              midSquared: midSq,
+              cond: left <= right,
+              action: `收缩左边界: left = ${mid} + 1 = ${left}`,
+              decision: "shrink_left",
+              explanation: `排除小于等于 ${mid} 的区间，将左边界更新为 left = mid + 1 = ${left}。新的搜索区间为 [${left}, ${right}]。`
+            });
+          } else {
+            // Exact match!
+            steps.push({
+              line: 9,
+              lineDesc: "else: (mid * mid == x)",
+              left: left,
+              right: right,
+              mid: mid,
+              midSquared: midSq,
+              cond: true,
+              action: `比较: mid² (${midSq}) == x (${x}) 精确命中`,
+              decision: "equal_check",
+              explanation: `计算 mid² = ${mid} × ${mid} = ${midSq}。刚好等于 ${x}，精确找到完全平方根！`
+            });
+
+            steps.push({
+              line: 10,
+              lineDesc: "return mid",
+              left: left,
+              right: right,
+              mid: mid,
+              midSquared: midSq,
+              cond: true,
+              action: `命中完全平方根，返回 mid = ${mid}`,
+              decision: "return_mid",
+              isFinal: true,
+              finalResult: mid,
+              explanation: `直接返回 mid = ${mid}。因为 ${mid}² = ${x}。`
+            });
+            finished = true;
+            break;
+          }
+        }
+
+        if (!finished) {
+          // Loop exit check: left > right
+          steps.push({
+            line: 3,
+            lineDesc: "while left <= right: (判断失败)",
+            left: left,
+            right: right,
+            mid: null,
+            midSquared: null,
+            cond: false,
+            action: `循环终止: left (${left}) > right (${right})`,
+            decision: "loop_exit",
+            explanation: `此时 left = ${left}, right = ${right}。left <= right 不再成立，二分查找循环正常结束！`
+          });
+
+          steps.push({
+            line: 11,
+            lineDesc: "return right",
+            left: left,
+            right: right,
+            mid: null,
+            midSquared: null,
+            cond: false,
+            action: `返回向下取整的平方根 right = ${right}`,
+            decision: "return_right",
+            isFinal: true,
+            finalResult: right,
+            explanation: `执行 return right，返回 ${right}。由于此时 right² ≤ ${x} < left²，所以 ${right} 恰好是向下取整后的最大整数平方根！`
+          });
+        }
+
+        return steps;
+      }
+
+      // App State
+      let currentX = 8;
+      let steps = generateSteps(currentX);
+      let currentStepIdx = 0;
+      let isPlaying = false;
+      let playTimer = null;
+      let speedMs = 1000;
+
+      // DOM Elements
+      const inputX = document.getElementById("input-x");
+      const btnApplyX = document.getElementById("btn-apply-x");
+      const btnFirst = document.getElementById("btn-first");
+      const btnPrev = document.getElementById("btn-prev");
+      const btnPlay = document.getElementById("btn-play");
+      const textPlay = document.getElementById("text-play");
+      const btnNext = document.getElementById("btn-next");
+      const btnLast = document.getElementById("btn-last");
+      const selectSpeed = document.getElementById("select-speed");
+      const stepCounter = document.getElementById("step-counter");
+      const totalSteps = document.getElementById("total-steps");
+      const numberStrip = document.getElementById("number-strip");
+      const cmpMid = document.getElementById("cmp-mid");
+      const cmpCalc = document.getElementById("cmp-calc");
+      const cmpRes = document.getElementById("cmp-res");
+      const actionSummary = document.getElementById("action-summary");
+      const currentLineDesc = document.getElementById("current-line-desc");
+      const varX = document.getElementById("var-x");
+      const varLeft = document.getElementById("var-left");
+      const varRight = document.getElementById("var-right");
+      const varMid = document.getElementById("var-mid");
+      const varMidsq = document.getElementById("var-midsq");
+      const varCond = document.getElementById("var-cond");
+      const stepDetailBox = document.getElementById("step-detail-box");
+      const finalResultBox = document.getElementById("final-result-box");
+      const resAns = document.getElementById("res-ans");
+      const resMath = document.getElementById("res-math");
+      const historyTbody = document.getElementById("history-tbody");
+
+      // Initialize UI
+      function initVisualizer(xVal) {
+        pausePlayback();
+        currentX = parseInt(xVal, 10);
+        if (isNaN(currentX) || currentX < 0) currentX = 0;
+        if (currentX > 36) currentX = 36;
+        inputX.value = currentX;
+
+        steps = generateSteps(currentX);
+        currentStepIdx = 0;
+        totalSteps.textContent = steps.length;
+
+        renderNumberCards();
+        renderHistoryTable();
+        renderStep();
+      }
+
+      // Render Number Strip Cards
+      function renderNumberCards() {
+        numberStrip.innerHTML = "";
+        const maxVal = Math.max(currentX, 1);
+        for (let i = 0; i <= maxVal; i++) {
+          const card = document.createElement("div");
+          card.id = `num-card-${i}`;
+          card.className = "relative flex flex-col items-center justify-center w-12 h-16 rounded-xl border border-slate-200 bg-white transition-all duration-300";
+          card.innerHTML = `
+            <div id="pointer-tag-${i}" class="absolute -top-7 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm opacity-0 transition-all"></div>
+            <span class="text-sm font-bold text-slate-800 font-mono">${i}</span>
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5">²=${i * i}</span>
+          `;
+          numberStrip.appendChild(card);
+        }
+      }
+
+      // Render History Table
+      function renderHistoryTable() {
+        historyTbody.innerHTML = "";
+        steps.forEach((st, idx) => {
+          const tr = document.createElement("tr");
+          tr.id = `history-row-${idx}`;
+          tr.className = "hover:bg-slate-50 cursor-pointer transition";
+          tr.addEventListener("click", () => {
+            pausePlayback();
+            currentStepIdx = idx;
+            renderStep();
+          });
+
+          let cmpText = "-";
+          if (st.midSquared !== null) {
+            if (st.midSquared > currentX) {
+              cmpText = `${st.midSquared} > ${currentX}`;
+            } else if (st.midSquared < currentX) {
+              cmpText = `${st.midSquared} < ${currentX}`;
+            } else {
+              cmpText = `${st.midSquared} == ${currentX}`;
+            }
+          }
+
+          tr.innerHTML = `
+            <td class="py-2 px-3 font-semibold text-slate-500">${idx + 1}</td>
+            <td class="py-2 px-3 text-indigo-600 font-mono">行 ${st.line}: ${st.lineDesc}</td>
+            <td class="py-2 px-3 text-emerald-700 font-bold">${st.left}</td>
+            <td class="py-2 px-3 text-indigo-700 font-bold">${st.right}</td>
+            <td class="py-2 px-3 text-amber-600 font-bold">${st.mid !== null ? st.mid : '-'}</td>
+            <td class="py-2 px-3">${cmpText}</td>
+            <td class="py-2 px-3 text-slate-700 font-sans">${st.action}</td>
+          `;
+          historyTbody.appendChild(tr);
+        });
+      }
+
+      // Main Step Renderer
+      function renderStep() {
+        const step = steps[currentStepIdx];
+        stepCounter.textContent = currentStepIdx + 1;
+
+        // 1. Highlight Code Line
+        for (let l = 1; l <= 11; l++) {
+          const el = document.getElementById(`line-${l}`);
+          if (el) {
+            el.classList.remove("line-highlight");
+            const ind = el.querySelector(".indicator");
+            if (ind) ind.classList.add("hidden");
+          }
+        }
+        const activeLineEl = document.getElementById(`line-${step.line}`);
+        if (activeLineEl) {
+          activeLineEl.classList.add("line-highlight");
+          const ind = activeLineEl.querySelector(".indicator");
+          if (ind) ind.classList.remove("hidden");
+        }
+        currentLineDesc.textContent = `行 ${step.line}: ${step.lineDesc}`;
+
+        // 2. Update Variables Watch
+        varX.textContent = currentX;
+        varLeft.textContent = step.left;
+        varRight.textContent = step.right;
+        varMid.textContent = step.mid !== null ? step.mid : "-";
+        varMidsq.textContent = step.midSquared !== null ? step.midSquared : "-";
+        varCond.textContent = step.cond ? "True" : "False";
+        varCond.className = step.cond ? "text-lg font-bold font-mono text-emerald-600" : "text-lg font-bold font-mono text-rose-600";
+
+        // 3. Update Comparison Banner
+        if (step.mid !== null) {
+          cmpMid.textContent = `mid = ${step.mid}`;
+          if (step.midSquared !== null) {
+            cmpCalc.textContent = `${step.mid}² = ${step.midSquared}`;
+            if (step.midSquared > currentX) {
+              cmpRes.textContent = `${step.midSquared} > ${currentX} (猜大了)`;
+              cmpRes.className = "font-bold px-2 py-0.5 rounded text-xs bg-rose-100 text-rose-800";
+            } else if (step.midSquared < currentX) {
+              cmpRes.textContent = `${step.midSquared} < ${currentX} (猜小了)`;
+              cmpRes.className = "font-bold px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-800";
+            } else {
+              cmpRes.textContent = `${step.midSquared} == ${currentX} (命中)`;
+              cmpRes.className = "font-bold px-2 py-0.5 rounded text-xs bg-emerald-100 text-emerald-800";
+            }
+          } else {
+            cmpCalc.textContent = "计算中...";
+            cmpRes.textContent = "准备比较";
+            cmpRes.className = "font-bold px-2 py-0.5 rounded text-xs bg-slate-200 text-slate-700";
+          }
+        } else {
+          cmpMid.textContent = "mid = -";
+          cmpCalc.textContent = "mid² = -";
+          cmpRes.textContent = "未计算中点";
+          cmpRes.className = "font-bold px-2 py-0.5 rounded text-xs bg-slate-200 text-slate-700";
+        }
+        actionSummary.textContent = step.action;
+
+        // 4. Update Number Strip Cards and Pointers
+        const maxVal = Math.max(currentX, 1);
+        for (let i = 0; i <= maxVal; i++) {
+          const card = document.getElementById(`num-card-${i}`);
+          const pTag = document.getElementById(`pointer-tag-${i}`);
+          if (!card || !pTag) continue;
+
+          // Determine tags at index i
+          const tags = [];
+          if (i === step.left) tags.push({ text: "L", bg: "bg-emerald-600 text-white" });
+          if (i === step.mid) tags.push({ text: "M", bg: "bg-amber-500 text-white" });
+          if (i === step.right) tags.push({ text: "R", bg: "bg-indigo-600 text-white" });
+
+          if (tags.length > 0) {
+            pTag.className = `absolute -top-7 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm opacity-100 transition-all ${tags[0].bg}`;
+            pTag.textContent = tags.map(t => t.text).join(",");
+          } else {
+            pTag.className = "absolute -top-7 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm opacity-0 transition-all";
+            pTag.textContent = "";
+          }
+
+          // Card visual state: inside active [left, right] or eliminated
+          const inRange = i >= step.left && i <= step.right;
+          if (inRange) {
+            card.className = "relative flex flex-col items-center justify-center w-12 h-16 rounded-xl border-2 border-indigo-500 bg-indigo-50/60 shadow-sm transition-all duration-200";
+            if (i === step.mid) {
+              card.classList.add("ring-2", "ring-amber-400", "bg-amber-50/80");
+            }
+          } else {
+            card.className = "relative flex flex-col items-center justify-center w-12 h-16 rounded-xl border border-slate-200 bg-slate-100/70 opacity-40 transition-all duration-200";
+          }
+        }
+
+        // 5. Update Step Detail Box
+        stepDetailBox.textContent = step.explanation;
+
+        // 6. Handle Final Result Box
+        if (step.isFinal) {
+          finalResultBox.classList.remove("hidden");
+          resAns.textContent = step.finalResult;
+          const ansSq = step.finalResult * step.finalResult;
+          const nextSq = (step.finalResult + 1) * (step.finalResult + 1);
+          resMath.textContent = `验证: ${step.finalResult}² = ${ansSq} ≤ ${currentX} < ${nextSq} = (${step.finalResult + 1})²，向下取整正确无误！`;
+        } else {
+          finalResultBox.classList.add("hidden");
+        }
+
+        // 7. Highlight History Table Row
+        steps.forEach((_, idx) => {
+          const row = document.getElementById(`history-row-${idx}`);
+          if (row) {
+            if (idx === currentStepIdx) {
+              row.className = "bg-indigo-50 font-semibold border-l-4 border-indigo-600 transition";
+            } else {
+              row.className = "hover:bg-slate-50 cursor-pointer transition";
+            }
+          }
+        });
+
+        // Auto-scroll active card into view
+        if (step.mid !== null) {
+          const midCard = document.getElementById(`num-card-${step.mid}`);
+          if (midCard) {
+            midCard.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+          }
+        }
+      }
+
+      // Playback Controls
+      function pausePlayback() {
+        if (isPlaying) {
+          isPlaying = false;
+          if (playTimer) clearInterval(playTimer);
+          playTimer = null;
+          textPlay.textContent = "自动播放";
+          btnPlay.classList.replace("bg-amber-600", "bg-indigo-600");
+          btnPlay.classList.replace("hover:bg-amber-700", "hover:bg-indigo-700");
+        }
+      }
+
+      function startPlayback() {
+        if (currentStepIdx >= steps.length - 1) {
+          currentStepIdx = 0;
+          renderStep();
+        }
+        isPlaying = true;
+        textPlay.textContent = "暂停播放";
+        btnPlay.classList.replace("bg-indigo-600", "bg-amber-600");
+        btnPlay.classList.replace("hover:bg-indigo-700", "hover:bg-amber-700");
+
+        playTimer = setInterval(() => {
+          if (currentStepIdx < steps.length - 1) {
+            currentStepIdx++;
+            renderStep();
+          } else {
+            pausePlayback();
+          }
+        }, speedMs);
+      }
+
+      // Event Listeners
+      btnPlay.addEventListener("click", () => {
+        if (isPlaying) {
+          pausePlayback();
+        } else {
+          startPlayback();
+        }
+      });
+
+      btnNext.addEventListener("click", () => {
+        pausePlayback();
+        if (currentStepIdx < steps.length - 1) {
+          currentStepIdx++;
+          renderStep();
+        }
+      });
+
+      btnPrev.addEventListener("click", () => {
+        pausePlayback();
+        if (currentStepIdx > 0) {
+          currentStepIdx--;
+          renderStep();
+        }
+      });
+
+      btnFirst.addEventListener("click", () => {
+        pausePlayback();
+        currentStepIdx = 0;
+        renderStep();
+      });
+
+      btnLast.addEventListener("click", () => {
+        pausePlayback();
+        currentStepIdx = steps.length - 1;
+        renderStep();
+      });
+
+      btnApplyX.addEventListener("click", () => {
+        initVisualizer(inputX.value);
+      });
+
+      inputX.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          initVisualizer(inputX.value);
+        }
+      });
+
+      selectSpeed.addEventListener("change", (e) => {
+        speedMs = parseInt(e.target.value, 10);
+        if (isPlaying) {
+          pausePlayback();
+          startPlayback();
+        }
+      });
+
+      document.querySelectorAll(".preset-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const val = e.currentTarget.getAttribute("data-val");
+          initVisualizer(val);
+        });
+      });
+
+      // Initial Mount
+      initVisualizer(8);
+    })();
+  </script>
+</body>
+</html>
