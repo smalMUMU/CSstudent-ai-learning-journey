@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 75 · 颜色分类交互式可视化</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .cell-transition {
+      transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    @keyframes swapPulse {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-6px) scale(1.06); }
+    }
+    .swap-active {
+      animation: swapPulse 0.45s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased">
+  <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-5">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">LeetCode 75</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">颜色分类 (Sort Colors) 交互式图解</h1>
+        </div>
+        <p class="mt-1 text-sm text-slate-600">
+          对比你的「两次遍历双指针」与「荷兰国旗三指针」「计数排序」，单步追踪指针移动、交换时机与区间不变量。
+        </p>
+      </div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 shrink-0">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 font-medium">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> 0 · 红
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-medium">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> 1 · 白
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 font-medium">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> 2 · 蓝
+        </span>
+      </div>
+    </header>
+
+    <!-- Algorithm Tabs & Input Bar -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <!-- Tabs -->
+        <div class="flex flex-wrap gap-2" role="tablist" aria-label="算法版本切换">
+          <button id="tab-twoPass" type="button" class="algo-tab px-3.5 py-2 rounded-xl text-sm font-semibold transition border" data-algo="twoPass">
+            你的代码 · 两次遍历双指针
+          </button>
+          <button id="tab-threePtr" type="button" class="algo-tab px-3.5 py-2 rounded-xl text-sm font-semibold transition border" data-algo="threePtr">
+            进阶 · 荷兰国旗三指针 (一趟)
+          </button>
+          <button id="tab-counting" type="button" class="algo-tab px-3.5 py-2 rounded-xl text-sm font-semibold transition border" data-algo="counting">
+            直观 · 计数统计覆盖
+          </button>
+        </div>
+
+        <!-- Presets -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-xs font-medium text-slate-500 mr-1">测试样例:</span>
+          <button type="button" class="preset-btn px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-arr="2,0,2,1,1,0">经典 [2,0,2,1,1,0]</button>
+          <button type="button" class="preset-btn px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-arr="2,2,1,1,0,0">全逆序</button>
+          <button type="button" class="preset-btn px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-arr="2,0,1,2,0,1,0">交错分布</button>
+          <button id="btn-random" type="button" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition">随机生成</button>
+        </div>
+      </div>
+
+      <!-- Custom Input & Playback Controls -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-slate-100">
+        <div class="flex items-center gap-2 flex-1 max-w-md">
+          <label for="array-input" class="text-xs font-semibold text-slate-600 shrink-0">自定义数组</label>
+          <input id="array-input" type="text" value="2,0,2,1,1,0" placeholder="输入 0,1,2 用逗号分隔" class="w-full px-3 py-1.5 text-sm font-mono-code bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+          <button id="btn-apply" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-900 text-white transition shrink-0">应用</button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-reset" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition">重置</button>
+          <button id="btn-prev" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition disabled:opacity-40">上一步</button>
+          <button id="btn-play" type="button" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm min-w-[76px]">播放</button>
+          <button id="btn-next" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition disabled:opacity-40">下一步</button>
+
+          <div class="flex items-center gap-1.5 ml-1 pl-2 border-l border-slate-200">
+            <label for="speed-range" class="text-xs text-slate-500">速度</label>
+            <input id="speed-range" type="range" min="1" max="5" value="3" class="w-16 accent-indigo-600 cursor-pointer" />
+            <span id="speed-label" class="text-xs font-mono-code text-slate-600 w-8">1.0x</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="input-error" class="hidden text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></div>
+    </section>
+
+    <!-- Main Workspace: Visual Stage + Code Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Left: Visualization Stage -->
+      <section class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-5">
+        <div class="space-y-4">
+          <!-- Status & Progress -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span id="phase-badge" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">准备就绪</span>
+              <span id="step-counter" class="text-xs font-mono-code text-slate-500">Step 0 / 0</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-600">
+              <span>读取/比较: <strong id="metric-reads" class="font-mono-code text-slate-900">0</strong></span>
+              <span>交换/写入: <strong id="metric-writes" class="font-mono-code text-slate-900">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Progress Scrubber -->
+          <input id="step-scrubber" type="range" min="0" max="0" value="0" class="w-full accent-indigo-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg" />
+
+          <!-- Counting Sort Auxiliary Array (shown only for counting sort) -->
+          <div id="counts-panel" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <div class="text-xs font-semibold text-slate-600 mb-2">辅助计数数组 <span class="font-mono-code">counts</span></div>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="bg-rose-50 border border-rose-200 rounded-lg py-2">
+                <div class="text-[11px] text-rose-600 font-medium">counts[0] (红)</div>
+                <div id="count-0" class="text-lg font-bold font-mono-code text-rose-700">0</div>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg py-2">
+                <div class="text-[11px] text-amber-700 font-medium">counts[1] (白)</div>
+                <div id="count-1" class="text-lg font-bold font-mono-code text-amber-800">0</div>
+              </div>
+              <div class="bg-sky-50 border border-sky-200 rounded-lg py-2">
+                <div class="text-[11px] text-sky-600 font-medium">counts[2] (蓝)</div>
+                <div id="count-2" class="text-lg font-bold font-mono-code text-sky-700">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Array Stage -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-6 overflow-x-auto">
+            <div id="array-stage" class="flex items-center justify-center gap-2 sm:gap-3 min-h-[168px] py-2"></div>
+          </div>
+
+          <!-- Invariant / Zone Legend -->
+          <div id="invariant-box" class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-700 space-y-1.5">
+            <div class="font-semibold text-slate-800">当前区间语义 (循环不变量)</div>
+            <div id="invariant-text" class="leading-relaxed"></div>
+          </div>
+        </div>
+
+        <!-- Step Narration -->
+        <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-4">
+          <div class="text-xs font-semibold text-indigo-800 uppercase tracking-wide mb-1">当前步骤说明</div>
+          <p id="step-narration" class="text-sm text-slate-800 leading-relaxed font-medium"></p>
+        </div>
+      </section>
+
+      <!-- Right: Synchronized Code Panel -->
+      <section class="lg:col-span-5 bg-slate-900 text-slate-100 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between space-y-4">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+            <div>
+              <h2 id="code-title" class="text-sm font-semibold text-white">Python 代码追踪</h2>
+              <p id="code-subtitle" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button id="btn-copy" type="button" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">复制代码</button>
+          </div>
+
+          <div id="code-container" class="font-mono-code text-xs sm:text-[13px] leading-6 overflow-x-auto space-y-0.5"></div>
+        </div>
+
+        <div id="algo-insight" class="bg-slate-800/80 border border-slate-700 rounded-xl p-3.5 text-xs text-slate-300 leading-relaxed space-y-1">
+          <div class="font-semibold text-indigo-300">核心思路</div>
+          <p id="insight-text"></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bottom: Complexity & Strategy Comparison -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+      <h2 class="text-base font-bold text-slate-900 mb-3">三种解法横向对比</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <th class="py-2.5 pr-4 font-semibold">解法</th>
+              <th class="py-2.5 px-4 font-semibold">时间复杂度</th>
+              <th class="py-2.5 px-4 font-semibold">空间复杂度</th>
+              <th class="py-2.5 px-4 font-semibold">遍历次数</th>
+              <th class="py-2.5 pl-4 font-semibold">特点与关键细节</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr class="hover:bg-slate-50/70">
+              <td class="py-3 pr-4 font-semibold text-slate-900">你的解法 · 两次遍历双指针</td>
+              <td class="py-3 px-4 font-mono-code text-xs">O(n)</td>
+              <td class="py-3 px-4 font-mono-code text-xs">O(1)</td>
+              <td class="py-3 px-4">2 趟（第二趟从 <code class="font-mono-code text-xs bg-slate-100 px-1 rounded">k</code> 开始）</td>
+              <td class="py-3 pl-4 text-xs sm:text-sm">逻辑非常稳健直观：第一趟把所有 0 换到头部，第二趟只需从 <code class="font-mono-code text-xs bg-slate-100 px-1 rounded">k</code> 往后把 1 换过来，剩下的自然全都是 2。</td>
+            </tr>
+            <tr class="hover:bg-slate-50/70">
+              <td class="py-3 pr-4 font-semibold text-slate-900">荷兰国旗 · 三指针</td>
+              <td class="py-3 px-4 font-mono-code text-xs">O(n)</td>
+              <td class="py-3 px-4 font-mono-code text-xs">O(1)</td>
+              <td class="py-3 px-4">1 趟（题目进阶要求）</td>
+              <td class="py-3 pl-4 text-xs sm:text-sm">用 <code class="font-mono-code text-xs bg-slate-100 px-1 rounded">p0</code> 维护 0 的右边界、<code class="font-mono-code text-xs bg-slate-100 px-1 rounded">p2</code> 维护 2 的左边界。注意：与 <code class="font-mono-code text-xs bg-slate-100 px-1 rounded">p2</code> 交换后 <code class="font-mono-code text-xs bg-slate-100 px-1 rounded">curr</code> 不能自增，因为换回来的元素还没检查过。</td>
+            </tr>
+            <tr class="hover:bg-slate-50/70">
+              <td class="py-3 pr-4 font-semibold text-slate-900">计数排序 · 统计覆盖</td>
+              <td class="py-3 px-4 font-mono-code text-xs">O(n)</td>
+              <td class="py-3 px-4 font-mono-code text-xs">O(1)</td>
+              <td class="py-3 px-4">2 趟</td>
+              <td class="py-3 pl-4 text-xs sm:text-sm">无需元素交换，先统计 0、1、2 各自数量再按顺序覆写数组。写法极简，但若元素是带附加数据的对象而非纯整数则不适用。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const ALGOS = {
+      twoPass: {
+        title: "你的解法 · 两次遍历双指针",
+        subtitle: "O(n) 时间 · O(1) 原地空间 · 2 趟扫描",
+        insight: "第一趟把所有 0 交换到 [0, k-1]；第二趟从 k 出发把所有 1 交换到 0 后面，其余元素自动留在末尾成为 2。写法清晰且不易写错边界！",
+        invariant: "区间 [0 .. k-1] 为已归位元素；第一趟将 0 换入 k 位置，第二趟从 k 开始将 1 换入 k 位置，末尾自然全为 2。",
+        code: [
+          "class Solution:",
+          "    def sortColors(self, nums: list[int]) -> None:",
+          "        k = 0",
+          "        for i in range(len(nums)):",
+          "            if nums[i] == 0:",
+          "                temp = nums[k]",
+          "                nums[k] = nums[i]",
+          "                nums[i] = temp",
+          "                k += 1",
+          "        for i in range(k, len(nums)):",
+          "            if nums[i] == 1:",
+          "                temp = nums[k]",
+          "                nums[k] = nums[i]",
+          "                nums[i] = temp",
+          "                k += 1"
+        ]
+      },
+      threePtr: {
+        title: "荷兰国旗 · 三指针 (One-Pass)",
+        subtitle: "O(n) 时间 · O(1) 原地空间 · 仅 1 趟扫描",
+        insight: "遇到 0 往左扔 (p0+=1, curr+=1)；遇到 1 跳过 (curr+=1)；遇到 2 往右扔 (p2-=1)，但此时 curr 必须停在原地继续检查从右边换过来的未知数！",
+        invariant: "[0 .. p0-1] 全为 0 ｜ [p0 .. curr-1] 全为 1 ｜ [curr .. p2] 待扫描 ｜ [p2+1 .. n-1] 全为 2。",
+        code: [
+          "class Solution:",
+          "    def sortColors(self, nums: list[int]) -> None:",
+          "        p0, curr, p2 = 0, 0, len(nums) - 1",
+          "        while curr <= p2:",
+          "            if nums[curr] == 0:",
+          "                nums[p0], nums[curr] = nums[curr], nums[p0]",
+          "                p0 += 1",
+          "                curr += 1",
+          "            elif nums[curr] == 2:",
+          "                nums[curr], nums[p2] = nums[p2], nums[curr]",
+          "                p2 -= 1",
+          "            else:",
+          "                curr += 1"
+        ]
+      },
+      counting: {
+        title: "计数排序 · 统计覆盖",
+        subtitle: "O(n) 时间 · O(1) 辅助计数 · 2 趟扫描",
+        insight: "因为只有 0、1、2 三种颜色，第一趟统计每种颜色的出现次数，第二趟直接按 0→1→2 的顺序覆写原数组。",
+        invariant: "counts[0..2] 记录各颜色频次；第二趟用 idx 指针依次写入对应数量的 0、1、2。",
+        code: [
+          "class Solution:",
+          "    def sortColors(self, nums: list[int]) -> None:",
+          "        counts = [0, 0, 0]",
+          "        for x in nums:",
+          "            counts[x] += 1",
+          "        idx = 0",
+          "        for color in range(3):",
+          "            for _ in range(counts[color]):",
+          "                nums[idx] = color",
+          "                idx += 1"
+        ]
+      }
+    };
+
+    function generateSteps(algoKey, initialArr) {
+      const steps = [];
+      const arr = [...initialArr];
+      let reads = 0;
+      let writes = 0;
+
+      const pushStep = (data) => {
+        steps.push({
+          arr: [...arr],
+          reads,
+          writes,
+          swapPair: null,
+          writeIdx: null,
+          counts: null,
+          ...data
+        });
+      };
+
+      if (algoKey === "twoPass") {
+        let k = 0;
+        pushStep({
+          line: 2,
+          phase: "初始化",
+          pointers: { k },
+          narration: "初始化边界指针 k = 0，准备第一趟扫描，将所有 0 归位到数组前面。"
+        });
+
+        for (let i = 0; i < arr.length; i++) {
+          reads++;
+          pushStep({
+            line: 4,
+            phase: "第一趟 · 归位 0",
+            pointers: { k, i },
+            narration: `检查 nums[${i}] = ${arr[i]}，判断是否等于 0。`
+          });
+
+          if (arr[i] === 0) {
+            const temp = arr[k];
+            arr[k] = arr[i];
+            arr[i] = temp;
+            writes += (k === i ? 0 : 2);
+            pushStep({
+              line: 6,
+              phase: "第一趟 · 归位 0",
+              pointers: { k, i },
+              swapPair: [k, i],
+              narration: k === i
+                ? `nums[${i}] 本身就是 0 且位于 k=${k}，原地交换无变化，准备 k += 1。`
+                : `nums[${i}] == 0！交换 nums[k=${k}] 和 nums[i=${i}]，把 0 放到前部。`
+            });
+            k++;
+            pushStep({
+              line: 8,
+              phase: "第一趟 · 归位 0",
+              pointers: { k, i },
+              narration: `k 右移至 ${k}，现在 [0 .. ${k - 1}] 已全部是 0。`
+            });
+          }
+        }
+
+        const kAfterPass1 = k;
+        pushStep({
+          line: 9,
+          phase: "第二趟 · 归位 1",
+          pointers: { k },
+          narration: `第一趟结束！所有 0 已归位到 [0 .. ${kAfterPass1 - 1}]。第二趟从 i = k = ${k} 开始找 1。`
+        });
+
+        for (let i = kAfterPass1; i < arr.length; i++) {
+          reads++;
+          pushStep({
+            line: 10,
+            phase: "第二趟 · 归位 1",
+            pointers: { k, i },
+            narration: `检查 nums[${i}] = ${arr[i]}，判断是否等于 1。`
+          });
+
+          if (arr[i] === 1) {
+            const temp = arr[k];
+            arr[k] = arr[i];
+            arr[i] = temp;
+            writes += (k === i ? 0 : 2);
+            pushStep({
+              line: 12,
+              phase: "第二趟 · 归位 1",
+              pointers: { k, i },
+              swapPair: [k, i],
+              narration: k === i
+                ? `nums[${i}] 本身就是 1 且位于 k=${k}，原地交换无变化，准备 k += 1。`
+                : `nums[${i}] == 1！交换 nums[k=${k}] 和 nums[i=${i}]，把 1 紧挨着 0 放好。`
+            });
+            k++;
+            pushStep({
+              line: 14,
+              phase: "第二趟 · 归位 1",
+              pointers: { k, i },
+              narration: `k 右移至 ${k}，现在 [${kAfterPass1} .. ${k - 1}] 已全部是 1。`
+            });
+          }
+        }
+
+        pushStep({
+          line: 14,
+          phase: "排序完成",
+          pointers: { k },
+          narration: `全部两趟遍历完成！0 和 1 均已归位，剩余末尾元素自然全为 2，原地排序完成。`
+        });
+      } else if (algoKey === "threePtr") {
+        let p0 = 0, curr = 0, p2 = arr.length - 1;
+        pushStep({
+          line: 2,
+          phase: "初始化三指针",
+          pointers: { p0, curr, p2 },
+          narration: `初始化 p0 = 0，curr = 0，p2 = ${p2}。只要 curr <= p2 就继续扫描。`
+        });
+
+        while (curr <= p2) {
+          reads++;
+          pushStep({
+            line: 4,
+            phase: "单趟扫描中",
+            pointers: { p0, curr, p2 },
+            narration: `当前扫描 nums[curr=${curr}] = ${arr[curr]}。`
+          });
+
+          if (arr[curr] === 0) {
+            [arr[p0], arr[curr]] = [arr[curr], arr[p0]];
+            writes += (p0 === curr ? 0 : 2);
+            pushStep({
+              line: 5,
+              phase: "遇到 0 · 左移",
+              pointers: { p0, curr, p2 },
+              swapPair: [p0, curr],
+              narration: p0 === curr
+                ? `nums[${curr}] == 0，与 p0=${p0} 同位置交换，无需变动。`
+                : `nums[${curr}] == 0！交换 nums[p0=${p0}] 与 nums[curr=${curr}]。`
+            });
+            p0++;
+            curr++;
+            pushStep({
+              line: 7,
+              phase: "指针推进",
+              pointers: { p0, curr, p2 },
+              narration: `换过来的一定是 1（或自身 0），无需再查，p0 → ${p0}，curr → ${curr}。`
+            });
+          } else if (arr[curr] === 2) {
+            [arr[curr], arr[p2]] = [arr[p2], arr[curr]];
+            writes += (curr === p2 ? 0 : 2);
+            pushStep({
+              line: 9,
+              phase: "遇到 2 · 右移",
+              pointers: { p0, curr, p2 },
+              swapPair: [curr, p2],
+              narration: curr === p2
+                ? `nums[${curr}] == 2，已在 p2=${p2} 边界上。`
+                : `nums[${curr}] == 2！交换 nums[curr=${curr}] 与 nums[p2=${p2}]，把 2 扔到右区。`
+            });
+            p2--;
+            pushStep({
+              line: 10,
+              phase: "p2 左移 (curr 不动)",
+              pointers: { p0, curr, p2 },
+              narration: `p2 左移至 ${p2}。注意 curr 保持在 ${curr} 不动，因为从 p2 换过来的 ${arr[curr]} 还没检查过！`
+            });
+          } else {
+            curr++;
+            pushStep({
+              line: 12,
+              phase: "遇到 1 · 跳过",
+              pointers: { p0, curr, p2 },
+              narration: `nums[curr] == 1，本来就在中间区域，直接 curr 右移至 ${curr}。`
+            });
+          }
+        }
+
+        pushStep({
+          line: 3,
+          phase: "排序完成",
+          pointers: { p0, curr, p2 },
+          narration: `curr (${curr}) > p2 (${p2})，待扫描区间为空，一趟原地排序完成！`
+        });
+      } else if (algoKey === "counting") {
+        const counts = [0, 0, 0];
+        pushStep({
+          line: 2,
+          phase: "初始化计数",
+          pointers: {},
+          counts: [...counts],
+          narration: "初始化 counts = [0, 0, 0]，准备第一趟统计每种颜色的数量。"
+        });
+
+        for (let i = 0; i < arr.length; i++) {
+          reads++;
+          counts[arr[i]]++;
+          pushStep({
+            line: 4,
+            phase: "第一趟 · 统计频次",
+            pointers: { i },
+            counts: [...counts],
+            narration: `读取 nums[${i}] = ${arr[i]}，counts[${arr[i]}] 加 1 变为 ${counts[arr[i]]}。`
+          });
+        }
+
+        let idx = 0;
+        pushStep({
+          line: 5,
+          phase: "第二趟 · 按序覆写",
+          pointers: { idx },
+          counts: [...counts],
+          narration: `统计完成：0 有 ${counts[0]} 个，1 有 ${counts[1]} 个，2 有 ${counts[2]} 个。准备从 idx = 0 开始覆写原数组。`
+        });
+
+        for (let color = 0; color < 3; color++) {
+          for (let c = 0; c < counts[color]; c++) {
+            arr[idx] = color;
+            writes++;
+            pushStep({
+              line: 8,
+              phase: `覆写颜色 ${color}`,
+              pointers: { idx },
+              writeIdx: idx,
+              counts: [...counts],
+              narration: `将 nums[${idx}] 覆写为 ${color}，准备 idx += 1。`
+            });
+            idx++;
+          }
+        }
+
+        pushStep({
+          line: 9,
+          phase: "排序完成",
+          pointers: { idx },
+          counts: [...counts],
+          narration: "所有颜色按 0、1、2 数量覆写完毕，排序完成！"
+        });
+      }
+
+      return steps;
+    }
+
+    // Application State
+    let state = {
+      algo: "twoPass",
+      initialArr: [2, 0, 2, 1, 1, 0],
+      steps: [],
+      stepIdx: 0,
+      playing: false,
+      timerId: null,
+      speedLevel: 3
+    };
+
+    const SPEED_MAP = {
+      1: { ms: 1300, label: "0.5x" },
+      2: { ms: 900, label: "0.75x" },
+      3: { ms: 600, label: "1.0x" },
+      4: { ms: 350, label: "1.5x" },
+      5: { ms: 180, label: "2.5x" }
+    };
+
+    // DOM Elements
+    const elArrayStage = document.getElementById("array-stage");
+    const elCodeContainer = document.getElementById("code-container");
+    const elCodeTitle = document.getElementById("code-title");
+    const elCodeSubtitle = document.getElementById("code-subtitle");
+    const elInsightText = document.getElementById("insight-text");
+    const elInvariantText = document.getElementById("invariant-text");
+    const elPhaseBadge = document.getElementById("phase-badge");
+    const elStepCounter = document.getElementById("step-counter");
+    const elMetricReads = document.getElementById("metric-reads");
+    const elMetricWrites = document.getElementById("metric-writes");
+    const elScrubber = document.getElementById("step-scrubber");
+    const elNarration = document.getElementById("step-narration");
+    const elCountsPanel = document.getElementById("counts-panel");
+    const elArrayInput = document.getElementById("array-input");
+    const elInputError = document.getElementById("input-error");
+    const elBtnPrev = document.getElementById("btn-prev");
+    const elBtnNext = document.getElementById("btn-next");
+    const elBtnPlay = document.getElementById("btn-play");
+    const elSpeedRange = document.getElementById("speed-range");
+    const elSpeedLabel = document.getElementById("speed-label");
+
+    function stopPlayback() {
+      state.playing = false;
+      if (state.timerId !== null) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+      elBtnPlay.textContent = "播放";
+      elBtnPlay.classList.remove("bg-amber-600", "hover:bg-amber-700");
+      elBtnPlay.classList.add("bg-indigo-600", "hover:bg-indigo-700");
+    }
+
+    function startPlayback() {
+      if (state.stepIdx >= state.steps.length - 1) {
+        state.stepIdx = 0;
+      }
+      state.playing = true;
+      elBtnPlay.textContent = "暂停";
+      elBtnPlay.classList.remove("bg-indigo-600", "hover:bg-indigo-700");
+      elBtnPlay.classList.add("bg-amber-600", "hover:bg-amber-700");
+
+      const intervalMs = SPEED_MAP[state.speedLevel].ms;
+      state.timerId = setInterval(() => {
+        if (state.stepIdx < state.steps.length - 1) {
+          state.stepIdx++;
+          render();
+        } else {
+          stopPlayback();
+        }
+      }, intervalMs);
+    }
+
+    function rebuildSteps() {
+      stopPlayback();
+      state.steps = generateSteps(state.algo, state.initialArr);
+      state.stepIdx = 0;
+      elScrubber.max = Math.max(0, state.steps.length - 1);
+      render();
+    }
+
+    function getColorStyle(val) {
+      if (val === 0) {
+        return {
+          bg: "bg-rose-500 text-white border-rose-600",
+          label: "红"
+        };
+      }
+      if (val === 1) {
+        return {
+          bg: "bg-amber-300 text-amber-950 border-amber-400",
+          label: "白"
+        };
+      }
+      return {
+        bg: "bg-sky-500 text-white border-sky-600",
+        label: "蓝"
+      };
+    }
+
+    function getPointerBadgeStyle(name) {
+      const map = {
+        k: "bg-purple-600 text-white",
+        i: "bg-slate-800 text-white",
+        p0: "bg-rose-600 text-white",
+        curr: "bg-indigo-600 text-white",
+        p2: "bg-sky-600 text-white",
+        idx: "bg-emerald-600 text-white"
+      };
+      return map[name] || "bg-slate-700 text-white";
+    }
+
+    function render() {
+      const algoMeta = ALGOS[state.algo];
+      const step = state.steps[state.stepIdx];
+      if (!step) return;
+
+      // Tabs active styling
+      document.querySelectorAll(".algo-tab").forEach((btn) => {
+        const isActive = btn.dataset.algo === state.algo;
+        btn.className = isActive
+          ? "algo-tab px-3.5 py-2 rounded-xl text-sm font-semibold transition border bg-indigo-600 text-white border-indigo-600 shadow-sm"
+          : "algo-tab px-3.5 py-2 rounded-xl text-sm font-semibold transition border bg-white text-slate-700 border-slate-200 hover:bg-slate-50";
+      });
+
+      // Header & metadata
+      elCodeTitle.textContent = algoMeta.title;
+      elCodeSubtitle.textContent = algoMeta.subtitle;
+      elInsightText.textContent = algoMeta.insight;
+      elInvariantText.textContent = algoMeta.invariant;
+
+      elPhaseBadge.textContent = step.phase;
+      elStepCounter.textContent = `Step ${state.stepIdx} / ${state.steps.length - 1}`;
+      elMetricReads.textContent = step.reads;
+      elMetricWrites.textContent = step.writes;
+      elScrubber.value = state.stepIdx;
+      elNarration.textContent = step.narration;
+
+      elBtnPrev.disabled = state.stepIdx <= 0;
+      elBtnNext.disabled = state.stepIdx >= state.steps.length - 1;
+
+      // Auxiliary counts panel
+      if (state.algo === "counting" && step.counts) {
+        elCountsPanel.classList.remove("hidden");
+        document.getElementById("count-0").textContent = step.counts[0];
+        document.getElementById("count-1").textContent = step.counts[1];
+        document.getElementById("count-2").textContent = step.counts[2];
+      } else {
+        elCountsPanel.classList.add("hidden");
+      }
+
+      // Render array cells
+      elArrayStage.innerHTML = "";
+      step.arr.forEach((val, idx) => {
+        const colorStyle = getColorStyle(val);
+        const isSwapped = step.swapPair && (step.swapPair[0] === idx || step.swapPair[1] === idx);
+        const isWritten = step.writeIdx === idx;
+
+        // Collect pointers at this index
+        const ptrsHere = [];
+        Object.entries(step.pointers || {}).forEach(([pName, pVal]) => {
+          if (pVal === idx) ptrsHere.push(pName);
+        });
+
+        const col = document.createElement("div");
+        col.className = "flex flex-col items-center gap-1.5 min-w-[44px] sm:min-w-[54px]";
+
+        // Top pointer stack
+        const ptrBox = document.createElement("div");
+        ptrBox.className = "flex flex-col items-center justify-end gap-1 min-h-[44px]";
+        ptrsHere.forEach((pName) => {
+          const badge = document.createElement("span");
+          badge.className = `px-1.5 py-0.5 rounded text-[11px] font-mono-code font-semibold shadow-sm ${getPointerBadgeStyle(pName)}`;
+          badge.textContent = `${pName}↓`;
+          ptrBox.appendChild(badge);
+        });
+        col.appendChild(ptrBox);
+
+        // Value box
+        const cell = document.createElement("div");
+        const ringClass = isSwapped
+          ? "ring-4 ring-indigo-400 ring-offset-2 swap-active"
+          : isWritten
+            ? "ring-4 ring-emerald-400 ring-offset-2 swap-active"
+            : "";
+        cell.className = `cell-transition w-11 h-12 sm:w-13 sm:h-14 rounded-xl border-2 flex flex-col items-center justify-center shadow-sm ${colorStyle.bg} ${ringClass}`;
+        cell.innerHTML = `<span class="text-base sm:text-lg font-bold leading-none">${val}</span><span class="text-[10px] opacity-85 mt-0.5">${colorStyle.label}</span>`;
+        col.appendChild(cell);
+
+        // Index label
+        const idxLabel = document.createElement("span");
+        idxLabel.className = "text-[11px] font-mono-code text-slate-400";
+        idxLabel.textContent = `[${idx}]`;
+        col.appendChild(idxLabel);
+
+        elArrayStage.appendChild(col);
+      });
+
+      // Render out-of-bounds pointers if any (e.g. k == len, curr == len, p2 == -1)
+      const oobPtrs = Object.entries(step.pointers || {}).filter(
+        ([, pVal]) => pVal < 0 || pVal >= step.arr.length
+      );
+      if (oobPtrs.length > 0) {
+        const oobBox = document.createElement("div");
+        oobBox.className = "flex flex-col items-center justify-center gap-1 pl-2 border-l border-dashed border-slate-300";
+        oobPtrs.forEach(([pName, pVal]) => {
+          const badge = document.createElement("span");
+          badge.className = `px-2 py-0.5 rounded text-[11px] font-mono-code font-semibold opacity-80 ${getPointerBadgeStyle(pName)}`;
+          badge.textContent = `${pName}=${pVal}`;
+          oobBox.appendChild(badge);
+        });
+        elArrayStage.appendChild(oobBox);
+      }
+
+      // Render code lines
+      elCodeContainer.innerHTML = "";
+      algoMeta.code.forEach((lineText, idx) => {
+        const isCurrent = step.line === idx;
+        const row = document.createElement("div");
+        row.className = `flex items-center px-2.5 py-0.5 rounded-md whitespace-pre ${
+          isCurrent ? "bg-indigo-500/25 border-l-2 border-indigo-400 text-white" : "text-slate-300"
+        }`;
+
+        const num = document.createElement("span");
+        num.className = `w-6 shrink-0 select-none text-right pr-3 text-[11px] ${
+          isCurrent ? "text-indigo-300 font-semibold" : "text-slate-500"
+        }`;
+        num.textContent = idx + 1;
+
+        const code = document.createElement("span");
+        code.textContent = lineText;
+
+        row.appendChild(num);
+        row.appendChild(code);
+        elCodeContainer.appendChild(row);
+      });
+    }
+
+    function applyCustomArray(rawStr) {
+      elInputError.classList.add("hidden");
+      const parts = rawStr
+        .replace(/[\[\]\s]/g, "")
+        .split(",")
+        .filter((s) => s.length > 0);
+
+      if (parts.length === 0 || parts.length > 14) {
+        elInputError.textContent = "请输入 1 到 14 个由逗号分隔的数字（仅限 0、1、2）。";
+        elInputError.classList.remove("hidden");
+        return;
+      }
+
+      const parsed = parts.map((s) => Number(s));
+      if (parsed.some((n) => !Number.isInteger(n) || n < 0 || n > 2)) {
+        elInputError.textContent = "数组中只能包含 0、1、2 三个整数，例如: 2,0,2,1,1,0";
+        elInputError.classList.remove("hidden");
+        return;
+      }
+
+      state.initialArr = parsed;
+      elArrayInput.value = parsed.join(",");
+      rebuildSteps();
+    }
+
+    // Event Listeners
+    document.querySelectorAll(".algo-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.algo = btn.dataset.algo;
+        rebuildSteps();
+      });
+    });
+
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        applyCustomArray(btn.dataset.arr);
+      });
+    });
+
+    document.getElementById("btn-random").addEventListener("click", () => {
+      const len = Math.floor(Math.random() * 5) + 6; // 6..10 elements
+      const arr = Array.from({ length: len }, () => Math.floor(Math.random() * 3));
+      applyCustomArray(arr.join(","));
+    });
+
+    document.getElementById("btn-apply").addEventListener("click", () => {
+      applyCustomArray(elArrayInput.value);
+    });
+
+    elArrayInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") applyCustomArray(elArrayInput.value);
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      stopPlayback();
+      state.stepIdx = 0;
+      render();
+    });
+
+    elBtnPrev.addEventListener("click", () => {
+      stopPlayback();
+      if (state.stepIdx > 0) {
+        state.stepIdx--;
+        render();
+      }
+    });
+
+    elBtnNext.addEventListener("click", () => {
+      stopPlayback();
+      if (state.stepIdx < state.steps.length - 1) {
+        state.stepIdx++;
+        render();
+      }
+    });
+
+    elBtnPlay.addEventListener("click", () => {
+      if (state.playing) {
+        stopPlayback();
+      } else {
+        startPlayback();
+      }
+    });
+
+    elScrubber.addEventListener("input", (e) => {
+      stopPlayback();
+      state.stepIdx = Number(e.target.value);
+      render();
+    });
+
+    elSpeedRange.addEventListener("input", (e) => {
+      state.speedLevel = Number(e.target.value);
+      elSpeedLabel.textContent = SPEED_MAP[state.speedLevel].label;
+      if (state.playing) {
+        stopPlayback();
+        startPlayback();
+      }
+    });
+
+    document.getElementById("btn-copy").addEventListener("click", () => {
+      const codeText = ALGOS[state.algo].code.join("\n");
+      const btn = document.getElementById("btn-copy");
+      const onCopied = () => {
+        btn.textContent = "已复制";
+        setTimeout(() => { btn.textContent = "复制代码"; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codeText).then(onCopied).catch(() => {
+          fallbackCopy(codeText, onCopied);
+        });
+      } else {
+        fallbackCopy(codeText, onCopied);
+      }
+    });
+
+    function fallbackCopy(text, cb) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        cb();
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
+
+    // Initialize
+    rebuildSteps();
+  </script>
+</body>
+</html>
