@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 34 交互式图解 — 在排序数组中查找元素的第一个和最后一个位置</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .code-line {
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .array-cell {
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .pointer-pill {
+      transition: all 0.25s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+    <!-- Header -->
+    <header class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">LeetCode 34</span>
+          <h1 class="text-lg sm:text-xl font-bold text-slate-900">在排序数组中查找元素的第一个和最后一个位置</h1>
+        </div>
+        <p class="text-sm text-slate-500 mt-1">
+          核心思想：利用 <code class="px-1.5 py-0.5 bg-slate-100 rounded text-indigo-600 font-medium">erf(target, nums)</code> 寻找第一个 <code class="font-medium text-slate-700">&gt;= target</code> 的下标，再通过 <code class="px-1.5 py-0.5 bg-slate-100 rounded text-teal-600 font-medium">erf(target + 1, nums) - 1</code> 锁定右边界。
+        </p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-medium text-slate-500">时间复杂度 O(log n)</span>
+        <span class="text-slate-300">|</span>
+        <span class="text-xs font-medium text-slate-500">空间复杂度 O(1)</span>
+      </div>
+    </header>
+
+    <!-- Input & Presets -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">预设用例：</span>
+        <button data-preset="0" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition">示例1: [5,7,7,8,8,10], target=8</button>
+        <button data-preset="1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition">示例2: 目标不存在(中间) target=6</button>
+        <button data-preset="2" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition">示例3: 目标越界 target=12</button>
+        <button data-preset="3" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition">示例4: 全重复 [2,2,2,2,2], target=2</button>
+        <button data-preset="4" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition">示例5: 空数组 [], target=0</button>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 pt-1">
+        <div class="flex-1">
+          <label for="nums-input" class="block text-xs font-medium text-slate-600 mb-1">有序数组 nums（逗号分隔）</label>
+          <input id="nums-input" type="text" value="5, 7, 7, 8, 8, 10"
+            class="w-full px-3 py-2 text-sm font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white" />
+        </div>
+        <div class="w-full sm:w-32">
+          <label for="target-input" class="block text-xs font-medium text-slate-600 mb-1">目标值 target</label>
+          <input id="target-input" type="number" value="8"
+            class="w-full px-3 py-2 text-sm font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white" />
+        </div>
+        <button id="apply-btn" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition cursor-pointer">
+          应用数据
+        </button>
+      </div>
+      <div id="input-error" class="hidden text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5"></div>
+    </section>
+
+    <!-- Playback Controls & Phase Bar -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="reset-btn" class="px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 transition cursor-pointer">
+          ↺ 重置
+        </button>
+        <button id="prev-btn" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 disabled:opacity-40 transition cursor-pointer">
+          ◀ 上一步
+        </button>
+        <button id="play-btn" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition cursor-pointer min-w-[88px]">
+          ▶ 自动播放
+        </button>
+        <button id="next-btn" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 disabled:opacity-40 transition cursor-pointer">
+          下一步 ▶
+        </button>
+        <div class="flex items-center gap-1.5 ml-1">
+          <span class="text-xs text-slate-500">速度</span>
+          <select id="speed-select" class="text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none">
+            <option value="1400">0.7x</option>
+            <option value="950" selected>1.0x</option>
+            <option value="500">2.0x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 flex-1 lg:max-w-md">
+        <input id="step-slider" type="range" min="0" max="0" value="0" class="w-full accent-indigo-600 cursor-pointer" />
+        <span id="step-counter" class="text-xs font-mono font-semibold text-slate-600 whitespace-nowrap">0 / 0</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button id="jump-p1" class="phase-pill px-2.5 py-1 text-xs font-semibold rounded-lg border transition cursor-pointer">1. erf(target)</button>
+        <button id="jump-p2" class="phase-pill px-2.5 py-1 text-xs font-semibold rounded-lg border transition cursor-pointer">2. erf(target+1)-1</button>
+        <button id="jump-p3" class="phase-pill px-2.5 py-1 text-xs font-semibold rounded-lg border transition cursor-pointer">3. 校验返回</button>
+      </div>
+    </section>
+
+    <!-- Main Visualization Stage -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span id="phase-badge" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-100 text-indigo-700">阶段 1</span>
+          <h2 id="phase-title" class="text-sm sm:text-base font-bold text-slate-800">寻找左边界：erf(target, nums)</h2>
+        </div>
+        <div class="flex items-center gap-3 text-xs font-medium flex-wrap">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span> left (L)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> mid (M)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-600 inline-block"></span> right (R)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span> num1</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-teal-600 inline-block"></span> num2</span>
+        </div>
+      </div>
+
+      <!-- Array Container -->
+      <div class="overflow-x-auto pb-2">
+        <div id="array-stage" class="min-w-fit flex items-start justify-start sm:justify-center gap-2 sm:gap-3 pt-2 pb-4 px-2">
+          <!-- Cells rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Explanation & Variable Watchers -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between gap-2">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">当前步骤解析</div>
+          <p id="step-desc" class="text-sm sm:text-base text-slate-800 font-medium leading-relaxed"></p>
+          <div id="step-math" class="text-xs font-mono text-slate-600 bg-white border border-slate-200 rounded-lg px-3 py-2 hidden"></div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">变量实时状态</div>
+          <div class="grid grid-cols-3 gap-2 text-center font-mono">
+            <div class="bg-white border border-slate-200 rounded-lg p-2">
+              <div class="text-[11px] text-slate-400">target</div>
+              <div id="var-target" class="text-sm font-bold text-slate-800">-</div>
+            </div>
+            <div class="bg-white border border-blue-200 rounded-lg p-2">
+              <div class="text-[11px] text-blue-500">left</div>
+              <div id="var-left" class="text-sm font-bold text-blue-700">-</div>
+            </div>
+            <div class="bg-white border border-purple-200 rounded-lg p-2">
+              <div class="text-[11px] text-purple-500">right</div>
+              <div id="var-right" class="text-sm font-bold text-purple-700">-</div>
+            </div>
+            <div class="bg-white border border-amber-200 rounded-lg p-2">
+              <div class="text-[11px] text-amber-600">mid</div>
+              <div id="var-mid" class="text-sm font-bold text-amber-700">-</div>
+            </div>
+            <div class="bg-white border border-emerald-200 rounded-lg p-2">
+              <div class="text-[11px] text-emerald-600">num1</div>
+              <div id="var-num1" class="text-sm font-bold text-emerald-700">-</div>
+            </div>
+            <div class="bg-white border border-teal-200 rounded-lg p-2">
+              <div class="text-[11px] text-teal-600">num2</div>
+              <div id="var-num2" class="text-sm font-bold text-teal-700">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom: Synchronized Python Code & Key Insight -->
+    <section class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <div class="lg:col-span-3 bg-slate-900 text-slate-100 rounded-2xl shadow-sm overflow-hidden border border-slate-800">
+        <div class="px-4 py-2.5 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300">Python 源码同步追踪</span>
+          <span id="code-status-tag" class="text-[11px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">准备就绪</span>
+        </div>
+        <div id="code-container" class="p-3 text-xs sm:text-[13px] font-mono leading-6 overflow-x-auto">
+          <!-- Code lines rendered by JS -->
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-indigo-600 rounded-full inline-block"></span>
+          为什么这样写能一次搞定左右边界？
+        </h3>
+        <div class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <div class="p-3 rounded-xl bg-blue-50/70 border border-blue-100">
+            <div class="font-semibold text-blue-900 mb-1">1. erf(target, nums) 的本质</div>
+            <p>循环条件 <code class="font-mono text-blue-700">left &lt;= right</code> 是闭区间二分。只有 <code class="font-mono text-blue-700">nums[mid] &lt; target</code> 时才移动 <code class="font-mono">left</code>，否则一律左移 <code class="font-mono">right</code>。循环结束时 <code class="font-mono font-semibold">left</code> 必停在<strong>第一个 ≥ target</strong> 的下标。</p>
+          </div>
+          <div class="p-3 rounded-xl bg-teal-50/70 border border-teal-100">
+            <div class="font-semibold text-teal-900 mb-1">2. 巧妙复用求右边界</div>
+            <p>把目标换成 <code class="font-mono text-teal-700">target + 1</code>，调用同一个 <code class="font-mono">erf</code> 会找到第一个 <code class="font-mono">&gt;= target + 1</code> 的位置（即最后一个 <code class="font-mono">target</code> 的下一位），再<strong>减 1</strong> 就精准落在右边界 <code class="font-mono">num2</code>。</p>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-100">
+            <div class="font-semibold text-amber-900 mb-1">3. 为什么最后必须校验？</div>
+            <p>如果 <code class="font-mono">target</code> 比所有元素都大，<code class="font-mono">num1 == len(nums)</code>（越界）；如果 <code class="font-mono">target</code> 不存在但落在数组中间，<code class="font-mono">nums[num1] &gt; target</code>。因此必须判断 <code class="font-mono text-amber-800">num1 &lt; len(nums) and nums[num1] == target</code>。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const CODE_LINES = [
+      'def erf(target, nums):',
+      '    left = 0',
+      '    right = len(nums) - 1',
+      '    while left <= right:',
+      '        mid = (left + right) // 2',
+      '        if nums[mid] < target:',
+      '            left = mid + 1',
+      '        else:',
+      '            right = mid - 1',
+      '    return left',
+      'class Solution:',
+      '    def searchRange(self, nums: list[int], target: int) -> list[int]:',
+      '        num1 = erf(target, nums)',
+      '        num2 = erf(target + 1, nums) - 1',
+      '        if num1 < len(nums) and nums[num1] == target:',
+      '            return [num1, num2]',
+      '        return [-1, -1]'
+    ];
+
+    const PRESETS = [
+      { nums: [5, 7, 7, 8, 8, 10], target: 8 },
+      { nums: [5, 7, 7, 8, 8, 10], target: 6 },
+      { nums: [5, 7, 7, 8, 8, 10], target: 12 },
+      { nums: [2, 2, 2, 2, 2], target: 2 },
+      { nums: [], target: 0 }
+    ];
+
+    let state = {
+      nums: [5, 7, 7, 8, 8, 10],
+      target: 8,
+      steps: [],
+      currentStep: 0,
+      timer: null,
+      phaseStarts: { p1: 0, p2: 0, p3: 0 }
+    };
+
+    function generateSteps(nums, target) {
+      const steps = [];
+      const n = nums.length;
+      let num1 = null;
+      let num2 = null;
+
+      function runErf(searchTarget, phaseNum, phaseLabel) {
+        let left = 0;
+        let right = n - 1;
+
+        steps.push({
+          phase: phaseNum,
+          phaseTitle: phaseLabel,
+          activeLine: phaseNum === 1 ? 13 : 14,
+          currentTarget: searchTarget,
+          left, right, mid: null,
+          num1, num2,
+          result: null,
+          desc: phaseNum === 1
+            ? `开始阶段 1：调用 erf(${searchTarget}, nums)，寻找第一个 >= ${searchTarget} 的元素下标作为左边界 num1。`
+            : `开始阶段 2：调用 erf(${searchTarget}, nums)，寻找第一个 >= ${searchTarget} (即 target+1) 的下标，之后减 1 得到右边界 num2。`,
+          math: `初始闭区间 [left, right] = [0, ${n - 1}]`
+        });
+
+        steps.push({
+          phase: phaseNum,
+          phaseTitle: phaseLabel,
+          activeLine: 2,
+          currentTarget: searchTarget,
+          left, right, mid: null,
+          num1, num2,
+          result: null,
+          desc: `初始化指针：left = 0，right = ${n - 1}。`,
+          math: `搜索区间长度 = ${Math.max(0, right - left + 1)}`
+        });
+
+        while (left <= right) {
+          const mid = Math.floor((left + right) / 2);
+          steps.push({
+            phase: phaseNum,
+            phaseTitle: phaseLabel,
+            activeLine: 5,
+            currentTarget: searchTarget,
+            left, right, mid,
+            num1, num2,
+            result: null,
+            desc: `left (${left}) <= right (${right}) 成立，计算中点 mid = (${left} + ${right}) // 2 = ${mid}，对应 nums[${mid}] = ${nums[mid]}。`,
+            math: `比较 nums[${mid}] (${nums[mid]}) 与 当前目标 (${searchTarget})`
+          });
+
+          if (nums[mid] < searchTarget) {
+            const nextLeft = mid + 1;
+            steps.push({
+              phase: phaseNum,
+              phaseTitle: phaseLabel,
+              activeLine: 7,
+              currentTarget: searchTarget,
+              left: nextLeft, right, mid,
+              num1, num2,
+              result: null,
+              desc: `因为 nums[${mid}] (${nums[mid]}) < ${searchTarget}，说明 mid 及左侧都不可能 >= ${searchTarget}，更新 left = mid + 1 = ${nextLeft}。`,
+              math: `舍弃左半部分 [${left}..${mid}]，新区间 [${nextLeft}..${right}]`
+            });
+            left = nextLeft;
+          } else {
+            const nextRight = mid - 1;
+            steps.push({
+              phase: phaseNum,
+              phaseTitle: phaseLabel,
+              activeLine: 9,
+              currentTarget: searchTarget,
+              left, right: nextRight, mid,
+              num1, num2,
+              result: null,
+              desc: `因为 nums[${mid}] (${nums[mid]}) >= ${searchTarget}，${mid} 可能是答案或偏右，收缩右边界 right = mid - 1 = ${nextRight}，继续向左试探。`,
+              math: `舍弃 [${mid}..${right}]，新区间 [${left}..${nextRight}]`
+            });
+            right = nextRight;
+          }
+        }
+
+        steps.push({
+          phase: phaseNum,
+          phaseTitle: phaseLabel,
+          activeLine: 10,
+          currentTarget: searchTarget,
+          left, right, mid: null,
+          num1, num2,
+          result: null,
+          desc: `循环终止：left (${left}) > right (${right})。二分结束，返回 left = ${left}。`,
+          math: phaseNum === 1
+            ? `num1 = ${left}`
+            : `erf(${searchTarget}) = ${left}，故 num2 = ${left} - 1 = ${left - 1}`
+        });
+
+        return left;
+      }
+
+      const p1Start = steps.length;
+      num1 = runErf(target, 1, `阶段 1：寻找左边界 erf(${target}, nums)`);
+
+      const p2Start = steps.length;
+      const rawRight = runErf(target + 1, 2, `阶段 2：寻找右边界 erf(${target + 1}, nums) - 1`);
+      num2 = rawRight - 1;
+
+      const p3Start = steps.length;
+      const isValid = num1 < n && nums[num1] === target;
+      steps.push({
+        phase: 3,
+        phaseTitle: '阶段 3：边界合法性校验与返回',
+        activeLine: 15,
+        currentTarget: target,
+        left: null, right: null, mid: null,
+        num1, num2,
+        result: null,
+        desc: `校验条件：num1 < len(nums) (${num1} < ${n} 为 ${num1 < n})${num1 < n ? ` 且 nums[${num1}] == ${target} (${nums[num1]} == ${target} 为 ${nums[num1] === target})` : ''}。`,
+        math: `校验结果：${isValid ? '通过，目标存在' : '不通过，目标不存在'}`
+      });
+
+      const finalRes = isValid ? [num1, num2] : [-1, -1];
+      steps.push({
+        phase: 3,
+        phaseTitle: '阶段 3：边界合法性校验与返回',
+        activeLine: isValid ? 16 : 17,
+        currentTarget: target,
+        left: null, right: null, mid: null,
+        num1, num2,
+        result: finalRes,
+        desc: isValid
+          ? `校验通过！返回目标 ${target} 的起止下标 [${num1}, ${num2}]。`
+          : `校验失败！数组中不存在目标值 ${target}，返回 [-1, -1]。`,
+        math: `最终返回值：return [${finalRes[0]}, ${finalRes[1]}]`
+      });
+
+      return { steps, phaseStarts: { p1: p1Start, p2: p2Start, p3: p3Start } };
+    }
+
+    function renderCode(activeLine) {
+      const container = document.getElementById('code-container');
+      container.innerHTML = CODE_LINES.map((line, idx) => {
+        const lineNum = idx + 1;
+        const isActive = lineNum === activeLine;
+        const escaped = line
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        return `
+          <div class="code-line flex items-center px-2 py-0.5 rounded ${isActive ? 'bg-indigo-500/25 border-l-4 border-indigo-400 text-white font-semibold' : 'border-l-4 border-transparent text-slate-300'}">
+            <span class="w-7 text-right pr-3 select-none text-slate-500 text-xs">${lineNum}</span>
+            <pre class="whitespace-pre">${escaped}</pre>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderArray(step) {
+      const stage = document.getElementById('array-stage');
+      const nums = state.nums;
+      const n = nums.length;
+      const cells = [];
+
+      // Optional -1 virtual slot if right == -1
+      if (step.right === -1 || step.left === -1) {
+        cells.push(buildVirtualCell(-1, '越界 -1', step));
+      }
+
+      for (let i = 0; i < n; i++) {
+        const inRange = step.left !== null && step.right !== null && i >= step.left && i <= step.right;
+        const isMid = step.mid === i;
+        const isResultRange = step.result && step.result[0] !== -1 && i >= step.result[0] && i <= step.result[1];
+        const isTargetVal = nums[i] === state.target;
+
+        let cardClass = 'bg-white border-slate-200 text-slate-800';
+        if (isResultRange) {
+          cardClass = 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-200';
+        } else if (isMid) {
+          cardClass = 'bg-amber-50 border-amber-500 text-amber-900 ring-2 ring-amber-200 scale-105';
+        } else if (inRange) {
+          cardClass = 'bg-indigo-50/70 border-indigo-300 text-indigo-950';
+        } else if (step.left !== null && step.right !== null) {
+          cardClass = 'bg-slate-100 border-slate-200 text-slate-400 opacity-65';
+        }
+
+        const topBadges = [];
+        if (step.left === i) topBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white">L</span>');
+        if (step.mid === i) topBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-500 text-white">M</span>');
+        if (step.right === i) topBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-purple-600 text-white">R</span>');
+
+        const bottomBadges = [];
+        if (step.num1 === i) bottomBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white">num1</span>');
+        if (step.num2 === i) bottomBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-teal-600 text-white">num2</span>');
+
+        cells.push(`
+          <div class="flex flex-col items-center min-w-[54px] sm:min-w-[62px]">
+            <div class="h-6 flex items-center justify-center gap-1 mb-1">
+              ${topBadges.join('')}
+            </div>
+            <div class="array-cell w-13 h-13 sm:w-14 sm:h-14 w-12 h-12 rounded-xl border-2 flex flex-col items-center justify-center shadow-sm relative ${cardClass}">
+              <span class="text-base sm:text-lg font-bold font-mono">${nums[i]}</span>
+              ${isTargetVal ? '<span class="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" title="等于 target"></span>' : ''}
+            </div>
+            <span class="text-[11px] font-mono text-slate-400 mt-1.5">[${i}]</span>
+            <div class="h-6 flex items-center justify-center gap-1 mt-0.5">
+              ${bottomBadges.join('')}
+            </div>
+          </div>
+        `);
+      }
+
+      // Virtual end slot for index n (when left == n or num1 == n)
+      cells.push(buildVirtualCell(n, `len=${n}`, step));
+
+      stage.innerHTML = cells.join('');
+    }
+
+    function buildVirtualCell(idx, label, step) {
+      const topBadges = [];
+      if (step.left === idx) topBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white">L</span>');
+      if (step.right === idx) topBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-purple-600 text-white">R</span>');
+
+      const bottomBadges = [];
+      if (step.num1 === idx) bottomBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white">num1</span>');
+      if (step.num2 === idx) bottomBadges.push('<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-teal-600 text-white">num2</span>');
+
+      return `
+        <div class="flex flex-col items-center min-w-[54px] sm:min-w-[62px]">
+          <div class="h-6 flex items-center justify-center gap-1 mb-1">
+            ${topBadges.join('')}
+          </div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[11px] font-mono text-slate-400">
+            ${label}
+          </div>
+          <span class="text-[11px] font-mono text-slate-400 mt-1.5">[${idx}]</span>
+          <div class="h-6 flex items-center justify-center gap-1 mt-0.5">
+            ${bottomBadges.join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const step = state.steps[state.currentStep];
+      if (!step) return;
+
+      renderArray(step);
+      renderCode(step.activeLine);
+
+      // Phase header
+      const badge = document.getElementById('phase-badge');
+      const phaseColors = {
+        1: 'bg-indigo-100 text-indigo-700',
+        2: 'bg-teal-100 text-teal-700',
+        3: 'bg-emerald-100 text-emerald-700'
+      };
+      badge.className = `px-2.5 py-1 text-xs font-bold rounded-lg ${phaseColors[step.phase]}`;
+      badge.textContent = `阶段 ${step.phase}`;
+      document.getElementById('phase-title').textContent = step.phaseTitle;
+      document.getElementById('code-status-tag').textContent = `Line ${step.activeLine} · 阶段 ${step.phase}`;
+
+      // Description & math
+      document.getElementById('step-desc').textContent = step.desc;
+      const mathEl = document.getElementById('step-math');
+      if (step.math) {
+        mathEl.textContent = step.math;
+        mathEl.classList.remove('hidden');
+      } else {
+        mathEl.classList.add('hidden');
+      }
+
+      // Variables
+      document.getElementById('var-target').textContent = step.currentTarget !== null ? step.currentTarget : '-';
+      document.getElementById('var-left').textContent = step.left !== null ? step.left : '-';
+      document.getElementById('var-right').textContent = step.right !== null ? step.right : '-';
+      document.getElementById('var-mid').textContent = step.mid !== null ? step.mid : '-';
+      document.getElementById('var-num1').textContent = step.num1 !== null ? step.num1 : '-';
+      document.getElementById('var-num2').textContent = step.num2 !== null ? step.num2 : '-';
+
+      // Controls
+      const total = state.steps.length - 1;
+      document.getElementById('step-slider').max = total;
+      document.getElementById('step-slider').value = state.currentStep;
+      document.getElementById('step-counter').textContent = `${state.currentStep} / ${total}`;
+      document.getElementById('prev-btn').disabled = state.currentStep === 0;
+      document.getElementById('next-btn').disabled = state.currentStep === total;
+
+      // Phase pills active state
+      const pills = [
+        { el: document.getElementById('jump-p1'), p: 1 },
+        { el: document.getElementById('jump-p2'), p: 2 },
+        { el: document.getElementById('jump-p3'), p: 3 }
+      ];
+      pills.forEach(({ el, p }) => {
+        if (step.phase === p) {
+          el.className = 'phase-pill px-2.5 py-1 text-xs font-semibold rounded-lg border border-indigo-600 bg-indigo-600 text-white transition cursor-pointer';
+        } else {
+          el.className = 'phase-pill px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition cursor-pointer';
+        }
+      });
+    }
+
+    function stopPlay() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      document.getElementById('play-btn').textContent = '▶ 自动播放';
+    }
+
+    function togglePlay() {
+      if (state.timer) {
+        stopPlay();
+        return;
+      }
+      if (state.currentStep >= state.steps.length - 1) {
+        state.currentStep = 0;
+      }
+      document.getElementById('play-btn').textContent = '⏸ 暂停';
+      const speed = Number(document.getElementById('speed-select').value);
+      state.timer = setInterval(() => {
+        if (state.currentStep < state.steps.length - 1) {
+          state.currentStep++;
+          render();
+        } else {
+          stopPlay();
+        }
+      }, speed);
+    }
+
+    function initData(nums, target) {
+      stopPlay();
+      state.nums = nums;
+      state.target = target;
+      const generated = generateSteps(nums, target);
+      state.steps = generated.steps;
+      state.phaseStarts = generated.phaseStarts;
+      state.currentStep = 0;
+      render();
+    }
+
+    // Event Listeners
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      stopPlay();
+      if (state.currentStep > 0) {
+        state.currentStep--;
+        render();
+      }
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      stopPlay();
+      if (state.currentStep < state.steps.length - 1) {
+        state.currentStep++;
+        render();
+      }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      stopPlay();
+      state.currentStep = 0;
+      render();
+    });
+
+    document.getElementById('play-btn').addEventListener('click', togglePlay);
+
+    document.getElementById('speed-select').addEventListener('change', () => {
+      if (state.timer) {
+        stopPlay();
+        togglePlay();
+      }
+    });
+
+    document.getElementById('step-slider').addEventListener('input', (e) => {
+      stopPlay();
+      state.currentStep = Number(e.target.value);
+      render();
+    });
+
+    document.getElementById('jump-p1').addEventListener('click', () => {
+      stopPlay();
+      state.currentStep = state.phaseStarts.p1;
+      render();
+    });
+
+    document.getElementById('jump-p2').addEventListener('click', () => {
+      stopPlay();
+      state.currentStep = state.phaseStarts.p2;
+      render();
+    });
+
+    document.getElementById('jump-p3').addEventListener('click', () => {
+      stopPlay();
+      state.currentStep = state.phaseStarts.p3;
+      render();
+    });
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = PRESETS[Number(btn.dataset.preset)];
+        document.getElementById('nums-input').value = p.nums.join(', ');
+        document.getElementById('target-input').value = p.target;
+        document.getElementById('input-error').classList.add('hidden');
+        initData([...p.nums], p.target);
+      });
+    });
+
+    document.getElementById('apply-btn').addEventListener('click', () => {
+      const rawNums = document.getElementById('nums-input').value.trim();
+      const rawTarget = document.getElementById('target-input').value.trim();
+      const errEl = document.getElementById('input-error');
+
+      if (rawTarget === '' || isNaN(Number(rawTarget))) {
+        errEl.textContent = '请输入有效的整数 target。';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const target = parseInt(rawTarget, 10);
+
+      let nums = [];
+      if (rawNums !== '') {
+        const parts = rawNums.split(/[,，\s]+/).filter(Boolean);
+        for (const p of parts) {
+          if (isNaN(Number(p))) {
+            errEl.textContent = `输入包含非数字内容 "${p}"，请用逗号分隔整数。`;
+            errEl.classList.remove('hidden');
+            return;
+          }
+          nums.push(parseInt(p, 10));
+        }
+      }
+
+      // Check sorted
+      let sorted = true;
+      for (let i = 1; i < nums.length; i++) {
+        if (nums[i] < nums[i - 1]) {
+          sorted = false;
+          break;
+        }
+      }
+      if (!sorted) {
+        nums.sort((a, b) => a - b);
+        document.getElementById('nums-input').value = nums.join(', ');
+        errEl.textContent = '提示：二分查找要求数组非递减有序，已自动为您升序排列。';
+        errEl.classList.remove('hidden');
+      } else {
+        errEl.classList.add('hidden');
+      }
+
+      initData(nums, target);
+    });
+
+    // Init
+    initData([5, 7, 7, 8, 8, 10], 8);
+  </script>
+</body>
+</html>
