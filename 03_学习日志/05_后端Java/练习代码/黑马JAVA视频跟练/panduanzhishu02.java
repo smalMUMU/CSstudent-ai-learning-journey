@@ -3,7 +3,7 @@ public class panduanzhishu02 {
         int count = 0;
         for (int i = 100; i <= 200; i++){
             boolean flag = true;
-            for (int j = 2; j * j < i; j++){
+            for (int j = 2; j * j <= i; j++){
                 if (i % j == 0){
                     flag = false;
                     break;
