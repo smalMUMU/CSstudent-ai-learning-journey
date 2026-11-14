@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 278 · 第一个错误的版本 - 交互式二分查找可视化</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .code-line {
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    .code-line.active {
+      background-color: rgba(59, 130, 246, 0.18);
+      border-left-color: #3b82f6;
+    }
+    .version-cell {
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .pointer-pill {
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-blue-500/30">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+    <!-- Header -->
+    <header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5">
+      <div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">LeetCode 278</span>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">第一个错误的版本 (First Bad Version)</h1>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">
+          逐步观察二分查找如何用 <span class="text-blue-300 font-mono">left</span>、<span class="text-purple-300 font-mono">right</span>、<span class="text-amber-300 font-mono">mid</span> 夹逼出第一个坏版本，理解为什么最后 <span class="text-emerald-300 font-mono">return left</span>。
+        </p>
+      </div>
+
+      <!-- Presets -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs text-slate-400 mr-1">快速用例:</span>
+        <button id="preset-normal" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">常规 (n=10, bad=7)</button>
+        <button id="preset-first" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">第1个就坏 (n=8, bad=1)</button>
+        <button id="preset-last" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">最后才坏 (n=8, bad=8)</button>
+        <button id="preset-one" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">极小 (n=1, bad=1)</button>
+      </div>
+    </header>
+
+    <!-- Parameters & Playback Bar -->
+    <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        <!-- Total n -->
+        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <label for="input-n" class="text-slate-300 font-medium">总版本数 <span class="font-mono text-blue-300">n</span></label>
+            <span id="label-n" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">10</span>
+          </div>
+          <input id="input-n" type="range" min="1" max="16" value="10" class="w-full accent-blue-500 cursor-pointer" />
+        </div>
+
+        <!-- First Bad Version -->
+        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <label for="input-bad" class="text-slate-300 font-medium">首个坏版本 <span class="font-mono text-rose-300">firstBad</span></label>
+            <span id="label-bad" class="font-mono font-bold text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded">7</span>
+          </div>
+          <input id="input-bad" type="range" min="1" max="10" value="7" class="w-full accent-rose-500 cursor-pointer" />
+        </div>
+
+        <!-- Options -->
+        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs text-slate-300 font-medium">left 初始值</span>
+            <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700">
+              <button id="btn-left-0" class="px-2.5 py-1 text-xs font-mono rounded-md transition">left = 0</button>
+              <button id="btn-left-1" class="px-2.5 py-1 text-xs font-mono rounded-md transition">left = 1</button>
+            </div>
+          </div>
+          <label class="flex items-center justify-between text-xs text-slate-300 cursor-pointer select-none">
+            <span>上帝视角（显示真实好坏）</span>
+            <input id="toggle-xray" type="checkbox" checked class="w-4 h-4 accent-emerald-500 rounded cursor-pointer" />
+          </label>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-reset" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">↺ 重置</button>
+          <button id="btn-prev" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 border border-slate-700 transition">← 上一步</button>
+          <button id="btn-next" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm shadow-blue-900/40 transition">下一步 →</button>
+          <button id="btn-play" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition">▶ 自动播放</button>
+        </div>
+
+        <div class="flex items-center gap-3 text-xs text-slate-400">
+          <div class="flex items-center gap-1.5">
+            <span>速度:</span>
+            <select id="select-speed" class="bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none">
+              <option value="1400">慢速 (0.7x)</option>
+              <option value="900" selected>正常 (1x)</option>
+              <option value="450">快速 (2x)</option>
+            </select>
+          </div>
+          <span id="step-counter" class="font-mono text-slate-300 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700">步骤 0 / 0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Visualization + Code Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Left: Visual Array & Explanation (7 cols) -->
+      <div class="lg:col-span-7 space-y-5">
+        <!-- Version Array Stage -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <h2 class="text-sm font-semibold text-slate-200">版本序列可视化 <span class="text-xs font-normal text-slate-400">（点击任意版本块可直接设为首个坏版本）</span></h2>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span><span class="text-blue-300 font-mono">L=left</span></span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span><span class="text-amber-300 font-mono">M=mid</span></span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span><span class="text-purple-300 font-mono">R=right</span></span>
+            </div>
+          </div>
+
+          <!-- Array Grid -->
+          <div id="array-container" class="flex flex-wrap gap-2 sm:gap-2.5 pt-2 pb-3"></div>
+
+          <!-- Search Interval Legend -->
+          <div class="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/60 inline-block"></span>好版本 (False)</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500/20 border border-rose-500/60 inline-block"></span>坏版本 (True)</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-800/40 border border-slate-700/50 opacity-45 inline-block"></span>已排除区间</span>
+            </div>
+            <div class="font-mono text-slate-300">
+              API 调用次数: <span id="api-calls" class="text-amber-300 font-bold">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step Explanation Card -->
+        <div id="explanation-card" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span id="phase-badge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">初始化</span>
+            <span id="interval-badge" class="font-mono text-xs text-slate-400">当前搜索区间: [0, 10]</span>
+          </div>
+          <p id="explanation-text" class="text-sm sm:text-base text-slate-100 leading-relaxed"></p>
+          <div id="tip-banner" class="hidden mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed"></div>
+        </div>
+
+        <!-- Intuition Card -->
+        <div class="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-2">
+          <h3 class="text-sm font-semibold text-emerald-300">核心直觉：为什么循环结束时可以直接 return left？</h3>
+          <ul class="text-xs sm:text-sm text-slate-300 space-y-1.5 list-disc list-inside leading-relaxed">
+            <li><span class="font-mono text-blue-300">left</span> 左侧的所有版本都已被证实是<span class="text-emerald-300">好版本</span>（因为只有遇到 <code class="text-emerald-300">not bad</code> 时才令 <code class="text-blue-300">left = mid + 1</code>）。</li>
+            <li><span class="font-mono text-purple-300">right</span> 右侧的所有版本都已被证实是<span class="text-rose-300">坏版本</span>（因为只有遇到 <code class="text-rose-300">bad</code> 时才令 <code class="text-purple-300">right = mid - 1</code>）。</li>
+            <li>当 <code class="font-mono text-slate-200">while left &lt;= right</code> 结束时，必定有 <code class="font-mono text-slate-200">left == right + 1</code>：此时 <code class="font-mono text-purple-300">right</code> 停在最后一个好版本，而 <code class="font-mono text-blue-300">left</code> 恰好停在<strong class="text-white">第一个坏版本</strong>上！</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right: Synchronized Code & Trace Table (5 cols) -->
+      <div class="lg:col-span-5 space-y-5">
+        <!-- Live Variables -->
+        <div class="grid grid-cols-4 gap-2.5">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-mono text-blue-300">left</div>
+            <div id="var-left" class="text-lg font-mono font-bold text-white mt-0.5">0</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-mono text-purple-300">right</div>
+            <div id="var-right" class="text-lg font-mono font-bold text-white mt-0.5">10</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-mono text-amber-300">mid</div>
+            <div id="var-mid" class="text-lg font-mono font-bold text-white mt-0.5">-</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-mono text-slate-400">bad</div>
+            <div id="var-bad" class="text-lg font-mono font-bold text-white mt-0.5">-</div>
+          </div>
+        </div>
+
+        <!-- Python Code Viewer -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-slate-950/70 border-b border-slate-800">
+            <span class="text-xs font-mono text-slate-300">solution.py</span>
+            <span id="code-status" class="text-xs text-slate-400">准备就绪</span>
+          </div>
+          <div id="code-container" class="py-2 text-xs sm:text-[13px] font-mono leading-6 overflow-x-auto"></div>
+        </div>
+
+        <!-- Execution Log Table -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="px-4 py-2.5 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-200">每轮迭代记录</span>
+            <span class="text-[11px] text-slate-400">时间复杂度 O(log n)</span>
+          </div>
+          <div class="max-h-60 overflow-y-auto">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="bg-slate-950/50 text-slate-400 sticky top-0">
+                <tr>
+                  <th class="px-3 py-2">轮次</th>
+                  <th class="px-3 py-2">[L, R]</th>
+                  <th class="px-3 py-2">mid</th>
+                  <th class="px-3 py-2">bad?</th>
+                  <th class="px-3 py-2">更新</th>
+                </tr>
+              </thead>
+              <tbody id="log-tbody" class="divide-y divide-slate-800/70 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      n: 10,
+      firstBad: 7,
+      leftStart: 0,
+      xray: true,
+      steps: [],
+      stepIndex: 0,
+      timer: null,
+      speed: 900
+    };
+
+    function getCodeLines(leftStart) {
+      return [
+        { num: 1, text: 'class Solution:' },
+        { num: 2, text: '    def firstBadVersion(self, n: int) -> int:' },
+        { num: 3, text: `        left = ${leftStart}` },
+        { num: 4, text: '        right = n' },
+        { num: 5, text: '        while left <= right:' },
+        { num: 6, text: '            mid = (left + right) // 2' },
+        { num: 7, text: '            bad = isBadVersion(mid)' },
+        { num: 8, text: '            if not bad:' },
+        { num: 9, text: '                left = mid + 1' },
+        { num: 10, text: '            else:' },
+        { num: 11, text: '                right = mid - 1' },
+        { num: 12, text: '        return left' }
+      ];
+    }
+
+    function isBadVersion(v, firstBad) {
+      return v >= firstBad;
+    }
+
+    function buildSteps(n, firstBad, leftStart) {
+      const steps = [];
+      let left = leftStart;
+      let right = n;
+      let apiCalls = 0;
+      const known = {};
+      const logs = [];
+      let round = 0;
+
+      steps.push({
+        phase: '初始化',
+        badgeClass: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+        activeLine: 3,
+        left,
+        right,
+        mid: null,
+        bad: null,
+        apiCalls,
+        known: { ...known },
+        logs: [...logs],
+        explanation: `初始化搜索边界：left = ${left}，right = ${right}（总版本数 n = ${n}）。准备进入 while left <= right 循环。`,
+        tip: leftStart === 0 && firstBad === 1
+          ? '注意：当 left = 0 且第 1 个版本就出错时，后续可能会调用到 isBadVersion(0)（LeetCode 版本号从 1 开始，通常建议 left = 1）。'
+          : null
+      });
+
+      while (left <= right) {
+        round++;
+        const roundL = left;
+        const roundR = right;
+        const mid = Math.floor((left + right) / 2);
+
+        steps.push({
+          phase: `第 ${round} 轮 · 计算中点`,
+          badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+          activeLine: 6,
+          left,
+          right,
+          mid,
+          bad: null,
+          apiCalls,
+          known: { ...known },
+          logs: [...logs],
+          explanation: `当前区间 [${left}, ${right}] 满足 left <= right。计算中点 mid = (${left} + ${right}) // 2 = ${mid}。`,
+          tip: mid === 0
+            ? '此时 mid = 0，接下来会调用 isBadVersion(0)。在 1-indexed 的题目中 0 属于越界位（通常返回 False）。'
+            : null
+        });
+
+        const bad = isBadVersion(mid, firstBad);
+        apiCalls++;
+        known[mid] = bad;
+
+        steps.push({
+          phase: `第 ${round} 轮 · 调用 API`,
+          badgeClass: bad
+            ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+            : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+          activeLine: 7,
+          left,
+          right,
+          mid,
+          bad,
+          apiCalls,
+          known: { ...known },
+          logs: [...logs],
+          explanation: bad
+            ? `调用 isBadVersion(${mid}) 返回 True（坏版本！）。说明 ${mid} 可能是第一个坏版本，或者第一个坏版本在 ${mid} 的左边。`
+            : `调用 isBadVersion(${mid}) 返回 False（好版本）。说明 ${mid} 及它左边的所有版本都是好的，第一个坏版本一定在右边。`,
+          tip: null
+        });
+
+        if (!bad) {
+          left = mid + 1;
+          logs.push({
+            round,
+            range: `[${roundL}, ${roundR}]`,
+            mid,
+            bad: false,
+            action: `left = ${left}`
+          });
+          steps.push({
+            phase: `第 ${round} 轮 · 收缩左边界`,
+            badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+            activeLine: 9,
+            left,
+            right,
+            mid,
+            bad,
+            apiCalls,
+            known: { ...known },
+            logs: [...logs],
+            explanation: `因为 not bad 为真，将左边界右移：left = mid + 1 = ${mid} + 1 = ${left}。区间 [${roundL}, ${mid}] 已被全部排除。`,
+            tip: null
+          });
+        } else {
+          right = mid - 1;
+          logs.push({
+            round,
+            range: `[${roundL}, ${roundR}]`,
+            mid,
+            bad: true,
+            action: `right = ${right}`
+          });
+          steps.push({
+            phase: `第 ${round} 轮 · 收缩右边界`,
+            badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+            activeLine: 11,
+            left,
+            right,
+            mid,
+            bad,
+            apiCalls,
+            known: { ...known },
+            logs: [...logs],
+            explanation: `因为 bad 为 True，将右边界左移：right = mid - 1 = ${mid} - 1 = ${right}。区间 [${mid}, ${roundR}] 已知全是坏版本（${mid} 作为候选记录在 left 之后逼近的位置）。`,
+            tip: null
+          });
+        }
+      }
+
+      steps.push({
+        phase: '循环结束 · 返回结果',
+        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        activeLine: 12,
+        left,
+        right,
+        mid: null,
+        bad: null,
+        apiCalls,
+        known: { ...known },
+        logs: [...logs],
+        explanation: `此时 left (${left}) > right (${right})，不满足 left <= right，跳出循环！right 停在最后一个好版本 ${right}，而 left 恰好停在第一个坏版本 ${left}，因此 return left (${left})。`,
+        tip: `仅用了 ${apiCalls} 次 API 调用就从 ${n} 个版本中精确定位到第 ${left} 个版本！`
+      });
+
+      return steps;
+    }
+
+    function stopAutoPlay() {
+      if (state.timer !== null) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      const btnPlay = document.getElementById('btn-play');
+      btnPlay.textContent = '▶ 自动播放';
+      btnPlay.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+      btnPlay.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+    }
+
+    function startAutoPlay() {
+      if (state.stepIndex >= state.steps.length - 1) {
+        state.stepIndex = 0;
+        render();
+      }
+      stopAutoPlay();
+      const btnPlay = document.getElementById('btn-play');
+      btnPlay.textContent = '⏸ 暂停';
+      btnPlay.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+      btnPlay.classList.add('bg-amber-600', 'hover:bg-amber-500');
+      state.timer = setInterval(() => {
+        if (state.stepIndex < state.steps.length - 1) {
+          state.stepIndex++;
+          render();
+        } else {
+          stopAutoPlay();
+        }
+      }, state.speed);
+    }
+
+    function rebuild() {
+      stopAutoPlay();
+      if (state.firstBad > state.n) {
+        state.firstBad = state.n;
+      }
+      const inputN = document.getElementById('input-n');
+      const inputBad = document.getElementById('input-bad');
+      inputN.value = state.n;
+      inputBad.max = state.n;
+      inputBad.value = state.firstBad;
+      document.getElementById('label-n').textContent = state.n;
+      document.getElementById('label-bad').textContent = state.firstBad;
+
+      const btn0 = document.getElementById('btn-left-0');
+      const btn1 = document.getElementById('btn-left-1');
+      if (state.leftStart === 0) {
+        btn0.className = 'px-2.5 py-1 text-xs font-mono rounded-md bg-blue-600 text-white transition';
+        btn1.className = 'px-2.5 py-1 text-xs font-mono rounded-md text-slate-400 hover:text-white transition';
+      } else {
+        btn1.className = 'px-2.5 py-1 text-xs font-mono rounded-md bg-blue-600 text-white transition';
+        btn0.className = 'px-2.5 py-1 text-xs font-mono rounded-md text-slate-400 hover:text-white transition';
+      }
+
+      state.steps = buildSteps(state.n, state.firstBad, state.leftStart);
+      state.stepIndex = 0;
+      render();
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function render() {
+      const step = state.steps[state.stepIndex];
+      const isDone = step.activeLine === 12;
+
+      document.getElementById('step-counter').textContent = `步骤 ${state.stepIndex} / ${state.steps.length - 1}`;
+      document.getElementById('btn-prev').disabled = state.stepIndex === 0;
+      document.getElementById('btn-next').disabled = state.stepIndex === state.steps.length - 1;
+
+      document.getElementById('var-left').textContent = step.left;
+      document.getElementById('var-right').textContent = step.right;
+      document.getElementById('var-mid').textContent = step.mid === null ? '-' : step.mid;
+      const varBadEl = document.getElementById('var-bad');
+      if (step.bad === null) {
+        varBadEl.textContent = '-';
+        varBadEl.className = 'text-lg font-mono font-bold text-slate-400 mt-0.5';
+      } else if (step.bad) {
+        varBadEl.textContent = 'True';
+        varBadEl.className = 'text-lg font-mono font-bold text-rose-400 mt-0.5';
+      } else {
+        varBadEl.textContent = 'False';
+        varBadEl.className = 'text-lg font-mono font-bold text-emerald-400 mt-0.5';
+      }
+      document.getElementById('api-calls').textContent = step.apiCalls;
+
+      const phaseBadge = document.getElementById('phase-badge');
+      phaseBadge.textContent = step.phase;
+      phaseBadge.className = `px-2.5 py-0.5 text-xs font-semibold rounded-full border ${step.badgeClass}`;
+      document.getElementById('interval-badge').textContent =
+        step.left <= step.right
+          ? `当前搜索区间: [${step.left}, ${step.right}]`
+          : `搜索区间已空: left(${step.left}) > right(${step.right})`;
+      document.getElementById('explanation-text').textContent = step.explanation;
+
+      const tipBanner = document.getElementById('tip-banner');
+      if (step.tip) {
+        tipBanner.textContent = step.tip;
+        tipBanner.classList.remove('hidden');
+      } else {
+        tipBanner.classList.add('hidden');
+      }
+
+      const codeLines = getCodeLines(state.leftStart);
+      const codeContainer = document.getElementById('code-container');
+      codeContainer.innerHTML = codeLines
+        .map((line) => {
+          const isActive = line.num === step.activeLine;
+          return `<div class="code-line ${isActive ? 'active text-white font-semibold' : 'text-slate-400'} px-4 py-0.5 flex items-center gap-3 whitespace-pre"><span class="w-5 text-right text-[11px] text-slate-600 select-none">${line.num}</span><span>${escapeHtml(line.text)}</span></div>`;
+        })
+        .join('');
+      document.getElementById('code-status').textContent = `执行第 ${step.activeLine} 行`;
+
+      const startIdx = state.leftStart === 0 ? 0 : 1;
+      const arrayContainer = document.getElementById('array-container');
+      const cellsHtml = [];
+
+      for (let v = startIdx; v <= state.n; v++) {
+        const isZeroSlot = v === 0;
+        const inRange = v >= step.left && v <= step.right;
+        const isMid = step.mid === v;
+        const isLeft = step.left === v;
+        const isRight = step.right === v;
+        const probed = Object.prototype.hasOwnProperty.call(step.known, v);
+        const trueBad = isBadVersion(v, state.firstBad);
+
+        let cardStyle = 'bg-slate-800/80 border-slate-700 text-slate-200';
+        let statusText = '?';
+        let statusColor = 'text-slate-500';
+
+        if (isZeroSlot) {
+          cardStyle = 'bg-slate-900/60 border-dashed border-slate-700 text-slate-400';
+          statusText = probed ? 'False' : 'v0';
+          statusColor = probed ? 'text-emerald-400' : 'text-slate-500';
+        } else if (probed || state.xray) {
+          if (trueBad) {
+            cardStyle = probed
+              ? 'bg-rose-500/20 border-rose-500/70 text-rose-100'
+              : 'bg-rose-500/10 border-rose-500/35 text-rose-200';
+            statusText = '✕ 坏';
+            statusColor = 'text-rose-400';
+          } else {
+            cardStyle = probed
+              ? 'bg-emerald-500/20 border-emerald-500/70 text-emerald-100'
+              : 'bg-emerald-500/10 border-emerald-500/35 text-emerald-200';
+            statusText = '✓ 好';
+            statusColor = 'text-emerald-400';
+          }
+        }
+
+        const dimClass = !inRange && !isMid && !(isDone && isLeft) ? 'opacity-35 scale-95' : 'opacity-100';
+        const ringClass = isMid
+          ? 'ring-2 ring-amber-400 shadow-lg shadow-amber-500/20 scale-105'
+          : isDone && isLeft
+            ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/25 scale-105'
+            : '';
+
+        const badges = [];
+        if (isLeft) badges.push('<span class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-[10px] font-bold">L</span>');
+        if (isMid) badges.push('<span class="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 text-[10px] font-bold">M</span>');
+        if (isRight) badges.push('<span class="px-1.5 py-0.5 rounded bg-purple-600 text-white text-[10px] font-bold">R</span>');
+
+        const pointerRow = badges.length > 0
+          ? `<div class="flex items-center justify-center gap-1 min-h-[20px]">${badges.join('')}</div>`
+          : '<div class="min-h-[20px]"></div>';
+
+        const clickableAttr = isZeroSlot
+          ? 'title="版本 0（占位）"'
+          : `data-version="${v}" title="点击将版本 ${v} 设为首个坏版本"`;
+        const cursorClass = isZeroSlot ? 'cursor-default' : 'cursor-pointer hover:border-slate-400';
+
+        cellsHtml.push(`
+          <div class="flex flex-col items-center gap-1.5 w-14 sm:w-16">
+            ${pointerRow}
+            <button type="button" ${clickableAttr} class="version-cell w-full py-2.5 px-1 rounded-xl border ${cardStyle} ${dimClass} ${ringClass} ${cursorClass} flex flex-col items-center justify-center">
+              <span class="text-sm sm:text-base font-mono font-bold">${v}</span>
+              <span class="text-[11px] font-medium ${statusColor} mt-0.5">${statusText}</span>
+            </button>
+          </div>
+        `);
+      }
+
+      arrayContainer.innerHTML = cellsHtml.join('');
+
+      const logTbody = document.getElementById('log-tbody');
+      if (step.logs.length === 0) {
+        logTbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-slate-500">点击「下一步」开始单步执行</td></tr>';
+      } else {
+        logTbody.innerHTML = step.logs
+          .map((row) => `
+            <tr class="hover:bg-slate-800/40">
+              <td class="px-3 py-2 text-slate-400">#${row.round}</td>
+              <td class="px-3 py-2">${row.range}</td>
+              <td class="px-3 py-2 text-amber-300 font-semibold">${row.mid}</td>
+              <td class="px-3 py-2 ${row.bad ? 'text-rose-400' : 'text-emerald-400'}">${row.bad ? 'True' : 'False'}</td>
+              <td class="px-3 py-2 text-blue-300">${row.action}</td>
+            </tr>
+          `)
+          .join('');
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('input-n').addEventListener('input', (e) => {
+      state.n = Number(e.target.value);
+      rebuild();
+    });
+
+    document.getElementById('input-bad').addEventListener('input', (e) => {
+      state.firstBad = Number(e.target.value);
+      rebuild();
+    });
+
+    document.getElementById('btn-left-0').addEventListener('click', () => {
+      state.leftStart = 0;
+      rebuild();
+    });
+
+    document.getElementById('btn-left-1').addEventListener('click', () => {
+      state.leftStart = 1;
+      rebuild();
+    });
+
+    document.getElementById('toggle-xray').addEventListener('change', (e) => {
+      state.xray = e.target.checked;
+      render();
+    });
+
+    document.getElementById('array-container').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-version]');
+      if (!btn) return;
+      state.firstBad = Number(btn.getAttribute('data-version'));
+      rebuild();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      stopAutoPlay();
+      state.stepIndex = 0;
+      render();
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      stopAutoPlay();
+      if (state.stepIndex > 0) {
+        state.stepIndex--;
+        render();
+      }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      stopAutoPlay();
+      if (state.stepIndex < state.steps.length - 1) {
+        state.stepIndex++;
+        render();
+      }
+    });
+
+    document.getElementById('btn-play').addEventListener('click', () => {
+      if (state.timer !== null) {
+        stopAutoPlay();
+      } else {
+        startAutoPlay();
+      }
+    });
+
+    document.getElementById('select-speed').addEventListener('change', (e) => {
+      state.speed = Number(e.target.value);
+      if (state.timer !== null) {
+        startAutoPlay();
+      }
+    });
+
+    document.getElementById('preset-normal').addEventListener('click', () => {
+      state.n = 10; state.firstBad = 7; rebuild();
+    });
+    document.getElementById('preset-first').addEventListener('click', () => {
+      state.n = 8; state.firstBad = 1; rebuild();
+    });
+    document.getElementById('preset-last').addEventListener('click', () => {
+      state.n = 8; state.firstBad = 8; rebuild();
+    });
+    document.getElementById('preset-one').addEventListener('click', () => {
+      state.n = 1; state.firstBad = 1; rebuild();
+    });
+
+    // Init
+    rebuild();
+  </script>
+</body>
+</html>
