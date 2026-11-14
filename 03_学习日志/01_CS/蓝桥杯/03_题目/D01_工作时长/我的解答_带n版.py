@@ -32,4 +32,10 @@ for i in range(n):
     t = datetime.strptime(line, "%Y-%m-%d %H:%M:%S")
     times.append(t)
 
-print(len(times))
+times.sort()
+
+total = 0
+for i in range(0, len(times), 2):
+    total += int((times[i + 1] - times[i]).total_seconds())
+
+print(total)

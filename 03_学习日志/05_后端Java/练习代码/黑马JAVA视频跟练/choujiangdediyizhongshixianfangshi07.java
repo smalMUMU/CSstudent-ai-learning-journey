@@ -33,4 +33,7 @@ public class choujiangdediyizhongshixianfangshi07 {
         }
         return flag;
     }
+
+
+    //黑马优化了抽奖池子里面的奖金顺序，我没写，现在写一下，我还是不想写，算了还是写一下
 }
