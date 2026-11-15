@@ -12,3 +12,26 @@
 #   CMD:        type 样例输入.txt | python -X utf8 我的解答.py
 #
 # ---------- 从这里开始写 ----------
+
+n = int(input())
+total = 0
+pairs = []
+
+while len(pairs) < n:
+    line = input()
+    if not line.strip():
+        continue
+    name, v = line.split()
+    v = int(v)
+    total += v
+    pairs.append((name, v))
+pairs.sort(key = lambda p: p[0])
+pairs.sort(key = lambda p: p[1], reverse = True)
+
+for name, v in pairs:
+    print(f"{name} {v}")
+print(f"{total / n:.2f}")
+
+#我暂时就写到这里，了处理升序和降序的我不会写，然后至少输出的大致顺序是对的
+#我想想先暂时这样还是去问？我写了12分钟
+
