@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode 153 · 寻找旋转排序数组中的最小值 · 交互式图解</title>
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --surface: #ffffff;
+      --surface-dim: #eef2f7;
+      --surface-hover: #e4eaf3;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --primary-text: #1d4ed8;
+      --green: #059669;
+      --green-soft: #d1fae5;
+      --amber: #d97706;
+      --amber-soft: #fef3c7;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --code-bg: #f8fafc;
+      --shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #111827;
+      --surface-dim: #1e293b;
+      --surface-hover: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #1f2937;
+      --primary: #60a5fa;
+      --primary-soft: #1e3a8a;
+      --primary-text: #93c5fd;
+      --green: #34d399;
+      --green-soft: #064e3b;
+      --amber: #fbbf24;
+      --amber-soft: #451a03;
+      --red: #f87171;
+      --red-soft: #450a0a;
+      --code-bg: #0f172a;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px 16px 36px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title-group h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .title-group p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .theme-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .theme-btn:hover {
+      background: var(--surface-hover);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preset-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      background: var(--surface-dim);
+      color: var(--text);
+      border: 1px solid transparent;
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      background: var(--surface-hover);
+    }
+
+    .preset-btn.active {
+      background: var(--primary-soft);
+      color: var(--primary-text);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .custom-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .custom-input {
+      background: var(--surface-dim);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      width: 210px;
+      outline: none;
+    }
+
+    .custom-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      background: var(--surface-dim);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--surface-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.9;
+      background: var(--primary);
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--red);
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-msg.show {
+      display: block;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 16px;
+      font-weight: 600;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .stage-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: var(--surface-dim);
+      border-radius: var(--radius-md);
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 720px) {
+      .split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-x: auto;
+    }
+
+    .code-line {
+      padding: 2px 10px;
+      border-radius: 6px;
+      white-space: pre;
+      transition: background 0.15s ease;
+    }
+
+    .code-line.active {
+      background: var(--primary-soft);
+      color: var(--primary-text);
+      font-weight: 600;
+    }
+
+    .explain-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .explain-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .explain-body {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .explain-tip {
+      margin-top: auto;
+      background: var(--surface-dim);
+      border-left: 3px solid var(--primary);
+      padding: 10px 12px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .transport-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .scrub-group {
+      flex: 1;
+      min-width: 180px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider {
+      flex: 1;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .step-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--surface-dim);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      min-width: 64px;
+      text-align: center;
+    }
+
+    .speed-select {
+      background: var(--surface-dim);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .hint-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title-group">
+        <h1>LeetCode 153 · 寻找旋转排序数组中的最小值</h1>
+        <p>二分查找边界收缩交互图解（对比 nums[mid] 与 nums[right]）</p>
+      </div>
+      <button type="button" id="btn-theme" class="theme-btn">切换深色主题</button>
+    </div>
+
+    <div class="card">
+      <div class="controls-top">
+        <div class="preset-group" id="preset-group">
+          <button type="button" class="preset-btn active" data-preset="0">[3, 4, 5, 1, 2]</button>
+          <button type="button" class="preset-btn" data-preset="1">[4, 5, 6, 7, 0, 1, 2]</button>
+          <button type="button" class="preset-btn" data-preset="2">[11, 13, 15, 17]</button>
+          <button type="button" class="preset-btn" data-preset="3">[2, 1]</button>
+        </div>
+        <div class="custom-input-row">
+          <input type="text" id="custom-array" class="custom-input" placeholder="自定义: 例如 5,6,7,1,2,3" aria-label="输入自定义数组">
+          <button type="button" id="btn-apply" class="btn">应用数组</button>
+        </div>
+      </div>
+      <div id="error-msg" class="error-msg">请输入合法的旋转排序数组（用英文逗号分隔整数，且无重复元素）。</div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">左指针 left (L)</div>
+        <div id="kpi-left" class="kpi-value">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">中点 mid (M)</div>
+        <div id="kpi-mid" class="kpi-value">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">右指针 right (R)</div>
+        <div id="kpi-right" class="kpi-value">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">当前状态 / 结果</div>
+        <div id="kpi-status" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="stage-card">
+      <svg id="array-svg" class="stage-svg" viewBox="0 0 760 260" role="img" aria-label="旋转排序数组柱状图可视化"></svg>
+    </div>
+
+    <div class="split-grid">
+      <div class="card">
+        <div class="section-label">Python 代码执行追踪</div>
+        <div class="code-box" id="code-box">
+          <div class="code-line" data-line="0">left = 0</div>
+          <div class="code-line" data-line="1">right = len(nums) - 1</div>
+          <div class="code-line" data-line="2">while left &lt; right:</div>
+          <div class="code-line" data-line="3">    mid = (left + right) // 2</div>
+          <div class="code-line" data-line="4">    if nums[mid] &gt; nums[right]:</div>
+          <div class="code-line" data-line="5">        left = mid + 1</div>
+          <div class="code-line" data-line="6">    elif nums[mid] &lt; nums[right]:</div>
+          <div class="code-line" data-line="7">        right = mid</div>
+          <div class="code-line" data-line="8">return nums[right]</div>
+        </div>
+      </div>
+
+      <div class="card explain-panel">
+        <div class="section-label">当前步骤解析</div>
+        <div id="explain-title" class="explain-title">初始化指针</div>
+        <div id="explain-body" class="explain-body"></div>
+        <div id="explain-tip" class="explain-tip"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="transport-bar">
+        <button type="button" id="btn-prev" class="btn">上一步</button>
+        <button type="button" id="btn-play" class="btn btn-primary">自动播放</button>
+        <button type="button" id="btn-next" class="btn">下一步</button>
+        <button type="button" id="btn-reset" class="btn">重置</button>
+        <select id="speed-select" class="speed-select" aria-label="播放速度">
+          <option value="1800">慢速 (1.8s)</option>
+          <option value="1200" selected>中速 (1.2s)</option>
+          <option value="700">快速 (0.7s)</option>
+        </select>
+        <div class="scrub-group">
+          <input type="range" id="step-slider" class="slider" min="0" max="1" value="0" aria-label="步骤进度条">
+          <div id="step-badge" class="step-badge">1 / 1</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint-footer">快捷键支持：← 上一步 · → 下一步 · 空格 播放/暂停</div>
+  </div>
+
+  <script>
+    const PRESETS = [
+      [3, 4, 5, 1, 2],
+      [4, 5, 6, 7, 0, 1, 2],
+      [11, 13, 15, 17],
+      [2, 1]
+    ];
+
+    let steps = [];
+    let currentStep = 0;
+    let timer = null;
+    let playDelay = 1200;
+
+    function buildSteps(nums) {
+      const trace = [];
+      let left = 0;
+      let right = nums.length - 1;
+
+      trace.push({
+        nums,
+        left,
+        right,
+        mid: null,
+        line: 1,
+        done: false,
+        title: '初始化左右指针',
+        body: `设置 left = 0 (值 ${nums[left]})，right = ${right} (值 ${nums[right]})，初始搜索区间覆盖整个数组。`,
+        tip: '虚线代表右端点 nums[right] 的高度：把旋转数组想象成“左高右低”两段斜坡，最小值就在断崖跌落处。'
+      });
+
+      while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        trace.push({
+          nums,
+          left,
+          right,
+          mid,
+          line: 3,
+          done: false,
+          title: `计算中点 mid = (${left} + ${right}) // 2 = ${mid}`,
+          body: `当前 nums[mid] = ${nums[mid]}，右端点 nums[right] = ${nums[right]}，准备比较两者大小。`,
+          tip: '为什么和 nums[right] 比而不是 nums[left]？因为未旋转时 nums[mid] > nums[left] 会误导方向，而 nums[right] 始终能准确区分左右两段。'
+        });
+
+        if (nums[mid] > nums[right]) {
+          trace.push({
+            nums,
+            left,
+            right,
+            mid,
+            line: 4,
+            done: false,
+            title: `判断成立：nums[${mid}] (${nums[mid]}) > nums[${right}] (${nums[right]})`,
+            body: `mid 高于右端点虚线，说明 mid 处于左侧较高的升序段，最小值必然在 mid 的右侧。`,
+            tip: 'mid 本身一定不是最小值，因此可以安全跳过它。'
+          });
+          left = mid + 1;
+          trace.push({
+            nums,
+            left,
+            right,
+            mid,
+            line: 5,
+            done: false,
+            title: `收缩左边界：left = mid + 1 = ${left}`,
+            body: `新的搜索区间缩小为 [${left}, ${right}]。`,
+            tip: '左边界推进到 mid + 1，保持最小值始终落在 [left, right] 闭区间内。'
+          });
+        } else if (nums[mid] < nums[right]) {
+          trace.push({
+            nums,
+            left,
+            right,
+            mid,
+            line: 6,
+            done: false,
+            title: `判断成立：nums[${mid}] (${nums[mid]}) < nums[${right}] (${nums[right]})`,
+            body: `mid 低于右端点虚线，说明 [mid, right] 处于右侧单调递增段，最小值在 mid 左侧或就是 mid 本身。`,
+            tip: '关键点：mid 有可能就是最小值！所以不能写成 right = mid - 1。'
+          });
+          right = mid;
+          trace.push({
+            nums,
+            left,
+            right,
+            mid,
+            line: 7,
+            done: false,
+            title: `收缩右边界：right = mid = ${right}`,
+            body: `新的搜索区间缩小为 [${left}, ${right}]。`,
+            tip: '继续循环，直到 left == right 收敛到唯一元素。'
+          });
+        } else {
+          break;
+        }
+      }
+
+      trace.push({
+        nums,
+        left,
+        right,
+        mid: right,
+        line: 8,
+        done: true,
+        title: `循环结束：left == right == ${right}`,
+        body: `搜索区间只剩最后一个元素，返回 nums[${right}] = ${nums[right]}，即为数组最小值。`,
+        tip: '时间复杂度 O(log n)，空间复杂度 O(1)。'
+      });
+
+      return trace;
+    }
+
+    function renderSvg(state) {
+      const svg = document.getElementById('array-svg');
+      const { nums, left, right, mid, done } = state;
+      const n = nums.length;
+      const W = 760;
+      const padX = 52;
+      const topY = 38;
+      const baseY = 190;
+      const maxBarH = baseY - topY;
+      const maxVal = Math.max(...nums);
+      const minVal = Math.min(...nums);
+      const floorVal = Math.min(0, minVal);
+      const span = maxVal - floorVal || 1;
+
+      const slotW = (W - padX * 2) / n;
+      const barW = Math.min(62, slotW * 0.62);
+
+      const parts = [];
+
+      // Reference line at nums[right]
+      const rightH = Math.max(22, ((nums[right] - floorVal) / span) * maxBarH);
+      const refY = baseY - rightH;
+      parts.push(`<line x1="24" y1="${refY.toFixed(1)}" x2="${W - 24}" y2="${refY.toFixed(1)}" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5 5"/>`);
+      parts.push(`<text x="${W - 26}" y="${(refY - 8).toFixed(1)}" text-anchor="end" font-size="12" fill="var(--amber)">参考线 nums[R] = ${nums[right]}</text>`);
+
+      // Baseline
+      parts.push(`<line x1="24" y1="${baseY}" x2="${W - 24}" y2="${baseY}" fill="none" stroke="var(--border)" stroke-width="1.5"/>`);
+
+      for (let i = 0; i < n; i++) {
+        const cx = padX + slotW * i + slotW / 2;
+        const x = cx - barW / 2;
+        const h = Math.max(22, ((nums[i] - floorVal) / span) * maxBarH);
+        const y = baseY - h;
+
+        const inRange = i >= left && i <= right;
+        const isMid = mid !== null && i === mid;
+        const isTarget = done && i === right;
+
+        let fill = 'var(--surface-hover)';
+        let stroke = 'none';
+        let opacity = inRange ? '1' : '0.3';
+
+        if (isTarget) {
+          fill = 'var(--green-soft)';
+          stroke = 'var(--green)';
+        } else if (isMid) {
+          fill = 'var(--primary-soft)';
+          stroke = 'var(--primary)';
+        } else if (inRange) {
+          fill = 'var(--surface)';
+          stroke = 'var(--text-muted)';
+        }
+
+        const strokeAttr = stroke === 'none' ? '' : `stroke="${stroke}" stroke-width="1.8"`;
+        parts.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="10" fill="${fill}" ${strokeAttr} fill-opacity="${opacity}"/>`);
+
+        // Value label
+        parts.push(`<text x="${cx.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text)" fill-opacity="${opacity}">${nums[i]}</text>`);
+
+        // Index label
+        parts.push(`<text x="${cx.toFixed(1)}" y="${baseY + 18}" text-anchor="middle" font-size="12" fill="var(--text-muted)">[${i}]</text>`);
+
+        // Pointer pills
+        const tags = [];
+        if (i === left) tags.push({ label: 'L', bg: 'var(--surface)', fg: 'var(--text)', border: 'var(--text-muted)' });
+        if (mid !== null && i === mid) tags.push({ label: 'M', bg: 'var(--primary-soft)', fg: 'var(--primary-text)', border: 'var(--primary)' });
+        if (i === right) tags.push({ label: 'R', bg: done ? 'var(--green-soft)' : 'var(--amber-soft)', fg: done ? 'var(--green)' : 'var(--amber)', border: done ? 'var(--green)' : 'var(--amber)' });
+
+        if (tags.length > 0) {
+          const pillW = 24;
+          const gap = 4;
+          const totalW = tags.length * pillW + (tags.length - 1) * gap;
+          let startX = cx - totalW / 2;
+          tags.forEach(t => {
+            parts.push(`<rect x="${startX.toFixed(1)}" y="${baseY + 28}" width="${pillW}" height="20" rx="10" fill="${t.bg}" stroke="${t.border}" stroke-width="1.2"/>`);
+            parts.push(`<text x="${(startX + pillW / 2).toFixed(1)}" y="${baseY + 42}" text-anchor="middle" font-size="12" font-weight="600" fill="${t.fg}">${t.label}</text>`);
+            startX += pillW + gap;
+          });
+        }
+      }
+
+      svg.innerHTML = parts.join('');
+    }
+
+    function render() {
+      const state = steps[currentStep];
+      const { nums, left, right, mid, line, done, title, body, tip } = state;
+
+      document.getElementById('kpi-left').textContent = `${left} (值 ${nums[left]})`;
+      document.getElementById('kpi-mid').textContent = mid !== null ? `${mid} (值 ${nums[mid]})` : '-';
+      document.getElementById('kpi-right').textContent = `${right} (值 ${nums[right]})`;
+      document.getElementById('kpi-status').textContent = done ? `最小值: ${nums[right]}` : `区间 [${left}, ${right}]`;
+
+      document.querySelectorAll('.code-line').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.line, 10) === line);
+      });
+
+      document.getElementById('explain-title').textContent = title;
+      document.getElementById('explain-body').textContent = body;
+      document.getElementById('explain-tip').textContent = tip;
+
+      renderSvg(state);
+
+      const slider = document.getElementById('step-slider');
+      slider.max = steps.length - 1;
+      slider.value = currentStep;
+      document.getElementById('step-badge').textContent = `${currentStep + 1} / ${steps.length}`;
+
+      document.getElementById('btn-prev').disabled = currentStep === 0;
+      document.getElementById('btn-next').disabled = currentStep === steps.length - 1;
+    }
+
+    function stopPlay() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      document.getElementById('btn-play').textContent = '自动播放';
+    }
+
+    function startPlay() {
+      stopPlay();
+      if (currentStep >= steps.length - 1) {
+        currentStep = 0;
+        render();
+      }
+      document.getElementById('btn-play').textContent = '暂停';
+      timer = setInterval(() => {
+        if (currentStep < steps.length - 1) {
+          currentStep++;
+          render();
+        } else {
+          stopPlay();
+        }
+      }, playDelay);
+    }
+
+    function loadArray(nums, activePresetIdx) {
+      stopPlay();
+      steps = buildSteps(nums);
+      currentStep = 0;
+      document.querySelectorAll('.preset-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === activePresetIdx);
+      });
+      render();
+    }
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('error-msg').classList.remove('show');
+        const idx = parseInt(btn.dataset.preset, 10);
+        loadArray(PRESETS[idx], idx);
+      });
+    });
+
+    document.getElementById('btn-apply').addEventListener('click', () => {
+      const raw = document.getElementById('custom-array').value.trim();
+      const errEl = document.getElementById('error-msg');
+      const parsed = raw.split(/[,，\s]+/).filter(Boolean).map(Number);
+
+      if (parsed.length === 0 || parsed.length > 18 || parsed.some(Number.isNaN)) {
+        errEl.textContent = '请输入 1 到 18 个整数，用逗号或空格分隔。';
+        errEl.classList.add('show');
+        return;
+      }
+
+      if (new Set(parsed).size !== parsed.length) {
+        errEl.textContent = 'LeetCode 153 要求数组元素互不相同，请检查重复数字。';
+        errEl.classList.add('show');
+        return;
+      }
+
+      errEl.classList.remove('show');
+      loadArray(parsed, -1);
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      stopPlay();
+      if (currentStep > 0) {
+        currentStep--;
+        render();
+      }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      stopPlay();
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        render();
+      }
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      stopPlay();
+      currentStep = 0;
+      render();
+    });
+
+    document.getElementById('btn-play').addEventListener('click', () => {
+      if (timer) {
+        stopPlay();
+      } else {
+        startPlay();
+      }
+    });
+
+    document.getElementById('speed-select').addEventListener('change', (e) => {
+      playDelay = parseInt(e.target.value, 10);
+      if (timer) {
+        startPlay();
+      }
+    });
+
+    document.getElementById('step-slider').addEventListener('input', (e) => {
+      stopPlay();
+      currentStep = parseInt(e.target.value, 10);
+      render();
+    });
+
+    document.getElementById('btn-theme').addEventListener('click', (e) => {
+      const root = document.documentElement;
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        root.removeAttribute('data-theme');
+        e.target.textContent = '切换深色主题';
+      } else {
+        root.setAttribute('data-theme', 'dark');
+        e.target.textContent = '切换浅色主题';
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT') return;
+      if (e.key === 'ArrowLeft') {
+        stopPlay();
+        if (currentStep > 0) { currentStep--; render(); }
+      } else if (e.key === 'ArrowRight') {
+        stopPlay();
+        if (currentStep < steps.length - 1) { currentStep++; render(); }
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        if (timer) stopPlay(); else startPlay();
+      }
+    });
+
+    loadArray(PRESETS[0], 0);
+  </script>
+</body>
+</html>
