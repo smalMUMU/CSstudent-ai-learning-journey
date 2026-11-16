@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 154 · 寻找旋转排序数组中的最小值 II 可交互图解</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #162033;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --left: #3b82f6;
+      --mid: #f59e0b;
+      --right: #ec4899;
+      --ans: #10b981;
+      --danger: #ef4444;
+      --code-bg: #0b1120;
+      --radius: 12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .badge-info {
+      background: rgba(56, 189, 248, 0.14);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .input-section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .label-muted {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .preset-btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--accent);
+      color: #bae6fd;
+    }
+
+    .preset-btn.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--accent);
+      color: #7dd3fc;
+      font-weight: 600;
+    }
+
+    .custom-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .custom-input {
+      flex: 1 1 220px;
+      min-width: 0;
+      background: var(--code-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .custom-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: #22304a;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      border-color: #0ea5e9;
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #0369a1;
+    }
+
+    .toast {
+      font-size: 0.82rem;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: none;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    /* Visualization Stage */
+    .viz-stage {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 12px 14px;
+      overflow-x: auto;
+    }
+
+    .bars-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 8px;
+      min-height: 150px;
+      padding: 8px 4px 4px;
+    }
+
+    .cell-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 44px;
+      flex: 0 1 56px;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .cell-col.dimmed {
+      opacity: 0.28;
+    }
+
+    .bar-wrap {
+      width: 100%;
+      height: 110px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .bar {
+      width: 72%;
+      border-radius: 6px 6px 2px 2px;
+      background: #475569;
+      transition: height 0.25s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .cell-col.in-range .bar {
+      background: #64748b;
+    }
+
+    .cell-col.is-left .bar {
+      background: var(--left);
+    }
+
+    .cell-col.is-right .bar {
+      background: var(--right);
+    }
+
+    .cell-col.is-mid .bar {
+      background: var(--mid);
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+    }
+
+    .cell-col.is-ans .bar {
+      background: var(--ans);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.55);
+    }
+
+    .num-box {
+      width: 100%;
+      text-align: center;
+      padding: 6px 2px;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .cell-col.in-range .num-box {
+      border-color: #64748b;
+      background: #1e293b;
+    }
+
+    .cell-col.is-left .num-box {
+      border-color: var(--left);
+    }
+
+    .cell-col.is-right .num-box {
+      border-color: var(--right);
+    }
+
+    .cell-col.is-mid .num-box {
+      border-color: var(--mid);
+      color: #fde68a;
+    }
+
+    .cell-col.is-ans .num-box {
+      border-color: var(--ans);
+      background: rgba(16, 185, 129, 0.16);
+      color: #6ee7b7;
+    }
+
+    .idx-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .ptr-badges {
+      min-height: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .ptr-tag {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    .ptr-L { background: var(--left); }
+    .ptr-M { background: var(--mid); color: #111827; }
+    .ptr-R { background: var(--right); }
+    .ptr-ANS { background: var(--ans); color: #052e16; }
+
+    /* Controls */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .speed-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .scrubber-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .scrubber-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Explanation & State Cards */
+    .vars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .vars-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .var-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .var-name {
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    .var-val {
+      font-family: var(--mono);
+      font-size: 0.96rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .explain-box {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+    }
+
+    .explain-box.branch-gt {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.35);
+      border-left-color: var(--left);
+    }
+
+    .explain-box.branch-lt {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.35);
+      border-left-color: var(--mid);
+    }
+
+    .explain-box.branch-eq {
+      background: rgba(236, 72, 153, 0.1);
+      border-color: rgba(236, 72, 153, 0.35);
+      border-left-color: var(--right);
+    }
+
+    .explain-box.branch-done {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.35);
+      border-left-color: var(--ans);
+    }
+
+    .explain-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .compare-pill {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+    }
+
+    /* Code Panel */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 0;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      overflow-x: auto;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      padding: 2px 14px;
+      border-left: 3px solid transparent;
+      white-space: pre;
+      color: #cbd5e1;
+      transition: background-color 0.15s ease;
+    }
+
+    .code-line.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-left-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .line-no {
+      width: 24px;
+      flex-shrink: 0;
+      color: #475569;
+      user-select: none;
+      font-size: 0.74rem;
+    }
+
+    /* Intuition / Cheat Sheet */
+    .intuition-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .intuition-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .intuition-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.82rem;
+    }
+
+    .intuition-card h4 {
+      margin: 0 0 6px;
+      font-size: 0.86rem;
+      font-family: var(--mono);
+    }
+
+    .intuition-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding-top: 4px;
+      border-top: 1px solid var(--border);
+    }
+
+    .stats-row strong {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>
+          LeetCode 154 · 寻找旋转排序数组中的最小值 II
+          <span class="badge">Hard · 含重复元素二分</span>
+          <span class="badge badge-info">左闭右闭 [left, right]</span>
+        </h1>
+        <p class="subtitle">直观观察为何用 <code>nums[mid]</code> 与 <code>nums[right]</code> 比较，以及相等时 <code>right -= 1</code> 如何安全去重。</p>
+      </div>
+    </header>
+
+    <section class="input-section">
+      <div class="presets-row">
+        <span class="label-muted">经典用例：</span>
+        <button class="preset-btn active" data-arr="2,2,2,0,1">[2, 2, 2, 0, 1] 经典重复</button>
+        <button class="preset-btn" data-arr="3,3,1,3">[3, 3, 1, 3] 相等陷阱(右)</button>
+        <button class="preset-btn" data-arr="2,0,2,2,2">[2, 0, 2, 2, 2] 相等陷阱(左)</button>
+        <button class="preset-btn" data-arr="4,5,6,7,0,1,4">[4, 5, 6, 7, 0, 1, 4] 标准旋转</button>
+        <button class="preset-btn" data-arr="1,3,5">[1, 3, 5] 未旋转升序</button>
+        <button class="preset-btn" data-arr="2,2,2,2,2">[2, 2, 2, 2, 2] 全相等退化</button>
+      </div>
+      <div class="custom-row">
+        <input id="customInput" class="custom-input" type="text" value="2, 2, 2, 0, 1" placeholder="输入整数数组，如: 10, 1, 10, 10, 10" />
+        <button id="applyBtn" class="btn btn-primary">加载数组</button>
+      </div>
+      <div id="inputToast" class="toast" role="alert"></div>
+    </section>
+
+    <div class="main-grid">
+      <!-- Left: Visualization + Controls -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">数组地形与指针区间</h2>
+          <div class="legend">
+            <span class="legend-item"><span class="dot" style="background:var(--left)"></span>left</span>
+            <span class="legend-item"><span class="dot" style="background:var(--mid)"></span>mid</span>
+            <span class="legend-item"><span class="dot" style="background:var(--right)"></span>right</span>
+            <span class="legend-item"><span class="dot" style="background:var(--ans)"></span>最小值</span>
+          </div>
+        </div>
+
+        <div class="viz-stage">
+          <div id="barsRow" class="bars-row"></div>
+        </div>
+
+        <div class="controls-bar">
+          <div class="btn-group">
+            <button id="resetBtn" class="btn" title="重置 (R)">⏮ 重置</button>
+            <button id="prevBtn" class="btn" title="上一步 (←)">◀ 上一步</button>
+            <button id="playBtn" class="btn btn-primary" title="播放/暂停 (Space)">▶ 自动播放</button>
+            <button id="nextBtn" class="btn" title="下一步 (→)">下一步 ▶</button>
+          </div>
+          <div class="speed-box">
+            <label for="speedRange">速度</label>
+            <input id="speedRange" type="range" min="250" max="1800" step="50" value="950" />
+            <span id="speedText">0.95s</span>
+          </div>
+        </div>
+
+        <div class="scrubber-row">
+          <span>步骤 <strong id="stepCounter">0 / 0</strong></span>
+          <input id="stepSlider" type="range" min="0" max="0" value="0" />
+        </div>
+
+        <div class="vars-grid">
+          <div class="var-box">
+            <div class="var-name">left</div>
+            <div class="var-val" id="varLeft" style="color:var(--left)">-</div>
+          </div>
+          <div class="var-box">
+            <div class="var-name">mid</div>
+            <div class="var-val" id="varMid" style="color:var(--mid)">-</div>
+          </div>
+          <div class="var-box">
+            <div class="var-name">right</div>
+            <div class="var-val" id="varRight" style="color:var(--right)">-</div>
+          </div>
+          <div class="var-box">
+            <div class="var-name">区间长度</div>
+            <div class="var-val" id="varSpan">-</div>
+          </div>
+        </div>
+
+        <div id="explainBox" class="explain-box">
+          <div class="explain-title">
+            <span id="explainHeading">准备就绪</span>
+            <span id="comparePill" class="compare-pill">-</span>
+          </div>
+          <div id="explainBody">点击「下一步」或「自动播放」开始逐步跟踪二分查找。</div>
+        </div>
+
+        <div class="stats-row">
+          <span>循环次数：<strong id="statLoops">0</strong></span>
+          <span>线性退化 (<code>right -= 1</code>) 次数：<strong id="statShrinks">0</strong></span>
+          <span>数组长度 n：<strong id="statLen">0</strong></span>
+        </div>
+      </section>
+
+      <!-- Right: Synced Code + Core Intuition -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Python 代码同步追踪</h2>
+          <span class="label-muted">快捷键：← / → / Space / R</span>
+        </div>
+
+        <div id="codeBox" class="code-box"></div>
+
+        <div class="intuition-grid">
+          <div class="intuition-card">
+            <h4 style="color:var(--left)">nums[mid] &gt; nums[right]</h4>
+            <p><code>mid</code> 一定处于左侧较高一段，最小值必在 <code>mid</code> 右侧，安全执行 <code>left = mid + 1</code>。</p>
+          </div>
+          <div class="intuition-card">
+            <h4 style="color:var(--mid)">nums[mid] &lt; nums[right]</h4>
+            <p><code>mid</code> 处于右侧较低一段，<code>mid</code> 本身可能是最小值，不能跳过它，故 <code>right = mid</code>。</p>
+          </div>
+          <div class="intuition-card">
+            <h4 style="color:var(--right)">nums[mid] == nums[right]</h4>
+            <p>无法判断最小值在左还是在右，但 <code>nums[mid]</code> 可以替补 <code>nums[right]</code>，安全丢弃右端点 <code>right -= 1</code>。</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const CODE_LINES = [
+      "class Solution:",
+      "    def findMin(self, nums: list[int]) -> int:",
+      "        left = 0",
+      "        right = len(nums) - 1",
+      "        while left < right:",
+      "            mid = (left + right) // 2",
+      "            if nums[mid] > nums[right]:",
+      "                left = mid + 1",
+      "            elif nums[mid] < nums[right]:",
+      "                right = mid",
+      "            else:",
+      "                right -= 1",
+      "        return nums[left]"
+    ];
+
+    let nums = [2, 2, 2, 0, 1];
+    let steps = [];
+    let currentStep = 0;
+    let playTimer = null;
+
+    const barsRow = document.getElementById("barsRow");
+    const codeBox = document.getElementById("codeBox");
+    const customInput = document.getElementById("customInput");
+    const applyBtn = document.getElementById("applyBtn");
+    const inputToast = document.getElementById("inputToast");
+    const resetBtn = document.getElementById("resetBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const playBtn = document.getElementById("playBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const speedRange = document.getElementById("speedRange");
+    const speedText = document.getElementById("speedText");
+    const stepSlider = document.getElementById("stepSlider");
+    const stepCounter = document.getElementById("stepCounter");
+    const varLeft = document.getElementById("varLeft");
+    const varMid = document.getElementById("varMid");
+    const varRight = document.getElementById("varRight");
+    const varSpan = document.getElementById("varSpan");
+    const explainBox = document.getElementById("explainBox");
+    const explainHeading = document.getElementById("explainHeading");
+    const comparePill = document.getElementById("comparePill");
+    const explainBody = document.getElementById("explainBody");
+    const statLoops = document.getElementById("statLoops");
+    const statShrinks = document.getElementById("statShrinks");
+    const statLen = document.getElementById("statLen");
+
+    function renderCodeSkeleton() {
+      codeBox.innerHTML = CODE_LINES.map((line, i) => {
+        const escaped = line
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        return `<div class="code-line" data-line="${i + 1}"><span class="line-no">${i + 1}</span><span>${escaped}</span></div>`;
+      }).join("");
+    }
+
+    function generateSteps(arr) {
+      const trace = [];
+      let left = 0;
+      let right = arr.length - 1;
+      let loops = 0;
+      let shrinks = 0;
+
+      trace.push({
+        left,
+        right,
+        mid: null,
+        line: 4,
+        branch: "init",
+        heading: "初始化搜索区间",
+        compare: `left = 0, right = ${right}`,
+        body: `搜索范围设为整个数组 [0, ${right}]，准备进入 while left < right 循环。`,
+        loops,
+        shrinks,
+        done: false
+      });
+
+      while (left < right) {
+        loops++;
+        const mid = Math.floor((left + right) / 2);
+
+        trace.push({
+          left,
+          right,
+          mid,
+          line: 6,
+          branch: "mid",
+          heading: `第 ${loops} 轮：计算中点 mid`,
+          compare: `mid = (${left} + ${right}) // 2 = ${mid}`,
+          body: `当前区间 [${left}, ${right}]，中点下标 mid = ${mid}（值 ${arr[mid]}），将与右端点 right = ${right}（值 ${arr[right]}）比较。`,
+          loops,
+          shrinks,
+          done: false
+        });
+
+        if (arr[mid] > arr[right]) {
+          const oldLeft = left;
+          left = mid + 1;
+          trace.push({
+            left,
+            right,
+            mid,
+            line: 8,
+            branch: "gt",
+            heading: "nums[mid] > nums[right] → 收缩左边界",
+            compare: `${arr[mid]} > ${arr[right]}`,
+            body: `因为 ${arr[mid]} > ${arr[right]}，说明 mid=${mid} 还在左侧高坡上，最小值一定在 mid 右边。left 从 ${oldLeft} 跳到 mid + 1 = ${left}。`,
+            loops,
+            shrinks,
+            done: false
+          });
+        } else if (arr[mid] < arr[right]) {
+          const oldRight = right;
+          right = mid;
+          trace.push({
+            left,
+            right,
+            mid,
+            line: 10,
+            branch: "lt",
+            heading: "nums[mid] < nums[right] → 收缩右边界",
+            compare: `${arr[mid]} < ${arr[right]}`,
+            body: `因为 ${arr[mid]} < ${arr[right]}，说明 [mid, right] 是递增的，最小值在 mid 或其左侧。保留 mid，right 从 ${oldRight} 收紧到 ${right}。`,
+            loops,
+            shrinks,
+            done: false
+          });
+        } else {
+          const oldRight = right;
+          right -= 1;
+          shrinks++;
+          trace.push({
+            left,
+            right,
+            mid,
+            line: 12,
+            branch: "eq",
+            heading: "nums[mid] == nums[right] → 安全去重",
+            compare: `${arr[mid]} == ${arr[right]}`,
+            body: `中点与右端点同为 ${arr[mid]}，无法直接判断最小值在左还是在右。但即使 nums[${oldRight}] 是最小值，nums[${mid}] 也保有相同的值，因此安全执行 right -= 1（${oldRight} → ${right}）。`,
+            loops,
+            shrinks,
+            done: false
+          });
+        }
+      }
+
+      trace.push({
+        left,
+        right,
+        mid: null,
+        line: 13,
+        branch: "done",
+        heading: `找到最小值：nums[${left}] = ${arr[left]}`,
+        compare: `left == right == ${left}`,
+        body: `区间已收敛至单点 [${left}, ${right}]，退出循环并返回 nums[${left}] = ${arr[left]}。`,
+        loops,
+        shrinks,
+        done: true
+      });
+
+      return trace;
+    }
+
+    function renderStep() {
+      const s = steps[currentStep];
+      const minVal = Math.min(...nums);
+      const maxVal = Math.max(...nums);
+      const span = maxVal - minVal;
+
+      barsRow.innerHTML = nums.map((val, idx) => {
+        const heightPct = span === 0 ? 60 : Math.round(22 + ((val - minVal) / span) * 76);
+        const inRange = idx >= s.left && idx <= s.right;
+        const isLeft = idx === s.left;
+        const isRight = idx === s.right;
+        const isMid = s.mid !== null && idx === s.mid;
+        const isAns = s.done && idx === s.left;
+
+        const classes = ["cell-col"];
+        classes.push(inRange ? "in-range" : "dimmed");
+        if (isLeft) classes.push("is-left");
+        if (isRight) classes.push("is-right");
+        if (isMid) classes.push("is-mid");
+        if (isAns) classes.push("is-ans");
+
+        const tags = [];
+        if (isAns) {
+          tags.push('<span class="ptr-tag ptr-ANS">MIN</span>');
+        } else {
+          if (isLeft) tags.push('<span class="ptr-tag ptr-L">L</span>');
+          if (isMid) tags.push('<span class="ptr-tag ptr-M">M</span>');
+          if (isRight) tags.push('<span class="ptr-tag ptr-R">R</span>');
+        }
+
+        return `
+          <div class="${classes.join(" ")}">
+            <div class="bar-wrap">
+              <div class="bar" style="height:${heightPct}%"></div>
+            </div>
+            <div class="num-box">${val}</div>
+            <div class="idx-label">[${idx}]</div>
+            <div class="ptr-badges">${tags.join("")}</div>
+          </div>
+        `;
+      }).join("");
+
+      // Code highlighting
+      document.querySelectorAll(".code-line").forEach(el => {
+        el.classList.toggle("active", Number(el.dataset.line) === s.line);
+      });
+
+      // Variables
+      varLeft.textContent = `${s.left} (值 ${nums[s.left]})`;
+      varMid.textContent = s.mid !== null ? `${s.mid} (值 ${nums[s.mid]})` : "-";
+      varRight.textContent = `${s.right} (值 ${nums[s.right]})`;
+      varSpan.textContent = `${s.right - s.left + 1}`;
+
+      // Explanation
+      explainBox.className = "explain-box";
+      if (s.branch === "gt") explainBox.classList.add("branch-gt");
+      else if (s.branch === "lt") explainBox.classList.add("branch-lt");
+      else if (s.branch === "eq") explainBox.classList.add("branch-eq");
+      else if (s.branch === "done") explainBox.classList.add("branch-done");
+
+      explainHeading.textContent = s.heading;
+      comparePill.textContent = s.compare;
+      explainBody.textContent = s.body;
+
+      // Stats & controls
+      statLoops.textContent = s.loops;
+      statShrinks.textContent = s.shrinks;
+      statLen.textContent = nums.length;
+
+      stepSlider.max = steps.length - 1;
+      stepSlider.value = currentStep;
+      stepCounter.textContent = `${currentStep} / ${steps.length - 1}`;
+
+      prevBtn.disabled = currentStep === 0;
+      nextBtn.disabled = currentStep === steps.length - 1;
+    }
+
+    function stopPlay() {
+      if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+      }
+      playBtn.textContent = "▶ 自动播放";
+    }
+
+    function startPlay() {
+      if (currentStep >= steps.length - 1) {
+        currentStep = 0;
+      }
+      stopPlay();
+      playBtn.textContent = "⏸ 暂停";
+      const delay = Number(speedRange.value);
+      playTimer = setInterval(() => {
+        if (currentStep < steps.length - 1) {
+          currentStep++;
+          renderStep();
+        } else {
+          stopPlay();
+        }
+      }, delay);
+    }
+
+    function loadArray(newArr) {
+      stopPlay();
+      nums = newArr;
+      steps = generateSteps(nums);
+      currentStep = 0;
+      renderStep();
+    }
+
+    function showToast(msg) {
+      inputToast.textContent = msg;
+      inputToast.classList.add("show");
+    }
+
+    function hideToast() {
+      inputToast.classList.remove("show");
+    }
+
+    function parseAndApply() {
+      const raw = customInput.value.trim();
+      if (!raw) {
+        showToast("请输入至少 1 个整数，例如：2, 2, 2, 0, 1");
+        return;
+      }
+      const parts = raw.replace(/[\[\]]/g, "").split(/[\s,，]+/).filter(Boolean);
+      const parsed = parts.map(Number);
+      if (parsed.length === 0 || parsed.some(n => !Number.isInteger(n))) {
+        showToast("格式无效：请只输入整数，用逗号或空格分隔。");
+        return;
+      }
+      if (parsed.length > 24) {
+        showToast("为了保证画面清晰，建议数组长度不超过 24 个元素。");
+        return;
+      }
+      hideToast();
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+      loadArray(parsed);
+    }
+
+    // Event listeners
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        hideToast();
+        document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const arr = btn.dataset.arr.split(",").map(Number);
+        customInput.value = arr.join(", ");
+        loadArray(arr);
+      });
+    });
+
+    applyBtn.addEventListener("click", parseAndApply);
+    customInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") parseAndApply();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      stopPlay();
+      currentStep = 0;
+      renderStep();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      stopPlay();
+      if (currentStep > 0) {
+        currentStep--;
+        renderStep();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      stopPlay();
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        renderStep();
+      }
+    });
+
+    playBtn.addEventListener("click", () => {
+      if (playTimer) stopPlay();
+      else startPlay();
+    });
+
+    speedRange.addEventListener("input", () => {
+      speedText.textContent = (Number(speedRange.value) / 1000).toFixed(2) + "s";
+      if (playTimer) startPlay();
+    });
+
+    stepSlider.addEventListener("input", () => {
+      stopPlay();
+      currentStep = Number(stepSlider.value);
+      renderStep();
+    });
+
+    document.addEventListener("keydown", e => {
+      if (document.activeElement === customInput) return;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nextBtn.click();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevBtn.click();
+      } else if (e.key === " ") {
+        e.preventDefault();
+        playBtn.click();
+      } else if (e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        resetBtn.click();
+      }
+    });
+
+    // Init
+    renderCodeSkeleton();
+    loadArray(nums);
+  </script>
+</body>
+</html>
