@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 33 · 搜索旋转排序数组 交互可视化</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #273449;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-dim: rgba(56, 189, 248, 0.16);
+      --green: #34d399;
+      --green-dim: rgba(52, 211, 153, 0.16);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.16);
+      --purple: #a78bfa;
+      --purple-dim: rgba(167, 139, 250, 0.16);
+      --rose: #fb7185;
+      --rose-dim: rgba(251, 113, 133, 0.16);
+      --radius: 12px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title-group h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--amber-dim);
+      color: var(--amber);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .target-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--primary-dim);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--primary);
+    }
+
+    /* Controls & Presets */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .controls-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .presets-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    button:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button.active-preset {
+      border-color: var(--primary);
+      background: var(--primary-dim);
+      color: var(--primary);
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    button.btn-primary:hover:not(:disabled) {
+      background: #7dd3fc;
+      border-color: #7dd3fc;
+    }
+
+    .custom-input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .input-group.small {
+      flex: 0 0 110px;
+      min-width: 90px;
+    }
+
+    .input-group label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--primary);
+    }
+
+    .input-msg {
+      font-size: 0.78rem;
+      color: var(--rose);
+      display: none;
+    }
+
+    .input-msg.warn {
+      color: var(--amber);
+      display: block;
+    }
+
+    .input-msg.err {
+      color: var(--rose);
+      display: block;
+    }
+
+    /* Playback Bar */
+    .playback-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .playback-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .playback-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.82rem;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .left-col, .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    /* Array Visualization */
+    .viz-scroll {
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .array-stage {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      min-height: 220px;
+      padding: 28px 8px 34px;
+      position: relative;
+    }
+
+    .cell-col {
+      flex: 1 0 54px;
+      max-width: 84px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .cell-col.dimmed {
+      opacity: 0.28;
+    }
+
+    .pointer-top {
+      position: absolute;
+      top: -26px;
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .ptr-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 5px;
+      line-height: 1.3;
+    }
+
+    .ptr-L { background: var(--primary-dim); color: var(--primary); border: 1px solid var(--primary); }
+    .ptr-M { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+    .ptr-R { background: var(--purple-dim); color: var(--purple); border: 1px solid var(--purple); }
+
+    .bar-wrap {
+      width: 100%;
+      height: 110px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+
+    .bar {
+      width: 72%;
+      border-radius: 6px 6px 2px 2px;
+      background: #475569;
+      transition: height 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+      position: relative;
+    }
+
+    .cell-col.in-range .bar {
+      background: #64748b;
+    }
+
+    .cell-col.sorted-half .bar {
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+    }
+
+    .cell-col.is-mid .bar {
+      background: var(--amber);
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+    }
+
+    .cell-col.is-found .bar {
+      background: var(--green);
+      box-shadow: 0 0 18px rgba(52, 211, 153, 0.6);
+    }
+
+    .val-box {
+      width: 100%;
+      padding: 8px 4px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .cell-col.sorted-half .val-box {
+      border-color: rgba(52, 211, 153, 0.6);
+      background: rgba(52, 211, 153, 0.08);
+    }
+
+    .cell-col.is-mid .val-box {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+      color: var(--amber);
+    }
+
+    .cell-col.is-found .val-box {
+      border-color: var(--green);
+      background: var(--green-dim);
+      color: var(--green);
+      transform: scale(1.06);
+    }
+
+    .idx-label {
+      margin-top: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Explanation & Condition Box */
+    .explain-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
+    }
+
+    .explain-box.found {
+      border-left-color: var(--green);
+      background: rgba(52, 211, 153, 0.06);
+    }
+
+    .explain-box.not-found {
+      border-left-color: var(--rose);
+      background: rgba(251, 113, 133, 0.06);
+    }
+
+    .explain-step-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .explain-box.found .explain-step-tag { color: var(--green); }
+    .explain-box.not-found .explain-step-tag { color: var(--rose); }
+
+    /* Variable State Cards */
+    .vars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+      gap: 8px;
+    }
+
+    .var-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .var-name {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .var-val {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .var-card.v-left .var-val { color: var(--primary); }
+    .var-card.v-mid .var-val { color: var(--amber); }
+    .var-card.v-right .var-val { color: var(--purple); }
+    .var-card.v-res .var-val { color: var(--green); }
+
+    /* Condition Evaluator */
+    .cond-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cond-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .cond-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .cond-true { background: var(--green-dim); color: var(--green); }
+    .cond-false { background: var(--rose-dim); color: var(--rose); }
+    .cond-idle { background: var(--surface-2); color: var(--text-muted); }
+
+    /* Code Panel */
+    .code-container {
+      background: #0b1120;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.65;
+      padding: 10px 0;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 1px 12px;
+      white-space: pre;
+      transition: background-color 0.15s ease;
+    }
+
+    .code-line.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-left: 3px solid var(--primary);
+      padding-left: 9px;
+    }
+
+    .line-num {
+      width: 28px;
+      flex-shrink: 0;
+      color: #475569;
+      user-select: none;
+    }
+
+    .code-line.active .line-num {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* Key Pitfalls */
+    .pitfalls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .pitfall-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .pitfall-item strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    code.inline {
+      font-family: var(--font-mono);
+      font-size: 0.8em;
+      background: var(--surface-2);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="title-group">
+        <h1>
+          LeetCode 33 · 搜索旋转排序数组
+          <span class="badge">二分查找 · O(log n)</span>
+        </h1>
+        <p class="subtitle">核心直觉：将数组一分为二，至少有一半是单调有序的；利用有序区间直接判断 target 是否在其中。</p>
+      </div>
+      <div class="target-pill">
+        <span>target =</span>
+        <span id="headerTarget">0</span>
+      </div>
+    </header>
+
+    <!-- Controls & Presets -->
+    <section class="panel controls-top">
+      <div class="presets-row">
+        <span class="presets-label">预设用例：</span>
+        <button type="button" class="preset-btn active-preset" data-nums="4,5,6,7,0,1,2" data-target="0">经典命中 [4,5,6,7,0,1,2], 0</button>
+        <button type="button" class="preset-btn" data-nums="4,5,6,7,0,1,2" data-target="3">经典未命中 (3)</button>
+        <button type="button" class="preset-btn" data-nums="3,1" data-target="1">关键边界 [3,1], 1 (mid==left)</button>
+        <button type="button" class="preset-btn" data-nums="1,2,3,4,5,6,7" data-target="5">未旋转数组</button>
+        <button type="button" class="preset-btn" data-nums="1" data-target="0">单元素 [-1]</button>
+      </div>
+
+      <div class="custom-input-row">
+        <div class="input-group">
+          <label for="numsInput">自定义 nums（逗号或空格分隔）</label>
+          <input type="text" id="numsInput" value="4,5,6,7,0,1,2" placeholder="例如: 4,5,6,7,0,1,2" />
+        </div>
+        <div class="input-group small">
+          <label for="targetInput">target</label>
+          <input type="number" id="targetInput" value="0" />
+        </div>
+        <button type="button" id="applyBtn" class="btn-primary">生成推演</button>
+      </div>
+      <div id="inputMsg" class="input-msg"></div>
+
+      <div class="playback-bar">
+        <div class="playback-buttons">
+          <button type="button" id="resetBtn">⏮ 重置</button>
+          <button type="button" id="prevBtn">◀ 上一步</button>
+          <button type="button" id="playBtn" class="btn-primary">▶ 自动播放</button>
+          <button type="button" id="nextBtn">下一步 ▶</button>
+        </div>
+        <div class="playback-meta">
+          <span id="stepCounter">步骤 1 / 1</span>
+          <div class="speed-control">
+            <label for="speedSelect">速度:</label>
+            <select id="speedSelect">
+              <option value="1600">0.5x (慢速)</option>
+              <option value="1000" selected>1.0x (正常)</option>
+              <option value="600">1.5x (较快)</option>
+              <option value="320">2.0x (快速)</option>
+            </select>
+          </div>
+          <span style="font-size: 0.78rem;">快捷键：← / → / 空格</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Left Column: Array Stage + Explanation + Variables -->
+      <div class="left-col">
+        <section class="panel">
+          <div class="section-title">
+            <span>数组状态与搜索区间</span>
+            <div class="legend">
+              <span class="legend-item"><span class="dot" style="background: var(--primary);"></span>L (left)</span>
+              <span class="legend-item"><span class="dot" style="background: var(--amber);"></span>M (mid)</span>
+              <span class="legend-item"><span class="dot" style="background: var(--purple);"></span>R (right)</span>
+              <span class="legend-item"><span class="dot" style="background: var(--green);"></span>已确认有序半段 / 命中</span>
+            </div>
+          </div>
+
+          <div class="viz-scroll">
+            <div id="arrayStage" class="array-stage"></div>
+          </div>
+
+          <div id="explainBox" class="explain-box">
+            <div id="explainTag" class="explain-step-tag">初始化</div>
+            <div id="explainText">准备开始二分查找...</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <span>变量状态 &amp; 条件判断</span>
+          </div>
+          <div class="vars-grid" id="varsGrid"></div>
+          <div class="cond-list" id="condList"></div>
+        </section>
+      </div>
+
+      <!-- Right Column: Python Code + Key Pitfalls -->
+      <div class="right-col">
+        <section class="panel">
+          <div class="section-title">
+            <span>Python 代码同步追踪</span>
+          </div>
+          <div class="code-container" id="codeContainer"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <span>易错点与面试高频追问</span>
+          </div>
+          <div class="pitfalls">
+            <div class="pitfall-item">
+              <strong>1. 为什么第 10 行是 <code class="inline">nums[mid] &gt;= nums[left]</code> 而不是 <code class="inline">&gt;</code>？</strong>
+              当区间只剩 2 个元素（例如 <code class="inline">[3, 1]</code>，target=1）时，<code class="inline">mid = (0+1)//2 = 0</code>，此时 <code class="inline">mid == left</code>。若写成 <code class="inline">&gt;</code> 会误入 <code class="inline">else</code> 分支，导致判断 <code class="inline">nums[0] &lt; 1 &lt;= nums[1]</code> 为假而错把 <code class="inline">right = -1</code>。点击上方 <b>关键边界 [3,1], 1</b> 即可直观观察！
+            </div>
+            <div class="pitfall-item">
+              <strong>2. 为什么必须先判断哪半段有序？</strong>
+              旋转数组整体并非单调，但从 <code class="inline">mid</code> 切开后，必有一侧是完全有序的。只有在完全有序的一侧，才能用 <code class="inline">a &lt;= target &lt; b</code> 百分百确定 target 是否落在该区间内，从而安全地丢弃另一半。
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CODE_LINES = [
+      "class Solution:",
+      "    def search(self, nums: list[int], target: int) -> int:",
+      "        left = 0",
+      "        right = len(nums) - 1",
+      "        while left <= right:",
+      "            mid = (left + right) // 2",
+      "            if nums[mid] == target:",
+      "                return mid",
+      "            ",
+      "            if nums[mid] >= nums[left]:",
+      "                if nums[left] <= target < nums[mid]:",
+      "                    right = mid - 1",
+      "                else:",
+      "                    left = mid + 1",
+      "            else:",
+      "                if nums[mid] < target <= nums[right]:",
+      "                    left = mid + 1",
+      "                else:",
+      "                    right = mid - 1",
+      "        return -1"
+    ];
+
+    let state = {
+      nums: [4, 5, 6, 7, 0, 1, 2],
+      target: 0,
+      steps: [],
+      currentStep: 0,
+      timer: null
+    };
+
+    function isRotatedSorted(arr) {
+      if (arr.length <= 1) return true;
+      let drops = 0;
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] > arr[(i + 1) % arr.length]) {
+          drops++;
+        }
+      }
+      return drops <= 1;
+    }
+
+    function generateTrace(nums, target) {
+      const steps = [];
+      let left = 0;
+      let right = nums.length - 1;
+
+      steps.push({
+        line: 3,
+        left,
+        right,
+        mid: null,
+        sortedRange: null,
+        foundIdx: null,
+        status: "running",
+        tag: "初始化",
+        explain: `初始化左右指针：left = 0，right = ${right}，搜索区间为 [0, ${right}]，目标值 target = ${target}。`,
+        conds: [
+          { expr: `left <= right (${left} <= ${right})`, res: left <= right }
+        ]
+      });
+
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+
+        steps.push({
+          line: 6,
+          left,
+          right,
+          mid,
+          sortedRange: null,
+          foundIdx: null,
+          status: "running",
+          tag: "计算中点",
+          explain: `进入循环（left=${left} <= right=${right}），计算中点 mid = (${left} + ${right}) // 2 = ${mid}，nums[mid] = ${nums[mid]}。`,
+          conds: [
+            { expr: `left <= right (${left} <= ${right})`, res: true },
+            { expr: `nums[mid] == target (${nums[mid]} == ${target})`, res: nums[mid] === target }
+          ]
+        });
+
+        if (nums[mid] === target) {
+          steps.push({
+            line: 8,
+            left,
+            right,
+            mid,
+            sortedRange: null,
+            foundIdx: mid,
+            status: "found",
+            tag: "命中目标",
+            explain: `nums[${mid}] == ${target} 成立！直接返回索引 ${mid}。`,
+            conds: [
+              { expr: `nums[mid] == target (${nums[mid]} == ${target})`, res: true }
+            ]
+          });
+          return steps;
+        }
+
+        const leftSorted = nums[mid] >= nums[left];
+        if (leftSorted) {
+          const inLeft = nums[left] <= target && target < nums[mid];
+          const extraNote = mid === left ? "（注意此时 mid == left，幸亏条件是 >= 才归入左半段有序！）" : "";
+
+          steps.push({
+            line: 10,
+            left,
+            right,
+            mid,
+            sortedRange: [left, mid],
+            foundIdx: null,
+            status: "running",
+            tag: "判断有序区间：左半段有序",
+            explain: `nums[mid](${nums[mid]}) >= nums[left](${nums[left]}) 成立${extraNote}，说明左半段 [${left}, ${mid}] 单调有序（绿色高亮）。`,
+            conds: [
+              { expr: `nums[mid] >= nums[left] (${nums[mid]} >= ${nums[left]})`, res: true },
+              { expr: `nums[left] <= target < nums[mid] (${nums[left]} <= ${target} < ${nums[mid]})`, res: inLeft }
+            ]
+          });
+
+          if (inLeft) {
+            const newRight = mid - 1;
+            steps.push({
+              line: 12,
+              left,
+              right: newRight,
+              mid,
+              sortedRange: [left, mid],
+              foundIdx: null,
+              status: "running",
+              tag: "收缩右边界",
+              explain: `target=${target} 落在有序的左半段 [${nums[left]}, ${nums[mid]}) 内，因此舍弃右半段，令 right = mid - 1 = ${newRight}。`,
+              conds: [
+                { expr: `nums[left] <= target < nums[mid]`, res: true }
+              ]
+            });
+            right = newRight;
+          } else {
+            const newLeft = mid + 1;
+            steps.push({
+              line: 14,
+              left: newLeft,
+              right,
+              mid,
+              sortedRange: [left, mid],
+              foundIdx: null,
+              status: "running",
+              tag: "收缩左边界",
+              explain: `target=${target} 不在有序的左半段 [${nums[left]}, ${nums[mid]}) 内，因此它只可能在右半段，令 left = mid + 1 = ${newLeft}。`,
+              conds: [
+                { expr: `nums[left] <= target < nums[mid]`, res: false }
+              ]
+            });
+            left = newLeft;
+          }
+        } else {
+          const inRight = nums[mid] < target && target <= nums[right];
+
+          steps.push({
+            line: 15,
+            left,
+            right,
+            mid,
+            sortedRange: [mid, right],
+            foundIdx: null,
+            status: "running",
+            tag: "判断有序区间：右半段有序",
+            explain: `nums[mid](${nums[mid]}) >= nums[left](${nums[left]}) 不成立，说明旋转点在左侧，右半段 [${mid}, ${right}] 一定单调有序（绿色高亮）。`,
+            conds: [
+              { expr: `nums[mid] >= nums[left] (${nums[mid]} >= ${nums[left]})`, res: false },
+              { expr: `nums[mid] < target <= nums[right] (${nums[mid]} < ${target} <= ${nums[right]})`, res: inRight }
+            ]
+          });
+
+          if (inRight) {
+            const newLeft = mid + 1;
+            steps.push({
+              line: 17,
+              left: newLeft,
+              right,
+              mid,
+              sortedRange: [mid, right],
+              foundIdx: null,
+              status: "running",
+              tag: "收缩左边界",
+              explain: `target=${target} 落在有序的右半段 (${nums[mid]}, ${nums[right]}] 内，舍弃左半段，令 left = mid + 1 = ${newLeft}。`,
+              conds: [
+                { expr: `nums[mid] < target <= nums[right]`, res: true }
+              ]
+            });
+            left = newLeft;
+          } else {
+            const newRight = mid - 1;
+            steps.push({
+              line: 19,
+              left,
+              right: newRight,
+              mid,
+              sortedRange: [mid, right],
+              foundIdx: null,
+              status: "running",
+              tag: "收缩右边界",
+              explain: `target=${target} 不在有序的右半段 (${nums[mid]}, ${nums[right]}] 内，舍弃右半段，令 right = mid - 1 = ${newRight}。`,
+              conds: [
+                { expr: `nums[mid] < target <= nums[right]`, res: false }
+              ]
+            });
+            right = newRight;
+          }
+        }
+      }
+
+      steps.push({
+        line: 20,
+        left,
+        right,
+        mid: null,
+        sortedRange: null,
+        foundIdx: -1,
+        status: "not-found",
+        tag: "未找到目标",
+        explain: `left (${left}) > right (${right})，搜索区间为空，退出循环并返回 -1。`,
+        conds: [
+          { expr: `left <= right (${left} <= ${right})`, res: false }
+        ]
+      });
+
+      return steps;
+    }
+
+    function renderCode(activeLine) {
+      const container = document.getElementById("codeContainer");
+      container.innerHTML = CODE_LINES.map((text, idx) => {
+        const lineNum = idx + 1;
+        const isActive = lineNum === activeLine ? " active" : "";
+        const escaped = text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        return `<div class="code-line${isActive}"><span class="line-num">${lineNum}</span><span>${escaped}</span></div>`;
+      }).join("");
+    }
+
+    function renderStep() {
+      const step = state.steps[state.currentStep];
+      const nums = state.nums;
+      const minVal = Math.min(...nums);
+      const maxVal = Math.max(...nums);
+      const span = maxVal - minVal || 1;
+
+      document.getElementById("headerTarget").textContent = state.target;
+      document.getElementById("stepCounter").textContent = `步骤 ${state.currentStep + 1} / ${state.steps.length}`;
+
+      // Array Stage
+      const stage = document.getElementById("arrayStage");
+      stage.innerHTML = nums.map((val, i) => {
+        const inRange = i >= step.left && i <= step.right;
+        const isMid = step.mid === i;
+        const isFound = step.foundIdx === i;
+        const inSorted = step.sortedRange && i >= step.sortedRange[0] && i <= step.sortedRange[1];
+
+        let classes = ["cell-col"];
+        if (!inRange && !isFound) classes.push("dimmed");
+        else classes.push("in-range");
+        if (inSorted) classes.push("sorted-half");
+        if (isMid) classes.push("is-mid");
+        if (isFound) classes.push("is-found");
+
+        const ptrs = [];
+        if (i === step.left) ptrs.push(`<span class="ptr-tag ptr-L">L</span>`);
+        if (i === step.mid) ptrs.push(`<span class="ptr-tag ptr-M">M</span>`);
+        if (i === step.right) ptrs.push(`<span class="ptr-tag ptr-R">R</span>`);
+
+        const barHeight = Math.round(22 + ((val - minVal) / span) * 82);
+
+        return `
+          <div class="${classes.join(" ")}">
+            <div class="pointer-top">${ptrs.join("")}</div>
+            <div class="bar-wrap">
+              <div class="bar" style="height: ${barHeight}px;"></div>
+            </div>
+            <div class="val-box">${val}</div>
+            <div class="idx-label">[${i}]</div>
+          </div>
+        `;
+      }).join("");
+
+      // Explanation
+      const explainBox = document.getElementById("explainBox");
+      explainBox.className = "explain-box" + (step.status === "found" ? " found" : step.status === "not-found" ? " not-found" : "");
+      document.getElementById("explainTag").textContent = step.tag;
+      document.getElementById("explainText").textContent = step.explain;
+
+      // Variables
+      const getVal = (idx) => (idx !== null && idx >= 0 && idx < nums.length ? nums[idx] : "—");
+      const resText = step.status === "found" ? `${step.foundIdx}` : step.status === "not-found" ? "-1" : "进行中";
+      const vars = [
+        { name: "left", val: step.left, cls: "v-left" },
+        { name: "mid", val: step.mid !== null ? step.mid : "—", cls: "v-mid" },
+        { name: "right", val: step.right, cls: "v-right" },
+        { name: "nums[left]", val: getVal(step.left), cls: "v-left" },
+        { name: "nums[mid]", val: getVal(step.mid), cls: "v-mid" },
+        { name: "nums[right]", val: getVal(step.right), cls: "v-right" },
+        { name: "返回值", val: resText, cls: "v-res" }
+      ];
+
+      document.getElementById("varsGrid").innerHTML = vars.map(v => `
+        <div class="var-card ${v.cls}">
+          <span class="var-name">${v.name}</span>
+          <span class="var-val">${v.val}</span>
+        </div>
+      `).join("");
+
+      // Conditions
+      document.getElementById("condList").innerHTML = (step.conds || []).map(c => {
+        const pillCls = c.res === true ? "cond-true" : c.res === false ? "cond-false" : "cond-idle";
+        const pillText = c.res === true ? "True" : c.res === false ? "False" : "—";
+        return `
+          <div class="cond-item">
+            <span>${c.expr}</span>
+            <span class="cond-pill ${pillCls}">${pillText}</span>
+          </div>
+        `;
+      }).join("");
+
+      // Code Highlight
+      renderCode(step.line);
+
+      // Buttons state
+      document.getElementById("prevBtn").disabled = state.currentStep === 0;
+      document.getElementById("nextBtn").disabled = state.currentStep >= state.steps.length - 1;
+      document.getElementById("resetBtn").disabled = state.currentStep === 0 && !state.timer;
+    }
+
+    function stopAutoPlay() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      document.getElementById("playBtn").textContent = "▶ 自动播放";
+    }
+
+    function toggleAutoPlay() {
+      if (state.timer) {
+        stopAutoPlay();
+        return;
+      }
+      if (state.currentStep >= state.steps.length - 1) {
+        state.currentStep = 0;
+        renderStep();
+      }
+      document.getElementById("playBtn").textContent = "⏸ 暂停";
+      const delay = parseInt(document.getElementById("speedSelect").value, 10) || 1000;
+      state.timer = setInterval(() => {
+        if (state.currentStep < state.steps.length - 1) {
+          state.currentStep++;
+          renderStep();
+        } else {
+          stopAutoPlay();
+        }
+      }, delay);
+    }
+
+    function loadCase(nums, target) {
+      stopAutoPlay();
+      state.nums = nums;
+      state.target = target;
+      state.steps = generateTrace(nums, target);
+      state.currentStep = 0;
+      renderStep();
+    }
+
+    function applyCustomInput() {
+      const rawNums = document.getElementById("numsInput").value.trim();
+      const rawTarget = document.getElementById("targetInput").value.trim();
+      const msgEl = document.getElementById("inputMsg");
+      msgEl.className = "input-msg";
+      msgEl.textContent = "";
+
+      if (!rawNums) {
+        msgEl.className = "input-msg err";
+        msgEl.textContent = "请输入至少一个整数作为 nums。";
+        return;
+      }
+
+      const parts = rawNums.split(/[\s,，]+/).filter(Boolean);
+      const parsed = parts.map(Number);
+      if (parsed.some(n => !Number.isInteger(n))) {
+        msgEl.className = "input-msg err";
+        msgEl.textContent = "nums 中包含无效数字，请使用逗号或空格分隔整数。";
+        return;
+      }
+
+      const targetVal = Number(rawTarget);
+      if (rawTarget === "" || !Number.isInteger(targetVal)) {
+        msgEl.className = "input-msg err";
+        msgEl.textContent = "请输入有效的整数 target。";
+        return;
+      }
+
+      if (!isRotatedSorted(parsed)) {
+        msgEl.className = "input-msg warn";
+        msgEl.textContent = "提示：当前数组不是标准的旋转排序数组，算法仍会按代码逻辑执行，但结果可能不符合题意。";
+      }
+
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active-preset"));
+      loadCase(parsed, targetVal);
+    }
+
+    // Event Listeners
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active-preset"));
+        btn.classList.add("active-preset");
+        const numsStr = btn.dataset.nums;
+        const targetStr = btn.dataset.target;
+        document.getElementById("numsInput").value = numsStr;
+        document.getElementById("targetInput").value = targetStr;
+        document.getElementById("inputMsg").className = "input-msg";
+        loadCase(numsStr.split(",").map(Number), Number(targetStr));
+      });
+    });
+
+    document.getElementById("applyBtn").addEventListener("click", applyCustomInput);
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      stopAutoPlay();
+      if (state.currentStep > 0) {
+        state.currentStep--;
+        renderStep();
+      }
+    });
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      stopAutoPlay();
+      if (state.currentStep < state.steps.length - 1) {
+        state.currentStep++;
+        renderStep();
+      }
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      stopAutoPlay();
+      state.currentStep = 0;
+      renderStep();
+    });
+    document.getElementById("playBtn").addEventListener("click", toggleAutoPlay);
+    document.getElementById("speedSelect").addEventListener("change", () => {
+      if (state.timer) {
+        stopAutoPlay();
+        toggleAutoPlay();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+      if (e.key === "ArrowRight") {
+        stopAutoPlay();
+        if (state.currentStep < state.steps.length - 1) {
+          state.currentStep++;
+          renderStep();
+        }
+      } else if (e.key === "ArrowLeft") {
+        stopAutoPlay();
+        if (state.currentStep > 0) {
+          state.currentStep--;
+          renderStep();
+        }
+      } else if (e.key === " ") {
+        e.preventDefault();
+        toggleAutoPlay();
+      }
+    });
+
+    // Init
+    loadCase(state.nums, state.target);
+  </script>
+</body>
+</html>
