@@ -120,7 +120,10 @@
 | **数组类型的 `[]` 有四处** | ① 方法返回类型 `int[] getScores()` ✅；② **接收变量**漏了：`int scoreArr = getScores()` ❌（11-13）；③ 参数类型 `getSum(int[] a)`；④ **调用处不写类型**：`getMax(int[] scoreArr)` ❌ 应为 `getMax(scoreArr)`（11-13） | 记法：**定义时写 `[]`，调用时只传名字** |
 | **验证"是不是副本"不能只比内容** | 数组复制的校验只比 `farr[i] != arr[i]`——**如果两变量指向同一个数组，内容当然一样，校验照样通过**（11-13 `shuzuyuansufuzhi04`） | **改一个再看另一个**：`farr[0] = 999` 后 `arr[0]` 若不变 ⇒ 真副本。**测什么，比测出什么更要紧** |
 | **方法签名的返回类型 ≠ `return` 的类型**（**同一概念四次**） | ① `int` 方法 `return` 数组（11-12 我自己发现）；② 接收端漏 `[]`（11-13）；③ 抽奖里 `public static int check(...)` 却 `return boolean flag`（11-13） | **签名上的返回类型 = 每处 `return` 后面那个值的类型。** 写之前用方法三问第③问定类型：要判断 → `boolean`；要数组 → `int[]` |
-| 空指针 NPE |  |  |
+| **类声明的括号位置（`class` 是唯一不带括号的）** | `public class X() {` ❌ / `public X {` ❌（11-17 格斗游戏，改了一次还把括号挪反了） | **只有 `class` 那一行不带 `()`**；构造方法、普通方法都要 `()`。判据：看到 `class X(` 就是错 |
+| **语句写在类体里（缺 `main`）** | 把 `while` 循环、对象创建直接写在 `class { }` 里（11-17 `Gametest.java`） | 类体里只能放**字段**和**方法**。所有"要执行的动作"必须待在方法（通常是 `main`）里 |
+| **乱 import（IDE 自动补错）** | `import javax.management.relation.Role;` —— 完全无关的类，IDE 自动补的（11-17 `wenzigedoulianxi.java`） | **import 只留你真的用到的**；IDEA 弹"是否导入"时先看包名对不对（`java.util.*` 常见，`javax.management.*` 几乎不碰） |
+| **空指针 NPE** |  |  |
 | 集合选型 |  |  |
 | 受检异常 |  |  |
 | 编译错误 vs 运行异常 |  |  |
