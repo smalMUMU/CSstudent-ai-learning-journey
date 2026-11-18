@@ -1,9 +1,13 @@
 public class Gametest {
     public static void main(String[] args) {
 
-        wenzigedoulianxi r1 = new wenzigedoulianxi("小云", 100);
-        wenzigedoulianxi r2 = new wenzigedoulianxi("小苏", 100);
+        wenzigedoulianxi r1 = new wenzigedoulianxi("小云", 100, '男');
+        wenzigedoulianxi r2 = new wenzigedoulianxi("小苏", 100, '女');
 
+
+        r1.showRoleInfo();
+        r2.showRoleInfo();
+/*
         while (true) {
             r1.attack(r2);
             if (r2.getBlood() == 0) {
@@ -17,5 +21,6 @@ public class Gametest {
                 break;
             }
         }
+*/
     }
 }
