@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LeetCode 912 排序数组 — 交互式算法可视化</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-2: #273449;
+    --border: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-soft: rgba(99, 102, 241, 0.18);
+    --green: #10b981;
+    --green-soft: rgba(16, 185, 129, 0.18);
+    --amber: #f59e0b;
+    --amber-soft: rgba(245, 158, 11, 0.2);
+    --rose: #f43f5e;
+    --rose-soft: rgba(244, 63, 94, 0.2);
+    --sky: #38bdf8;
+    --sky-soft: rgba(56, 189, 248, 0.18);
+    --purple: #a855f7;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+
+  .title-block h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    font-weight: 600;
+  }
+
+  .title-block p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tab-btn {
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tab-btn:hover { color: var(--text); border-color: #475569; }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Controls Bar */
+  .controls-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .input-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-row label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .arr-input {
+    flex: 1;
+    min-width: 180px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .arr-input:focus { outline: none; border-color: var(--accent); }
+
+  .btn {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn:hover:not(:disabled) { background: #334155; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4f46e5; }
+
+  .preset-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .preset-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+  .preset-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .playback-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .playback-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+  .scrubber-wrap {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .scrubber-wrap input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .step-counter { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+  .speed-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .speed-wrap input[type="range"] { width: 80px; accent-color: var(--accent); }
+
+  /* Main Workspace */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 960px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .panel-title { font-size: 0.9rem; font-weight: 700; }
+
+  .phase-pill {
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--sky-soft);
+    color: var(--sky);
+  }
+  .phase-pill.sort { background: var(--amber-soft); color: var(--amber); }
+  .phase-pill.done { background: var(--green-soft); color: var(--green); }
+
+  /* Step Narration Banner */
+  .narration {
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.86rem;
+    color: var(--text);
+    min-height: 46px;
+  }
+
+  /* Array Visualization */
+  .array-section-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .array-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 4px;
+  }
+
+  .arr-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 48px;
+    transition: transform 0.2s ease;
+  }
+
+  .arr-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .arr-idx {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .ptr-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: center;
+    min-height: 18px;
+  }
+
+  .ptr-tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #fff;
+  }
+  .ptr-i { background: var(--accent); }
+  .ptr-largest { background: var(--rose); }
+  .ptr-left { background: var(--sky); color: #0f172a; }
+  .ptr-right { background: var(--purple); }
+  .ptr-end { background: var(--amber); color: #0f172a; }
+  .ptr-pivot { background: var(--amber); color: #0f172a; }
+  .ptr-lt { background: var(--green); color: #0f172a; }
+  .ptr-gt { background: var(--rose); }
+
+  .arr-box.is-current { border-color: var(--accent); background: var(--accent-soft); }
+  .arr-box.is-largest { border-color: var(--rose); background: var(--rose-soft); }
+  .arr-box.is-child { border-color: var(--sky); background: var(--sky-soft); }
+  .arr-box.is-swap { border-color: var(--amber); background: var(--amber-soft); transform: translateY(-4px); }
+  .arr-box.is-sorted { border-color: var(--green); background: var(--green-soft); color: #6ee7b7; }
+  .arr-box.is-dim { opacity: 0.45; }
+
+  /* Tree SVG */
+  .tree-container {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  #treeSvg {
+    width: 100%;
+    height: 240px;
+    display: block;
+  }
+
+  /* Variables Watch */
+  .vars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+  }
+  .var-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 8px;
+  }
+  .var-name { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .var-val { font-family: var(--mono); font-size: 0.92rem; font-weight: 700; color: var(--sky); }
+
+  /* Code Viewer */
+  .code-box {
+    background: #0b1120;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 0;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    overflow-x: auto;
+  }
+
+  .code-line {
+    display: flex;
+    padding: 1px 12px;
+    white-space: pre;
+    transition: background 0.12s ease;
+  }
+  .code-line.active {
+    background: rgba(99, 102, 241, 0.28);
+    border-left: 3px solid var(--accent);
+    padding-left: 9px;
+  }
+  .ln {
+    width: 28px;
+    flex-shrink: 0;
+    color: #475569;
+    user-select: none;
+  }
+  .code-line.active .ln { color: #a5b4fc; font-weight: 700; }
+
+  /* Intuition / Comparison Section */
+  .guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .guide-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .guide-card h3 {
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+    color: #c7d2fe;
+  }
+  .guide-card p, .guide-card li {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .guide-card ul { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
+  .guide-card code {
+    font-family: var(--mono);
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--sky);
+    font-size: 0.78rem;
+  }
+
+  table.cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    margin-top: 6px;
+  }
+  table.cmp-table th, table.cmp-table td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: left;
+  }
+  table.cmp-table th { background: var(--surface-2); color: var(--text); }
+  table.cmp-table td { color: var(--muted); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: var(--surface-2);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title-block">
+      <h1>LeetCode 912 · 排序数组 <span class="badge">交互式步进可视化</span></h1>
+      <p>逐行代码高亮 + 数组与二叉树双视图 + 多版本对比（含你贴的迭代堆排序）</p>
+    </div>
+    <div class="tabs" id="algoTabs">
+      <button class="tab-btn active" data-algo="heap_iter">1. 堆排序（你的迭代版）</button>
+      <button class="tab-btn" data-algo="heap_rec">2. 堆排序（递归好理解版）</button>
+      <button class="tab-btn" data-algo="quick_3way">3. 三路快排（随机基准）</button>
+      <button class="tab-btn" data-algo="merge">4. 归并排序（稳定分治）</button>
+    </div>
+  </header>
+
+  <section class="controls-card">
+    <div class="input-row">
+      <label for="arrayInput">输入数组：</label>
+      <input id="arrayInput" class="arr-input" type="text" value="5, 2, 3, 1, 6, 4" placeholder="用逗号或空格分隔数字，如 5, 2, 3, 1" />
+      <button class="btn btn-primary" id="applyBtn">加载并重置</button>
+      <div class="preset-group">
+        <button class="preset-btn" data-preset="5,2,3,1">LC示例1</button>
+        <button class="preset-btn" data-preset="5,1,1,2,0,0">LC示例2(含重复)</button>
+        <button class="preset-btn" data-preset="9,7,5,3,1,0">完全逆序</button>
+        <button class="preset-btn" data-preset="4,4,4,4,4">全相同</button>
+        <button class="preset-btn" data-preset="42">单元素</button>
+        <button class="preset-btn" id="randomBtn">随机7个数</button>
+      </div>
+    </div>
+
+    <div class="playback-row">
+      <div class="playback-btns">
+        <button class="btn" id="resetBtn">⏮ 重置</button>
+        <button class="btn" id="prevBtn">◀ 上一步</button>
+        <button class="btn btn-primary" id="playBtn">▶ 自动播放</button>
+        <button class="btn" id="nextBtn">下一步 ▶</button>
+      </div>
+      <div class="scrubber-wrap">
+        <input id="stepSlider" type="range" min="0" max="0" value="0" />
+        <span class="step-counter" id="stepCounter">0 / 0</span>
+      </div>
+      <div class="speed-wrap">
+        <span>速度</span>
+        <input id="speedSlider" type="range" min="150" max="1400" step="50" value="650" />
+      </div>
+    </div>
+  </section>
+
+  <main class="workspace">
+    <!-- Left: Visualizers -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title" id="visTitle">数组 & 完全二叉树视图</span>
+        <span class="phase-pill" id="phasePill">准备就绪</span>
+      </div>
+
+      <div class="narration" id="narrationBox">点击「下一步」或「自动播放」开始单步追踪。</div>
+
+      <div class="legend" id="legendBox">
+        <span class="legend-item"><span class="dot" style="background:var(--accent)"></span>当前节点 i</span>
+        <span class="legend-item"><span class="dot" style="background:var(--sky)"></span>左右孩子</span>
+        <span class="legend-item"><span class="dot" style="background:var(--rose)"></span>largest 最大值</span>
+        <span class="legend-item"><span class="dot" style="background:var(--amber)"></span>交换中</span>
+        <span class="legend-item"><span class="dot" style="background:var(--green)"></span>已排好序</span>
+      </div>
+
+      <div class="array-section-label">
+        <span>数组内存状态 (nums)</span>
+        <span id="regionLabel"></span>
+      </div>
+      <div class="array-boxes" id="arrayBoxes"></div>
+
+      <div id="treeWrap">
+        <div class="array-section-label" style="margin-bottom:6px;">
+          <span>对应的完全二叉树（仅展示当前活跃区间）</span>
+          <span>父节点 i → 左 2i+1, 右 2i+2</span>
+        </div>
+        <div class="tree-container">
+          <svg id="treeSvg" viewBox="0 0 640 240" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+      </div>
+
+      <div>
+        <div class="array-section-label" style="margin-bottom:6px;"><span>关键变量监控</span></div>
+        <div class="vars-grid" id="varsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Right: Code & Explanation -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title" id="codeTitle">Python 代码（行级同步高亮）</span>
+        <button class="btn" id="copyCodeBtn" style="padding:4px 10px; font-size:0.75rem;">复制代码</button>
+      </div>
+      <div class="code-box" id="codeBox"></div>
+      <div id="algoNote" style="font-size:0.82rem; color:var(--muted); background:var(--bg); padding:10px 12px; border-radius:8px; border:1px solid var(--border);"></div>
+    </section>
+  </main>
+
+  <!-- Core Intuition Cards -->
+  <section class="guide-grid">
+    <div class="guide-card">
+      <h3>为什么你原来的代码很难一眼看懂？</h3>
+      <ul>
+        <li><code>n // 2 - 1</code> 是<strong>最后一个非叶子节点</strong>：叶子节点没有孩子，不需要下沉，所以建堆从这里倒着往前 <code>-1</code> 走。</li>
+        <li><code>sift_down(nums, i, size)</code> 做的事情只有一件：<strong>把节点 i 往下沉</strong>，让以 <code>i</code> 为根的子树重新满足「父 ≥ 子」。</li>
+        <li>第二个循环 <code>end</code> 从 <code>n-1</code> 到 <code>1</code>：每次把堆顶最大值 <code>nums[0]</code> 换到数组末尾 <code>nums[end]</code>，然后把堆缩小为 <code>end</code>，再对 <code>0</code> 号位下沉。</li>
+      </ul>
+    </div>
+
+    <div class="guide-card">
+      <h3>4 个版本怎么选？（LeetCode 912 实战）</h3>
+      <table class="cmp-table">
+        <thead>
+          <tr><th>版本</th><th>时间</th><th>空间</th><th>LC 912 表现</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1. 堆排序（迭代）</td><td>O(n log n)</td><td>O(1)</td><td>稳定通过，最省空间</td></tr>
+          <tr><td>2. 堆排序（递归）</td><td>O(n log n)</td><td>O(log n)</td><td>逻辑最直观，易手写</td></tr>
+          <tr><td>3. 三路快排（随机）</td><td>期望 O(n log n)</td><td>O(log n)</td><td>最快，防大量重复值超时</td></tr>
+          <tr><td>4. 归并排序</td><td>O(n log n)</td><td>O(n)</td><td>稳定排序，面试最常考</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast">已复制到剪贴板</div>
+
+<script>
+// ===================== CODE TEMPLATES =====================
+const ALGOS = {
+  heap_iter: {
+    name: "堆排序（你的迭代版 sift_down）",
+    showTree: true,
+    note: "核心思想：先把数组原地建成大顶堆（最大值在索引 0），再反复把 nums[0] 换到末尾并缩小堆范围 size=end，对新的堆顶执行 sift_down。",
+    code: [
+      "class Solution:",
+      "    def sortArray(self, nums: list[int]) -> list[int]:",
+      "        n = len(nums)",
+      "        for i in range(n // 2 - 1, -1, -1):",
+      "            self.sift_down(nums, i, n)",
+      "        for end in range(n - 1, 0, -1):",
+      "            nums[0], nums[end] = nums[end], nums[0]",
+      "            self.sift_down(nums, 0, end)",
+      "        return nums",
+      "",
+      "    def sift_down(self, nums, i, size):",
+      "        while True:",
+      "            largest = i",
+      "            left = 2 * i + 1",
+      "            right = 2 * i + 2",
+      "            if left < size and nums[left] > nums[largest]:",
+      "                largest = left",
+      "            if right < size and nums[right] > nums[largest]:",
+      "                largest = right",
+      "            if largest == i:",
+      "                return",
+      "            nums[i], nums[largest] = nums[largest], nums[i]",
+      "            i = largest"
+    ]
+  },
+  heap_rec: {
+    name: "堆排序（递归版 sift_down）",
+    showTree: true,
+    note: "把 while True 改成递归调用 self.sift_down(nums, largest, size)。逻辑与树结构一一对应，更容易记忆和理解。",
+    code: [
+      "class Solution:",
+      "    def sortArray(self, nums: list[int]) -> list[int]:",
+      "        n = len(nums)",
+      "        for i in range(n // 2 - 1, -1, -1):",
+      "            self.sift_down(nums, i, n)",
+      "        for end in range(n - 1, 0, -1):",
+      "            nums[0], nums[end] = nums[end], nums[0]",
+      "            self.sift_down(nums, 0, end)",
+      "        return nums",
+      "",
+      "    def sift_down(self, nums, i, size):",
+      "        largest = i",
+      "        left, right = 2 * i + 1, 2 * i + 2",
+      "        if left < size and nums[left] > nums[largest]:",
+      "            largest = left",
+      "        if right < size and nums[right] > nums[largest]:",
+      "            largest = right",
+      "        if largest != i:",
+      "            nums[i], nums[largest] = nums[largest], nums[i]",
+      "            self.sift_down(nums, largest, size)"
+    ]
+  },
+  quick_3way: {
+    name: "三路快排（随机基准，LeetCode 912 高效 AC）",
+    showTree: false,
+    note: "普通快排遇到全相等或大量重复元素会退化到 O(n²)。三路快排将区间划分为 [< pivot | == pivot | > pivot] 三段，重复元素一次跳过！",
+    code: [
+      "import random",
+      "class Solution:",
+      "    def sortArray(self, nums: list[int]) -> list[int]:",
+      "        def quick_sort(l, r):",
+      "            if l >= r: return",
+      "            p_idx = random.randint(l, r)",
+      "            nums[l], nums[p_idx] = nums[p_idx], nums[l]",
+      "            pivot = nums[l]",
+      "            lt, i, gt = l, l + 1, r",
+      "            while i <= gt:",
+      "                if nums[i] < pivot:",
+      "                    nums[lt], nums[i] = nums[i], nums[lt]",
+      "                    lt += 1; i += 1",
+      "                elif nums[i] > pivot:",
+      "                    nums[i], nums[gt] = nums[gt], nums[i]",
+      "                    gt -= 1",
+      "                else:",
+      "                    i += 1",
+      "            quick_sort(l, lt - 1)",
+      "            quick_sort(gt + 1, r)",
+      "        quick_sort(0, len(nums) - 1)",
+      "        return nums"
+    ]
+  },
+  merge: {
+    name: "归并排序（经典分治，稳定 O(n log n)）",
+    showTree: false,
+    note: "先递归把左右两半排好序，再用双指针将两个有序子数组合并写回原数组。时间复杂度严格 O(n log n)，不惧任何极端输入。",
+    code: [
+      "class Solution:",
+      "    def sortArray(self, nums: list[int]) -> list[int]:",
+      "        def merge_sort(l, r):",
+      "            if l >= r: return",
+      "            mid = (l + r) // 2",
+      "            merge_sort(l, mid)",
+      "            merge_sort(mid + 1, r)",
+      "            tmp = []",
+      "            i, j = l, mid + 1",
+      "            while i <= mid and j <= r:",
+      "                if nums[i] <= nums[j]:",
+      "                    tmp.append(nums[i]); i += 1",
+      "                else:",
+      "                    tmp.append(nums[j]); j += 1",
+      "            tmp.extend(nums[i:mid+1])",
+      "            tmp.extend(nums[j:r+1])",
+      "            nums[l:r+1] = tmp",
+      "        merge_sort(0, len(nums) - 1)",
+      "        return nums"
+    ]
+  }
+};
+
+// ===================== STEP GENERATORS =====================
+function genHeapSteps(inputArr, isRecursive) {
+  const nums = [...inputArr];
+  const n = nums.length;
+  const steps = [];
+
+  function pushStep(line, phase, heapSize, vars, hi, msg) {
+    steps.push({
+      arr: [...nums],
+      line,
+      phase,
+      heapSize,
+      vars: { ...vars },
+      hi: { ...hi },
+      msg
+    });
+  }
+
+  pushStep(3, "build", n, { n }, {}, `初始化数组，长度 n = ${n}。`);
+
+  function siftDown(startI, size, phase, outerEnd) {
+    let i = startI;
+    while (true) {
+      let largest = i;
+      const left = 2 * i + 1;
+      const right = 2 * i + 2;
+
+      pushStep(
+        isRecursive ? 12 : 13,
+        phase,
+        size,
+        { n, size, i, largest, left, right, end: outerEnd ?? "-" },
+        { current: i, largest: i, left: left < size ? left : null, right: right < size ? right : null },
+        `检查节点 i=${i}（值 ${nums[i]}），左孩子=${left < size ? left + '(' + nums[left] + ')' : '越界'}，右孩子=${right < size ? right + '(' + nums[right] + ')' : '越界'}。`
+      );
+
+      if (left < size && nums[left] > nums[largest]) {
+        largest = left;
+        pushStep(
+          isRecursive ? 15 : 17,
+          phase,
+          size,
+          { n, size, i, largest, left, right, end: outerEnd ?? "-" },
+          { current: i, largest, left, right: right < size ? right : null },
+          `左孩子 nums[${left}]=${nums[left]} 更大，更新 largest = ${largest}。`
+        );
+      }
+
+      if (right < size && nums[right] > nums[largest]) {
+        largest = right;
+        pushStep(
+          isRecursive ? 17 : 19,
+          phase,
+          size,
+          { n, size, i, largest, left, right, end: outerEnd ?? "-" },
+          { current: i, largest, left: left < size ? left : null, right },
+          `右孩子 nums[${right}]=${nums[right]} 更大，更新 largest = ${largest}。`
+        );
+      }
+
+      if (largest === i) {
+        pushStep(
+          isRecursive ? 18 : 21,
+          phase,
+          size,
+          { n, size, i, largest, left, right, end: outerEnd ?? "-" },
+          { current: i },
+          `largest == i (${i})，当前节点已比左右孩子都大，下沉结束！`
+        );
+        return;
+      }
+
+      [nums[i], nums[largest]] = [nums[largest], nums[i]];
+      pushStep(
+        isRecursive ? 19 : 22,
+        phase,
+        size,
+        { n, size, i, largest, left, right, end: outerEnd ?? "-" },
+        { swapped: [i, largest], current: largest },
+        `交换 nums[${i}] 与 nums[${largest}]，继续向下检查新的位置 ${largest}。`
+      );
+      i = largest;
+    }
+  }
+
+  // Phase 1: Build heap
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+    pushStep(4, "build", n, { n, i, size: n }, { current: i }, `【阶段1 建堆】从最后一个非叶子节点开始倒序下沉：i = ${i}。`);
+    siftDown(i, n, "build", null);
+  }
+
+  // Phase 2: Extract max
+  for (let end = n - 1; end > 0; end--) {
+    [nums[0], nums[end]] = [nums[end], nums[0]];
+    pushStep(
+      7,
+      "sort",
+      end,
+      { n, end, size: end },
+      { swapped: [0, end] },
+      `【阶段2 排序】堆顶最大值 nums[0]=${nums[end]} 换到末尾 end=${end}，已确定位置！堆大小缩为 ${end}。`
+    );
+    siftDown(0, end, "sort", end);
+  }
+
+  pushStep(9, "done", 0, { n }, {}, `排序完成！最终结果：[${nums.join(", ")}]`);
+  return steps;
+}
+
+function genQuick3WaySteps(inputArr) {
+  const nums = [...inputArr];
+  const n = nums.length;
+  const steps = [];
+  const fixedSet = new Set();
+
+  function pushStep(line, phase, vars, hi, msg) {
+    steps.push({
+      arr: [...nums],
+      line,
+      phase,
+      heapSize: n,
+      fixed: new Set(fixedSet),
+      vars: { ...vars },
+      hi: { ...hi },
+      msg
+    });
+  }
+
+  pushStep(21, "build", { n }, {}, `开始三路快速排序，区间 [0, ${n - 1}]。`);
+
+  function qs(l, r) {
+    if (l >= r) {
+      if (l === r && l >= 0 && l < n) fixedSet.add(l);
+      return;
+    }
+    const pIdx = l + Math.floor((r - l) / 2); // deterministic mid-random for repeatable demo
+    [nums[l], nums[pIdx]] = [nums[pIdx], nums[l]];
+    const pivot = nums[l];
+    let lt = l, i = l + 1, gt = r;
+
+    pushStep(8, "build", { l, r, pivot, lt, i, gt }, { pivot: l, swapped: [l, pIdx] },
+      `选取基准 pivot = ${pivot} 并放到左端 l=${l}，初始化指针 lt=${lt}, i=${i}, gt=${gt}。`);
+
+    while (i <= gt) {
+      if (nums[i] < pivot) {
+        [nums[lt], nums[i]] = [nums[i], nums[lt]];
+        pushStep(12, "build", { l, r, pivot, lt, i, gt }, { swapped: [lt, i], lt, gt, current: i },
+          `nums[${i}]=${nums[lt]} < pivot(${pivot})，与 lt(${lt}) 交换并双双右移。`);
+        lt++; i++;
+      } else if (nums[i] > pivot) {
+        [nums[i], nums[gt]] = [nums[gt], nums[i]];
+        pushStep(15, "build", { l, r, pivot, lt, i, gt }, { swapped: [i, gt], lt, gt, current: i },
+          `nums[${gt}]=${nums[gt]} > pivot(${pivot})，与 gt(${gt}) 交换，gt 左移。`);
+        gt--;
+      } else {
+        pushStep(18, "build", { l, r, pivot, lt, i, gt }, { lt, gt, current: i },
+          `nums[${i}]=${nums[i]} == pivot(${pivot})，留在中间相等区，i 右移。`);
+        i++;
+      }
+    }
+
+    for (let k = lt; k <= gt; k++) fixedSet.add(k);
+    pushStep(19, "sort", { l, r, pivot, lt, gt }, { lt, gt },
+      `区间 [${lt}..${gt}] 全部等于 ${pivot}，位置已永久确定！递归左半 [${l}, ${lt - 1}] 与右半 [${gt + 1}, ${r}]。`);
+
+    qs(l, lt - 1);
+    qs(gt + 1, r);
+  }
+
+  qs(0, n - 1);
+  for (let k = 0; k < n; k++) fixedSet.add(k);
+  pushStep(22, "done", { n }, {}, `三路快排完成！最终结果：[${nums.join(", ")}]`);
+  return steps;
+}
+
+function genMergeSteps(inputArr) {
+  const nums = [...inputArr];
+  const n = nums.length;
+  const steps = [];
+
+  function pushStep(line, phase, vars, hi, msg) {
+    steps.push({
+      arr: [...nums],
+      line,
+      phase,
+      heapSize: n,
+      vars: { ...vars },
+      hi: { ...hi },
+      msg
+    });
+  }
+
+  pushStep(18, "build", { n }, {}, `开始归并排序，区间 [0, ${n - 1}]。`);
+
+  function ms(l, r) {
+    if (l >= r) return;
+    const mid = Math.floor((l + r) / 2);
+    pushStep(5, "build", { l, mid, r }, { current: mid }, `拆分区间 [${l}..${r}] 为左半 [${l}..${mid}] 和右半 [${mid + 1}..${r}]。`);
+    ms(l, mid);
+    ms(mid + 1, r);
+
+    const tmp = [];
+    let i = l, j = mid + 1;
+    while (i <= mid && j <= r) {
+      if (nums[i] <= nums[j]) {
+        tmp.push(nums[i]);
+        pushStep(12, "sort", { l, mid, r, i, j, tmp: `[${tmp.join(",")}]` }, { left: i, right: j },
+          `比较 nums[${i}]=${nums[i]} <= nums[${j}]=${nums[j]}，取左半 ${nums[i]} 放入 tmp。`);
+        i++;
+      } else {
+        tmp.push(nums[j]);
+        pushStep(14, "sort", { l, mid, r, i, j, tmp: `[${tmp.join(",")}]` }, { left: i, right: j },
+          `比较 nums[${i}]=${nums[i]} > nums[${j}]=${nums[j]}，取右半 ${nums[j]} 放入 tmp。`);
+        j++;
+      }
+    }
+    while (i <= mid) tmp.push(nums[i++]);
+    while (j <= r) tmp.push(nums[j++]);
+    for (let k = 0; k < tmp.length; k++) nums[l + k] = tmp[k];
+    pushStep(17, "sort", { l, r, tmp: `[${tmp.join(",")}]` }, { current: l, largest: r },
+      `将有序归并结果 [${tmp.join(", ")}] 写回 nums[${l}..${r}]。`);
+  }
+
+  ms(0, n - 1);
+  pushStep(19, "done", { n }, {}, `归并排序完成！最终结果：[${nums.join(", ")}]`);
+  return steps;
+}
+
+// ===================== STATE & RENDER =====================
+let currentAlgo = "heap_iter";
+let currentInput = [5, 2, 3, 1, 6, 4];
+let steps = [];
+let stepIdx = 0;
+let timer = null;
+
+const el = (id) => document.getElementById(id);
+
+function parseArray(str) {
+  const parts = str.split(/[\s,，]+/).filter(Boolean).map(Number);
+  const valid = parts.filter((x) => !Number.isNaN(x));
+  return valid.length ? valid.slice(0, 15) : [5, 2, 3, 1];
+}
+
+function rebuildSteps() {
+  stopPlay();
+  if (currentAlgo === "heap_iter") steps = genHeapSteps(currentInput, false);
+  else if (currentAlgo === "heap_rec") steps = genHeapSteps(currentInput, true);
+  else if (currentAlgo === "quick_3way") steps = genQuick3WaySteps(currentInput);
+  else steps = genMergeSteps(currentInput);
+
+  stepIdx = 0;
+  el("stepSlider").max = Math.max(0, steps.length - 1);
+  el("stepSlider").value = 0;
+  renderCode();
+  renderStep();
+}
+
+function renderCode() {
+  const cfg = ALGOS[currentAlgo];
+  el("codeTitle").textContent = cfg.name;
+  el("algoNote").textContent = cfg.note;
+  el("treeWrap").style.display = cfg.showTree ? "block" : "none";
+  el("visTitle").textContent = cfg.showTree ? "数组 & 完全二叉树双视图" : "数组分区状态视图";
+
+  const box = el("codeBox");
+  box.innerHTML = cfg.code.map((line, idx) => {
+    const ln = idx + 1;
+    const esc = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `<div class="code-line" data-ln="${ln}"><span class="ln">${ln}</span><span>${esc || " "}</span></div>`;
+  }).join("");
+}
+
+function renderStep() {
+  if (!steps.length) return;
+  const s = steps[stepIdx];
+
+  el("stepSlider").value = stepIdx;
+  el("stepCounter").textContent = `${stepIdx} / ${steps.length - 1}`;
+  el("narrationBox").textContent = s.msg;
+
+  // Phase pill
+  const pill = el("phasePill");
+  pill.className = "phase-pill";
+  if (s.phase === "build") pill.textContent = ALGOS[currentAlgo].showTree ? "阶段1：建大顶堆" : "分区 / 拆分中";
+  else if (s.phase === "sort") { pill.textContent = ALGOS[currentAlgo].showTree ? "阶段2：交换与下沉" : "合并 / 归位中"; pill.classList.add("sort"); }
+  else { pill.textContent = "排序完成"; pill.classList.add("done"); }
+
+  // Code highlight
+  document.querySelectorAll(".code-line").forEach((node) => {
+    node.classList.toggle("active", Number(node.dataset.ln) === s.line);
+  });
+
+  // Region label
+  const isHeap = ALGOS[currentAlgo].showTree;
+  el("regionLabel").textContent = isHeap
+    ? `活跃堆区: [0..${Math.max(0, s.heapSize - 1)}] | 已排好: [${s.heapSize}..${s.arr.length - 1}]`
+    : `元素总数: ${s.arr.length}`;
+
+  // Array boxes
+  const boxes = el("arrayBoxes");
+  boxes.innerHTML = s.arr.map((val, idx) => {
+    const cls = ["arr-box"];
+    const tags = [];
+    const hi = s.hi || {};
+    const isSorted = s.phase === "done" || (isHeap && idx >= s.heapSize) || (s.fixed && s.fixed.has(idx));
+
+    if (isSorted) cls.push("is-sorted");
+    if (hi.swapped && (hi.swapped[0] === idx || hi.swapped[1] === idx)) cls.push("is-swap");
+    else if (hi.largest === idx) cls.push("is-largest");
+    else if (hi.current === idx) cls.push("is-current");
+    else if (hi.left === idx || hi.right === idx) cls.push("is-child");
+
+    if (hi.current === idx) tags.push(`<span class="ptr-tag ptr-i">i</span>`);
+    if (hi.largest === idx && hi.largest !== hi.current) tags.push(`<span class="ptr-tag ptr-largest">max</span>`);
+    if (hi.left === idx) tags.push(`<span class="ptr-tag ptr-left">L</span>`);
+    if (hi.right === idx) tags.push(`<span class="ptr-tag ptr-right">R</span>`);
+    if (hi.pivot === idx) tags.push(`<span class="ptr-tag ptr-pivot">pivot</span>`);
+    if (hi.lt === idx) tags.push(`<span class="ptr-tag ptr-lt">lt</span>`);
+    if (hi.gt === idx) tags.push(`<span class="ptr-tag ptr-gt">gt</span>`);
+    if (s.vars.end === idx) tags.push(`<span class="ptr-tag ptr-end">end</span>`);
+
+    return `
+      <div class="arr-cell">
+        <div class="ptr-tags">${tags.join("")}</div>
+        <div class="${cls.join(" ")}">${val}</div>
+        <div class="arr-idx">[${idx}]</div>
+      </div>`;
+  }).join("");
+
+  // Variables
+  el("varsGrid").innerHTML = Object.entries(s.vars).map(([k, v]) => `
+    <div class="var-card">
+      <div class="var-name">${k}</div>
+      <div class="var-val">${v === null || v === undefined ? "-" : v}</div>
+    </div>`).join("");
+
+  // Tree SVG
+  if (isHeap) renderTree(s);
+
+  el("prevBtn").disabled = stepIdx === 0;
+  el("nextBtn").disabled = stepIdx >= steps.length - 1;
+}
+
+function renderTree(s) {
+  const svg = el("treeSvg");
+  const size = s.heapSize;
+  if (size <= 0) {
+    svg.innerHTML = `<text x="320" y="120" text-anchor="middle" fill="#64748b" font-size="14">堆已全部弹出，数组有序！</text>`;
+    return;
+  }
+
+  const levels = Math.floor(Math.log2(size)) + 1;
+  const W = 640, H = 230;
+  const pos = [];
+  for (let i = 0; i < size; i++) {
+    const lvl = Math.floor(Math.log2(i + 1));
+    const idxInLvl = i - (Math.pow(2, lvl) - 1);
+    const maxInLvl = Math.pow(2, lvl);
+    const x = ((idxInLvl + 0.5) / maxInLvl) * W;
+    const y = 32 + (lvl * (H - 60)) / Math.max(1, levels - 1);
+    pos.push({ x, y });
+  }
+
+  let html = "";
+  for (let i = 0; i < size; i++) {
+    const l = 2 * i + 1, r = 2 * i + 2;
+    if (l < size) html += `<line x1="${pos[i].x}" y1="${pos[i].y}" x2="${pos[l].x}" y2="${pos[l].y}" stroke="#334155" stroke-width="2" />`;
+    if (r < size) html += `<line x1="${pos[i].x}" y1="${pos[i].y}" x2="${pos[r].x}" y2="${pos[r].y}" stroke="#334155" stroke-width="2" />`;
+  }
+
+  const hi = s.hi || {};
+  for (let i = 0; i < size; i++) {
+    let fill = "#273449", stroke = "#475569";
+    if (hi.swapped && (hi.swapped[0] === i || hi.swapped[1] === i)) { fill = "#451a03"; stroke = "#f59e0b"; }
+    else if (hi.largest === i) { fill = "#4c0519"; stroke = "#f43f5e"; }
+    else if (hi.current === i) { fill = "#1e1b4b"; stroke = "#6366f1"; }
+    else if (hi.left === i || hi.right === i) { fill = "#082f49"; stroke = "#38bdf8"; }
+
+    html += `
+      <g>
+        <circle cx="${pos[i].x}" cy="${pos[i].y}" r="18" fill="${fill}" stroke="${stroke}" stroke-width="2.5" />
+        <text x="${pos[i].x}" y="${pos[i].y + 5}" text-anchor="middle" fill="#f1f5f9" font-size="13" font-weight="700" font-family="monospace">${s.arr[i]}</text>
+        <text x="${pos[i].x}" y="${pos[i].y + 30}" text-anchor="middle" fill="#64748b" font-size="10" font-family="monospace">[${i}]</text>
+      </g>`;
+  }
+  svg.innerHTML = html;
+}
+
+function stopPlay() {
+  if (timer) { clearInterval(timer); timer = null; }
+  el("playBtn").textContent = "▶ 自动播放";
+}
+
+function togglePlay() {
+  if (timer) { stopPlay(); return; }
+  if (stepIdx >= steps.length - 1) stepIdx = 0;
+  el("playBtn").textContent = "⏸ 暂停";
+  const delay = 1550 - Number(el("speedSlider").value);
+  timer = setInterval(() => {
+    if (stepIdx < steps.length - 1) {
+      stepIdx++;
+      renderStep();
+    } else {
+      stopPlay();
+    }
+  }, delay);
+}
+
+// ===================== EVENTS =====================
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentAlgo = btn.dataset.algo;
+    rebuildSteps();
+  });
+});
+
+el("applyBtn").addEventListener("click", () => {
+  currentInput = parseArray(el("arrayInput").value);
+  el("arrayInput").value = currentInput.join(", ");
+  rebuildSteps();
+});
+
+document.querySelectorAll(".preset-btn[data-preset]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    el("arrayInput").value = btn.dataset.preset;
+    currentInput = parseArray(btn.dataset.preset);
+    rebuildSteps();
+  });
+});
+
+el("randomBtn").addEventListener("click", () => {
+  const arr = Array.from({ length: 7 }, () => Math.floor(Math.random() * 20) - 3);
+  el("arrayInput").value = arr.join(", ");
+  currentInput = arr;
+  rebuildSteps();
+});
+
+el("resetBtn").addEventListener("click", () => { stopPlay(); stepIdx = 0; renderStep(); });
+el("prevBtn").addEventListener("click", () => { stopPlay(); if (stepIdx > 0) { stepIdx--; renderStep(); } });
+el("nextBtn").addEventListener("click", () => { stopPlay(); if (stepIdx < steps.length - 1) { stepIdx++; renderStep(); } });
+el("playBtn").addEventListener("click", togglePlay);
+el("stepSlider").addEventListener("input", (e) => { stopPlay(); stepIdx = Number(e.target.value); renderStep(); });
+el("speedSlider").addEventListener("change", () => { if (timer) { stopPlay(); togglePlay(); } });
+
+el("copyCodeBtn").addEventListener("click", () => {
+  const text = ALGOS[currentAlgo].code.join("\n");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+  const t = el("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1600);
+});
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+}
+
+// Init
+rebuildSteps();
+</script>
+</body>
+</html>
