@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 78. 子集 (Subsets) — 交互式算法可视化</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #273449;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --pick: #34d399;
+      --pick-soft: rgba(52, 211, 153, 0.16);
+      --skip: #fbbf24;
+      --skip-soft: rgba(251, 191, 36, 0.16);
+      --leaf: #a78bfa;
+      --leaf-soft: rgba(167, 139, 250, 0.18);
+      --danger: #f87171;
+      --code-bg: #0b1120;
+      --radius: 12px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 16px 20px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .title-group h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .title-group p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Intuition Banner */
+    .intuition-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(167, 139, 250, 0.08));
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .intuition-text {
+      flex: 1 1 520px;
+      font-size: 0.9rem;
+    }
+
+    .intuition-text strong { color: var(--accent); }
+    .intuition-text code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.7);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.84em;
+      color: #e2e8f0;
+    }
+
+    .pitfall-pill {
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      max-width: 440px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .tab-tag {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: inherit;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .input-group, .playback-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    input[type="text"] {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      width: 150px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #7dd3fc;
+      color: #0f172a;
+    }
+
+    .preset-btn {
+      padding: 4px 9px;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+    }
+
+    .preset-btn.active-preset {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .speed-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-body {
+      padding: 14px 16px;
+    }
+
+    /* Step Narrative */
+    .step-banner {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--code-bg);
+      border-left: 4px solid var(--accent);
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+    }
+
+    .step-banner.type-pick { border-left-color: var(--pick); }
+    .step-banner.type-skip { border-left-color: var(--skip); }
+    .step-banner.type-leaf { border-left-color: var(--leaf); }
+    .step-banner.type-back { border-left-color: var(--danger); }
+
+    .step-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .scrubber-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .scrubber-wrap input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Visual Canvas */
+    .viz-stage {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-height: 360px;
+      max-height: 480px;
+      overflow: auto;
+      position: relative;
+      padding: 12px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* State Dashboard */
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .state-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .state-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 28px;
+      align-items: center;
+    }
+
+    .chip {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .chip.highlight-pick {
+      background: var(--pick-soft);
+      border-color: var(--pick);
+      color: var(--pick);
+    }
+
+    .chip.highlight-leaf {
+      background: var(--leaf-soft);
+      border-color: var(--leaf);
+      color: #ddd6fe;
+    }
+
+    .chip.empty-muted {
+      color: var(--text-muted);
+      font-style: italic;
+      background: transparent;
+      border-style: dashed;
+    }
+
+    /* Call Stack */
+    .stack-list {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 4px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .stack-frame {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stack-frame.top {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Code Panel */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+
+    .code-line {
+      padding: 2px 14px;
+      white-space: pre;
+      color: #cbd5e1;
+      border-left: 3px solid transparent;
+      transition: background 0.15s;
+    }
+
+    .code-line.active-line {
+      background: rgba(56, 189, 248, 0.16);
+      border-left-color: var(--accent);
+      color: #ffffff;
+    }
+
+    /* Results Gallery */
+    .res-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    /* Iterative / Bitmask Views */
+    .iter-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .iter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .iter-card.active-card {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .bit-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+
+    .bit-table th, .bit-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .bit-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+    }
+
+    .bit-table tr.active-row {
+      background: var(--accent-soft);
+    }
+
+    .bit-box {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      text-align: center;
+      border-radius: 4px;
+      margin-right: 3px;
+      font-weight: 700;
+    }
+
+    .bit-1 { background: var(--pick-soft); color: var(--pick); border: 1px solid var(--pick); }
+    .bit-0 { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* Comparison Table */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .compare-table th, .compare-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .compare-table th {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .compare-table tr.selected-algo {
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .kbd {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 1px 5px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--code-bg);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="title-group">
+        <h1>
+          LeetCode 78. 子集 (Subsets)
+          <span class="badge">中等 · 回溯 / 迭代 / 位运算</span>
+        </h1>
+        <p>给你一个整数数组 <code>nums</code>（元素互不相同），返回该数组所有可能的子集（幂集）。共 2<sup>n</sup> 个子集。</p>
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-muted);">
+        快捷键：<span class="kbd">Space</span> 播放/暂停 · <span class="kbd">←</span>/<span class="kbd">→</span> 单步 · <span class="kbd">R</span> 重置
+      </div>
+    </header>
+
+    <section class="intuition-card">
+      <div class="intuition-text">
+        <strong>核心直觉：</strong>为什么 <code>n</code> 个元素恰好有 <code>2<sup>n</sup></code> 个子集？
+        因为对每个元素 <code>nums[i]</code>，都只有<strong>「不选」</strong>或<strong>「选」</strong>两种命运。你的代码先递归走「不选」分支，再 <code>append</code> 走「选」分支，最后 <code>pop()</code> 恢复现场，等 <code>i == n</code> 到达决策树叶子时记录结果。
+      </div>
+      <div class="pitfall-pill">
+        <strong>易错点提醒：</strong>必须写 <code>res.append(path[:])</code>（浅拷贝快照）！如果直接写 <code>res.append(path)</code>，所有结果都指向同一个列表，最后 <code>pop()</code> 清空后 <code>res</code> 会变成一堆 <code>[]</code>。
+      </div>
+    </section>
+
+    <nav class="tabs" id="algoTabs" aria-label="算法切换">
+      <button class="tab-btn active" data-algo="binary">
+        1. 选/不选回溯（你的代码） <span class="tab-tag">二叉树</span>
+      </button>
+      <button class="tab-btn" data-algo="forloop">
+        2. 枚举起点回溯（更少递归） <span class="tab-tag">多叉树</span>
+      </button>
+      <button class="tab-btn" data-algo="iterative">
+        3. 迭代倍增法（无递归栈） <span class="tab-tag">推荐进阶</span>
+      </button>
+      <button class="tab-btn" data-algo="bitmask">
+        4. 位运算枚举（O(1) 额外空间） <span class="tab-tag">二进制映射</span>
+      </button>
+    </nav>
+
+    <section class="controls-bar">
+      <div class="input-group">
+        <label for="numsInput">输入 nums：</label>
+        <input type="text" id="numsInput" value="1, 2, 3" placeholder="如 1, 2, 3" />
+        <button class="btn" id="applyBtn">应用</button>
+        <button class="btn preset-btn active-preset" data-preset="1,2,3">[1,2,3]</button>
+        <button class="btn preset-btn" data-preset="0">[0]</button>
+        <button class="btn preset-btn" data-preset="">[]</button>
+        <button class="btn preset-btn" data-preset="5,7,9,10">[5,7,9,10]</button>
+        <span class="error-msg" id="inputError">请输入最多 5 个不重复整数（用逗号分隔）</span>
+      </div>
+
+      <div class="playback-group">
+        <button class="btn" id="resetBtn">⏮ 重置</button>
+        <button class="btn" id="prevBtn">◀ 上一步</button>
+        <button class="btn btn-primary" id="playBtn">▶ 播放</button>
+        <button class="btn" id="nextBtn">下一步 ▶</button>
+        <div class="speed-wrap">
+          <label for="speedRange">速度</label>
+          <input type="range" id="speedRange" min="150" max="1500" step="50" value="700" style="width: 80px;" />
+          <span id="speedLabel">1.0x</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+      <!-- Left: Visualization -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title" id="vizTitle">递归决策树视图</div>
+          <div class="legend" id="vizLegend">
+            <span class="legend-item"><span class="dot" style="background:var(--accent)"></span>当前节点</span>
+            <span class="legend-item"><span class="dot" style="background:var(--skip)"></span>不选 (Skip)</span>
+            <span class="legend-item"><span class="dot" style="background:var(--pick)"></span>选 (Pick)</span>
+            <span class="legend-item"><span class="dot" style="background:var(--leaf)"></span>已收集子集</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="step-banner" id="stepBanner">
+            <div class="step-meta">
+              <span id="stepCounter">步骤 0 / 0</span>
+              <span id="stepPhase">准备就绪</span>
+            </div>
+            <div id="stepDesc">点击「播放」或「下一步」开始单步追踪。</div>
+          </div>
+
+          <div class="scrubber-wrap">
+            <span style="font-size:0.76rem; color:var(--text-muted);">进度</span>
+            <input type="range" id="stepScrubber" min="0" max="0" value="0" />
+          </div>
+
+          <div class="viz-stage" id="vizStage"></div>
+        </div>
+      </div>
+
+      <!-- Right: State & Code -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">实时状态面板</div>
+            <span style="font-size:0.78rem; color:var(--text-muted);" id="resCountLabel">已收集：0 个子集</span>
+          </div>
+          <div class="panel-body">
+            <div class="state-grid">
+              <div class="state-box">
+                <div class="state-label">当前索引 / 指针</div>
+                <div class="chip-list" id="pointerDisplay"></div>
+              </div>
+              <div class="state-box">
+                <div class="state-label">当前路径 path</div>
+                <div class="chip-list" id="pathDisplay"></div>
+              </div>
+            </div>
+
+            <div class="state-box" style="margin-bottom:12px;" id="stackBox">
+              <div class="state-label">递归调用栈 (Call Stack)</div>
+              <div class="stack-list" id="stackDisplay"></div>
+            </div>
+
+            <div class="state-box">
+              <div class="state-label">结果集 res</div>
+              <div class="res-gallery" id="resDisplay"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title" id="codeTitle">Python 代码追踪</div>
+          </div>
+          <div class="panel-body">
+            <div class="code-box" id="codeDisplay"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Section -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">四种解法横向对比（为什么推荐学习迭代法与枚举起点法？）</div>
+      </div>
+      <div class="panel-body" style="overflow-x:auto;">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>解法</th>
+              <th>时间复杂度</th>
+              <th>空间复杂度（不含输出）</th>
+              <th>递归节点数 (n=3)</th>
+              <th>特点与适用场景</th>
+            </tr>
+          </thead>
+          <tbody id="compareBody">
+            <tr data-algo="binary" class="selected-algo">
+              <td><strong>1. 选/不选回溯（你的代码）</strong></td>
+              <td><code>O(n · 2<sup>n</sup>)</code></td>
+              <td><code>O(n)</code> 栈 + <code>path</code></td>
+              <td>15 个节点</td>
+              <td>思维最直观，每个元素二选一；只在叶子节点 <code>i == n</code> 收集结果。</td>
+            </tr>
+            <tr data-algo="forloop">
+              <td><strong>2. 枚举起点回溯</strong></td>
+              <td><code>O(n · 2<sup>n</sup>)</code></td>
+              <td><code>O(n)</code> 栈 + <code>path</code></td>
+              <td>8 个节点</td>
+              <td><strong>树节点数减半！</strong> 每个节点都是合法子集，入栈即收集；更容易迁移到 LeetCode 90（子集 II 去重）。</td>
+            </tr>
+            <tr data-algo="iterative">
+              <td><strong>3. 迭代倍增法</strong></td>
+              <td><code>O(n · 2<sup>n</sup>)</code></td>
+              <td><code>O(1)</code> 无递归栈</td>
+              <td>无递归</td>
+              <td><strong>代码最短（仅 4 行）！</strong> 每遇到一个新数字，就把现有所有子集复制一份并加上它，无爆栈风险。</td>
+            </tr>
+            <tr data-algo="bitmask">
+              <td><strong>4. 位运算枚举</strong></td>
+              <td><code>O(n · 2<sup>n</sup>)</code></td>
+              <td><code>O(1)</code> 无递归栈</td>
+              <td>无递归</td>
+              <td>用 <code>0</code> 到 <code>2<sup>n</sup>-1</code> 的二进制位直接表示选/不选，天然对应幂集数学定义。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const ALGO_CODE = {
+      binary: [
+        "def subsets(nums):",
+        "    res, path, n = [], [], len(nums)",
+        "    def backTrack(i):",
+        "        if i == n:",
+        "            res.append(path[:])  # 到达叶子，拷贝快照",
+        "            return",
+        "        backTrack(i + 1)         # 分支1：不选 nums[i]",
+        "        path.append(nums[i])     # 选择 nums[i]",
+        "        backTrack(i + 1)         # 分支2：选 nums[i]",
+        "        path.pop()               # 撤销选择，恢复现场",
+        "    backTrack(0)",
+        "    return res"
+      ],
+      forloop: [
+        "def subsets(nums):",
+        "    res, path, n = [], [], len(nums)",
+        "    def dfs(start):",
+        "        res.append(path[:])      # 每个节点都是合法子集！",
+        "        for j in range(start, n):",
+        "            path.append(nums[j]) # 选 nums[j]",
+        "            dfs(j + 1)           # 只能从 j+1 往后选",
+        "            path.pop()           # 撤销选择",
+        "    dfs(0)",
+        "    return res"
+      ],
+      iterative: [
+        "def subsets(nums):",
+        "    res = [[]]                   # 初始只有空集",
+        "    for num in nums:             # 逐个考虑新元素",
+        "        # 把已有子集复制一份并加上 num",
+        "        new_subsets = [cur + [num] for cur in res]",
+        "        res.extend(new_subsets)",
+        "    return res"
+      ],
+      bitmask: [
+        "def subsets(nums):",
+        "    res, n = [], len(nums)",
+        "    for mask in range(1 << n):   # 枚举 0 到 2^n - 1",
+        "        cur = []",
+        "        for i in range(n):",
+        "            if (mask >> i) & 1:  # 第 i 位为 1 则选 nums[i]",
+        "                cur.append(nums[i])",
+        "        res.append(cur)",
+        "    return res"
+      ]
+    };
+
+    const state = {
+      nums: [1, 2, 3],
+      algo: "binary",
+      steps: [],
+      treeNodes: [],
+      treeEdges: [],
+      stepIdx: 0,
+      timer: null,
+      speedMs: 700
+    };
+
+    // --- Step Generators ---
+    function generateBinarySteps(nums) {
+      const n = nums.length;
+      const steps = [];
+      const nodes = [];
+      const edges = [];
+      let nextId = 0;
+
+      // Build full tree structure first for clean layout
+      function buildTree(i, depth, path, choice, parentId) {
+        const id = nextId++;
+        const node = {
+          id, i, depth, path: [...path], choice, parentId,
+          isLeaf: i === n, x: 0, y: 0
+        };
+        nodes.push(node);
+        if (parentId !== null) {
+          edges.push({ from: parentId, to: id, choice, label: choice === "skip" ? `不选 ${nums[i - 1]}` : `选 ${nums[i - 1]}` });
+        }
+        if (i < n) {
+          buildTree(i + 1, depth + 1, path, "skip", id);
+          buildTree(i + 1, depth + 1, [...path, nums[i]], "pick", id);
+        }
+        return id;
+      }
+      buildTree(0, 0, [], "root", null);
+      layoutTree(nodes);
+
+      const res = [];
+      const path = [];
+      const stack = [];
+      const visitedNodes = new Set();
+      const collectedNodes = new Set();
+
+      // Traverse in exact execution order
+      function sim(nodeId) {
+        const node = nodes[nodeId];
+        const i = node.i;
+        stack.push(`backTrack(${i})`);
+        visitedNodes.add(nodeId);
+
+        if (i === n) {
+          res.push([...path]);
+          collectedNodes.add(nodeId);
+          steps.push({
+            type: "leaf",
+            line: 5,
+            phase: "到达叶子 (i == n)",
+            desc: `i == ${n}，到达决策树叶子！将当前 path = [${path.join(", ")}] 浅拷贝存入 res。`,
+            pointer: `i = ${i} (n = ${n})`,
+            path: [...path],
+            stack: [...stack],
+            res: res.map(r => [...r]),
+            activeNodeId: nodeId,
+            visitedNodes: new Set(visitedNodes),
+            collectedNodes: new Set(collectedNodes)
+          });
+          stack.pop();
+          return;
+        }
+
+        steps.push({
+          type: "enter",
+          line: 3,
+          phase: `决策 nums[${i}] = ${nums[i]}`,
+          desc: `进入 backTrack(${i})，准备先走「不选 ${nums[i]}」分支。`,
+          pointer: `i = ${i}, nums[i] = ${nums[i]}`,
+          path: [...path],
+          stack: [...stack],
+          res: res.map(r => [...r]),
+          activeNodeId: nodeId,
+          visitedNodes: new Set(visitedNodes),
+          collectedNodes: new Set(collectedNodes)
+        });
+
+        const children = edges.filter(e => e.from === nodeId).map(e => e.to);
+        const skipChild = children[0];
+        const pickChild = children[1];
+
+        // Skip branch
+        steps.push({
+          type: "skip",
+          line: 7,
+          phase: `分支 1：不选 ${nums[i]}`,
+          desc: `保持 path = [${path.join(", ")}] 不变，递归调用 backTrack(${i + 1})。`,
+          pointer: `i = ${i} → ${i + 1}`,
+          path: [...path],
+          stack: [...stack],
+          res: res.map(r => [...r]),
+          activeNodeId: nodeId,
+          visitedNodes: new Set(visitedNodes),
+          collectedNodes: new Set(collectedNodes)
+        });
+        sim(skipChild);
+
+        // Pick branch
+        path.push(nums[i]);
+        steps.push({
+          type: "pick",
+          line: 8,
+          phase: `分支 2：选 ${nums[i]}`,
+          desc: `将 ${nums[i]} 加入 path → [${path.join(", ")}]，准备递归 backTrack(${i + 1})。`,
+          pointer: `i = ${i}, 加入 ${nums[i]}`,
+          path: [...path],
+          stack: [...stack],
+          res: res.map(r => [...r]),
+          activeNodeId: nodeId,
+          visitedNodes: new Set(visitedNodes),
+          collectedNodes: new Set(collectedNodes)
+        });
+        sim(pickChild);
+
+        // Backtrack pop
+        const popped = path.pop();
+        steps.push({
+          type: "back",
+          line: 10,
+          phase: "回溯恢复现场",
+          desc: `backTrack(${i}) 两条分支都已走完，执行 path.pop() 移除 ${popped}，恢复 path = [${path.join(", ")}]。`,
+          pointer: `i = ${i}, pop(${popped})`,
+          path: [...path],
+          stack: [...stack],
+          res: res.map(r => [...r]),
+          activeNodeId: nodeId,
+          visitedNodes: new Set(visitedNodes),
+          collectedNodes: new Set(collectedNodes)
+        });
+
+        stack.pop();
+      }
+
+      sim(0);
+      steps.push({
+        type: "done",
+        line: 12,
+        phase: "执行完成",
+        desc: `所有 ${res.length} 个子集已收集完毕！`,
+        pointer: "完成",
+        path: [],
+        stack: [],
+        res: res.map(r => [...r]),
+        activeNodeId: null,
+        visitedNodes: new Set(visitedNodes),
+        collectedNodes: new Set(collectedNodes)
+      });
+
+      return { steps, nodes, edges };
+    }
+
+    function generateForLoopSteps(nums) {
+      const n = nums.length;
+      const steps = [];
+      const nodes = [];
+      const edges = [];
+      let nextId = 0;
+
+      function buildTree(start, depth, path, parentId, pickedVal) {
+        const id = nextId++;
+        const node = {
+          id, i: start, depth, path: [...path], choice: parentId === null ? "root" : "pick",
+          parentId, isLeaf: true, x: 0, y: 0
+        };
+        nodes.push(node);
+        if (parentId !== null) {
+          edges.push({ from: parentId, to: id, choice: "pick", label: `+${pickedVal}` });
+        }
+        for (let j = start; j < n; j++) {
+          buildTree(j + 1, depth + 1, [...path, nums[j]], id, nums[j]);
+        }
+        return id;
+      }
+      buildTree(0, 0, [], null, null);
+      layoutTree(nodes);
+
+      const res = [];
+      const path = [];
+      const stack = [];
+      const visitedNodes = new Set();
+      const collectedNodes = new Set();
+
+      function sim(nodeId) {
+        const node = nodes[nodeId];
+        const start = node.i;
+        stack.push(`dfs(${start})`);
+        visitedNodes.add(nodeId);
+        res.push([...path]);
+        collectedNodes.add(nodeId);
+
+        steps.push({
+          type: "leaf",
+          line: 4,
+          phase: `入栈即收集`,
+          desc: `进入 dfs(${start})，立即收集当前节点 path = [${path.join(", ")}] 到 res（每个节点都是合法子集）。`,
+          pointer: `start = ${start}`,
+          path: [...path],
+          stack: [...stack],
+          res: res.map(r => [...r]),
+          activeNodeId: nodeId,
+          visitedNodes: new Set(visitedNodes),
+          collectedNodes: new Set(collectedNodes)
+        });
+
+        const children = edges.filter(e => e.from === nodeId);
+        for (let idx = 0; idx < children.length; idx++) {
+          const j = start + idx;
+          path.push(nums[j]);
+          steps.push({
+            type: "pick",
+            line: 6,
+            phase: `枚举起点 j = ${j}`,
+            desc: `选择 nums[${j}] = ${nums[j]}，path 变为 [${path.join(", ")}]，下一层只能从 ${j + 1} 往后选。`,
+            pointer: `start = ${start}, j = ${j}`,
+            path: [...path],
+            stack: [...stack],
+            res: res.map(r => [...r]),
+            activeNodeId: nodeId,
+            visitedNodes: new Set(visitedNodes),
+            collectedNodes: new Set(collectedNodes)
+          });
+          sim(children[idx].to);
+          const popped = path.pop();
+          steps.push({
+            type: "back",
+            line: 8,
+            phase: "撤销选择",
+            desc: `从 dfs(${j + 1}) 返回，path.pop() 移除 ${popped}，恢复为 [${path.join(", ")}]。`,
+            pointer: `start = ${start}, pop(${popped})`,
+            path: [...path],
+            stack: [...stack],
+            res: res.map(r => [...r]),
+            activeNodeId: nodeId,
+            visitedNodes: new Set(visitedNodes),
+            collectedNodes: new Set(collectedNodes)
+          });
+        }
+        stack.pop();
+      }
+
+      sim(0);
+      steps.push({
+        type: "done",
+        line: 10,
+        phase: "执行完成",
+        desc: `共收集 ${res.length} 个子集，总递归节点仅 ${nodes.length} 个（比选/不选少了近一半）。`,
+        pointer: "完成",
+        path: [],
+        stack: [],
+        res: res.map(r => [...r]),
+        activeNodeId: null,
+        visitedNodes: new Set(visitedNodes),
+        collectedNodes: new Set(collectedNodes)
+      });
+
+      return { steps, nodes, edges };
+    }
+
+    function generateIterativeSteps(nums) {
+      const steps = [];
+      let res = [[]];
+      const rounds = [{ label: "初始状态", existing: [[]], added: [] }];
+
+      steps.push({
+        type: "leaf",
+        line: 2,
+        phase: "初始化",
+        desc: "初始时 res = [ [] ]，只包含空集。",
+        pointer: "初始",
+        path: [],
+        stack: [],
+        res: res.map(r => [...r]),
+        rounds: JSON.parse(JSON.stringify(rounds)),
+        activeRound: 0
+      });
+
+      nums.forEach((num, idx) => {
+        const newSubsets = res.map(cur => [...cur, num]);
+        steps.push({
+          type: "pick",
+          line: 5,
+          phase: `处理 num = ${num}`,
+          desc: `遍历到 nums[${idx}] = ${num}：把当前已有的 ${res.length} 个子集全部复制一份，并各自加上 ${num}。`,
+          pointer: `idx = ${idx}, num = ${num}`,
+          path: [num],
+          stack: [],
+          res: res.map(r => [...r]),
+          rounds: JSON.parse(JSON.stringify([...rounds, { label: `加入 ${num}`, existing: res, added: newSubsets }])),
+          activeRound: rounds.length
+        });
+
+        res = [...res, ...newSubsets];
+        rounds.push({ label: `加入 ${num} 后 (共 ${res.length} 个)`, existing: res.slice(0, res.length - newSubsets.length), added: newSubsets });
+
+        steps.push({
+          type: "leaf",
+          line: 6,
+          phase: `合并新子集`,
+          desc: `将新生成的 ${newSubsets.length} 个子集并入 res，现在共有 ${res.length} 个子集。`,
+          pointer: `idx = ${idx}, 共 ${res.length} 个`,
+          path: [],
+          stack: [],
+          res: res.map(r => [...r]),
+          rounds: JSON.parse(JSON.stringify(rounds)),
+          activeRound: rounds.length - 1
+        });
+      });
+
+      steps.push({
+        type: "done",
+        line: 7,
+        phase: "执行完成",
+        desc: `迭代倍增完成！无需任何递归栈，共得到 ${res.length} 个子集。`,
+        pointer: "完成",
+        path: [],
+        stack: [],
+        res: res.map(r => [...r]),
+        rounds: JSON.parse(JSON.stringify(rounds)),
+        activeRound: rounds.length - 1
+      });
+
+      return { steps, nodes: [], edges: [] };
+    }
+
+    function generateBitmaskSteps(nums) {
+      const n = nums.length;
+      const total = 1 << n;
+      const steps = [];
+      const res = [];
+      const rows = [];
+
+      steps.push({
+        type: "enter",
+        line: 3,
+        phase: "准备位掩码枚举",
+        desc: `数组长度为 ${n}，将枚举 mask 从 0 到 ${total - 1}（共 ${total} 个二进制状态）。`,
+        pointer: `0 .. ${total - 1}`,
+        path: [],
+        stack: [],
+        res: [],
+        rows: [],
+        activeMask: -1
+      });
+
+      for (let mask = 0; mask < total; mask++) {
+        const cur = [];
+        const bits = [];
+        for (let i = 0; i < n; i++) {
+          const bit = (mask >> i) & 1;
+          bits.push(bit);
+          if (bit) cur.push(nums[i]);
+        }
+        res.push([...cur]);
+        rows.push({ mask, bits, cur: [...cur] });
+
+        steps.push({
+          type: "leaf",
+          line: 8,
+          phase: `mask = ${mask}`,
+          desc: `mask = ${mask}（二进制 ${mask.toString(2).padStart(Math.max(1, n), "0")}），对应选取元素 [${cur.join(", ")}]。`,
+          pointer: `mask = ${mask}`,
+          path: [...cur],
+          stack: [],
+          res: res.map(r => [...r]),
+          rows: rows.map(r => ({ ...r, bits: [...r.bits], cur: [...r.cur] })),
+          activeMask: mask
+        });
+      }
+
+      steps.push({
+        type: "done",
+        line: 9,
+        phase: "执行完成",
+        desc: `位运算枚举完成！共生成 ${res.length} 个子集，额外空间仅 O(1)。`,
+        pointer: "完成",
+        path: [],
+        stack: [],
+        res: res.map(r => [...r]),
+        rows: rows.map(r => ({ ...r, bits: [...r.bits], cur: [...r.cur] })),
+        activeMask: -1
+      });
+
+      return { steps, nodes: [], edges: [] };
+    }
+
+    // --- Tree Layout (Simple Reingold-Tilford-like leaf spacing) ---
+    function layoutTree(nodes) {
+      if (!nodes.length) return;
+      const childrenMap = new Map();
+      nodes.forEach(n => childrenMap.set(n.id, []));
+      nodes.forEach(n => {
+        if (n.parentId !== null) childrenMap.get(n.parentId).push(n);
+      });
+
+      let leafX = 0;
+      const xGap = 76;
+      const yGap = 84;
+
+      function assign(node) {
+        const ch = childrenMap.get(node.id);
+        node.y = 36 + node.depth * yGap;
+        if (!ch.length) {
+          node.x = 46 + leafX * xGap;
+          leafX++;
+        } else {
+          ch.forEach(assign);
+          node.x = (ch[0].x + ch[ch.length - 1].x) / 2;
+        }
+      }
+      assign(nodes[0]);
+    }
+
+    // --- Renderers ---
+    function renderCode() {
+      const lines = ALGO_CODE[state.algo];
+      const step = state.steps[state.stepIdx];
+      const activeLine = step ? step.line : -1;
+      const box = document.getElementById("codeDisplay");
+      box.innerHTML = lines
+        .map((txt, idx) => {
+          const lineNum = idx + 1;
+          const cls = lineNum === activeLine ? "code-line active-line" : "code-line";
+          return `<div class="${cls}"><span style="color:#475569;user-select:none;margin-right:10px;">${String(lineNum).padStart(2, " ")}</span>${escapeHtml(txt)}</div>`;
+        })
+        .join("");
+    }
+
+    function renderStatePanel() {
+      const step = state.steps[state.stepIdx];
+      if (!step) return;
+
+      document.getElementById("pointerDisplay").innerHTML = `<span class="chip">${escapeHtml(step.pointer)}</span>`;
+
+      const pathEl = document.getElementById("pathDisplay");
+      if (step.path.length === 0) {
+        pathEl.innerHTML = `<span class="chip empty-muted">[ ] 空</span>`;
+      } else {
+        pathEl.innerHTML = step.path
+          .map(v => `<span class="chip highlight-pick">${v}</span>`)
+          .join("");
+      }
+
+      const stackBox = document.getElementById("stackBox");
+      if (state.algo === "binary" || state.algo === "forloop") {
+        stackBox.style.display = "block";
+        const stackEl = document.getElementById("stackDisplay");
+        if (!step.stack.length) {
+          stackEl.innerHTML = `<span style="font-size:0.78rem;color:var(--text-muted);">栈空</span>`;
+        } else {
+          stackEl.innerHTML = step.stack
+            .map((frame, i) => `<div class="stack-frame ${i === step.stack.length - 1 ? "top" : ""}"><span>${escapeHtml(frame)}</span><span>${i === step.stack.length - 1 ? "栈顶" : ""}</span></div>`)
+            .join("");
+        }
+      } else {
+        stackBox.style.display = "none";
+      }
+
+      const resEl = document.getElementById("resDisplay");
+      document.getElementById("resCountLabel").textContent = `已收集：${step.res.length} / ${1 << state.nums.length} 个子集`;
+      if (!step.res.length) {
+        resEl.innerHTML = `<span class="chip empty-muted">暂无</span>`;
+      } else {
+        resEl.innerHTML = step.res
+          .map((sub, idx) => {
+            const isLast = idx === step.res.length - 1 && step.type === "leaf";
+            return `<span class="chip ${isLast ? "highlight-leaf" : ""}">[${sub.join(",")}]</span>`;
+          })
+          .join("");
+      }
+    }
+
+    function renderViz() {
+      const step = state.steps[state.stepIdx];
+      const stage = document.getElementById("vizStage");
+      if (!step) return;
+
+      // Update banner & scrubber
+      const banner = document.getElementById("stepBanner");
+      banner.className = `step-banner type-${step.type}`;
+      document.getElementById("stepCounter").textContent = `步骤 ${state.stepIdx + 1} / ${state.steps.length}`;
+      document.getElementById("stepPhase").textContent = step.phase;
+      document.getElementById("stepDesc").textContent = step.desc;
+      document.getElementById("stepScrubber").max = Math.max(0, state.steps.length - 1);
+      document.getElementById("stepScrubber").value = state.stepIdx;
+
+      if (state.algo === "binary" || state.algo === "forloop") {
+        renderTreeSVG(stage, step);
+      } else if (state.algo === "iterative") {
+        renderIterativeView(stage, step);
+      } else {
+        renderBitmaskView(stage, step);
+      }
+    }
+
+    function renderTreeSVG(stage, step) {
+      const nodes = state.treeNodes;
+      const edges = state.treeEdges;
+      if (!nodes.length) return;
+
+      const maxX = Math.max(...nodes.map(n => n.x)) + 70;
+      const maxY = Math.max(...nodes.map(n => n.y)) + 56;
+
+      let svg = `<svg width="${maxX}" height="${maxY}" viewBox="0 0 ${maxX} ${maxY}" style="display:block;margin:0 auto;">`;
+
+      // Edges
+      edges.forEach(e => {
+        const from = nodes[e.from];
+        const to = nodes[e.to];
+        const visited = step.visitedNodes && step.visitedNodes.has(e.to);
+        const color = !visited ? "#334155" : (e.choice === "skip" ? "#fbbf24" : "#34d399");
+        const width = visited ? 2.2 : 1.3;
+        const dash = e.choice === "skip" ? "stroke-dasharray='5,4'" : "";
+        svg += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${color}" stroke-width="${width}" ${dash} opacity="${visited ? 0.95 : 0.45}" />`;
+
+        const mx = (from.x + to.x) / 2;
+        const my = (from.y + to.y) / 2;
+        svg += `<text x="${mx}" y="${my - 4}" text-anchor="middle" fill="${visited ? color : "#64748b"}" font-size="10" font-family="var(--font-mono)">${escapeHtml(e.label)}</text>`;
+      });
+
+      // Nodes
+      nodes.forEach(n => {
+        const isActive = step.activeNodeId === n.id;
+        const isCollected = step.collectedNodes && step.collectedNodes.has(n.id);
+        const isVisited = step.visitedNodes && step.visitedNodes.has(n.id);
+
+        let fill = "#1e293b";
+        let stroke = "#475569";
+        let textFill = "#94a3b8";
+
+        if (isCollected) {
+          fill = "rgba(167, 139, 250, 0.22)";
+          stroke = "#a78bfa";
+          textFill = "#ede9fe";
+        } else if (isVisited) {
+          fill = "#273449";
+          stroke = "#64748b";
+          textFill = "#f1f5f9";
+        }
+
+        if (isActive) {
+          fill = "rgba(56, 189, 248, 0.25)";
+          stroke = "#38bdf8";
+          textFill = "#ffffff";
+        }
+
+        const label = `[${n.path.join(",")}]`;
+        const rectW = Math.max(40, label.length * 7.5 + 14);
+        svg += `<g>`;
+        svg += `<rect x="${n.x - rectW / 2}" y="${n.y - 14}" width="${rectW}" height="28" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="${isActive ? 2.5 : 1.5}" />`;
+        svg += `<text x="${n.x}" y="${n.y + 4}" text-anchor="middle" fill="${textFill}" font-size="11.5" font-weight="600" font-family="var(--font-mono)">${escapeHtml(label)}</text>`;
+        svg += `</g>`;
+      });
+
+      svg += `</svg>`;
+      stage.innerHTML = svg;
+    }
+
+    function renderIterativeView(stage, step) {
+      const rounds = step.rounds || [];
+      stage.innerHTML = `<div class="iter-rows">` + rounds.map((r, idx) => {
+        const isActive = idx === step.activeRound;
+        const existingHtml = r.existing.map(s => `<span class="chip">[${s.join(",")}]</span>`).join("");
+        const addedHtml = r.added.map(s => `<span class="chip highlight-pick">[${s.join(",")}]</span>`).join("");
+        return `
+          <div class="iter-card ${isActive ? "active-card" : ""}">
+            <div style="font-size:0.8rem;font-weight:700;margin-bottom:8px;color:${isActive ? "var(--accent)" : "var(--text-muted)"}">${escapeHtml(r.label)}</div>
+            <div class="chip-list">
+              ${existingHtml}
+              ${r.added.length ? `<span style="color:var(--text-muted);font-size:0.82rem;margin:0 4px;">+ 新增 →</span>` : ""}
+              ${addedHtml}
+            </div>
+          </div>
+        `;
+      }).join("") + `</div>`;
+    }
+
+    function renderBitmaskView(stage, step) {
+      const rows = step.rows || [];
+      const n = state.nums.length;
+      if (!rows.length) {
+        stage.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding-top:120px;">点击「下一步」开始从 0 枚举二进制位掩码</div>`;
+        return;
+      }
+      const headers = state.nums.map((v, i) => `位${i} (${v})`).join(" ");
+      stage.innerHTML = `
+        <table class="bit-table">
+          <thead>
+            <tr>
+              <th>mask</th>
+              <th>二进制映射 (${escapeHtml(headers || "空")})</th>
+              <th>对应子集</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => {
+              const active = r.mask === step.activeMask ? "active-row" : "";
+              const bitsHtml = n === 0
+                ? `<span class="bit-box bit-0">-</span>`
+                : r.bits.map(b => `<span class="bit-box ${b ? "bit-1" : "bit-0"}">${b}</span>`).join("");
+              return `
+                <tr class="${active}">
+                  <td>${r.mask}</td>
+                  <td>${bitsHtml}</td>
+                  <td><span class="chip ${active ? "highlight-leaf" : ""}">[${r.cur.join(",")}]</span></td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // --- Engine & Controls ---
+    function rebuild() {
+      stopPlay();
+      let result;
+      if (state.algo === "binary") result = generateBinarySteps(state.nums);
+      else if (state.algo === "forloop") result = generateForLoopSteps(state.nums);
+      else if (state.algo === "iterative") result = generateIterativeSteps(state.nums);
+      else result = generateBitmaskSteps(state.nums);
+
+      state.steps = result.steps;
+      state.treeNodes = result.nodes;
+      state.treeEdges = result.edges;
+      state.stepIdx = 0;
+
+      // Update legend & title
+      const isTree = state.algo === "binary" || state.algo === "forloop";
+      document.getElementById("vizLegend").style.display = isTree ? "flex" : "none";
+      const titles = {
+        binary: "选/不选 递归决策树（你的代码）",
+        forloop: "枚举起点 递归树（节点数减半）",
+        iterative: "迭代倍增过程（逐轮复制 + 追加）",
+        bitmask: "二进制位掩码映射表"
+      };
+      document.getElementById("vizTitle").textContent = titles[state.algo];
+
+      // Highlight compare table row
+      document.querySelectorAll("#compareBody tr").forEach(tr => {
+        tr.classList.toggle("selected-algo", tr.dataset.algo === state.algo);
+      });
+
+      renderAll();
+    }
+
+    function renderAll() {
+      renderViz();
+      renderStatePanel();
+      renderCode();
+      document.getElementById("prevBtn").disabled = state.stepIdx <= 0;
+      document.getElementById("nextBtn").disabled = state.stepIdx >= state.steps.length - 1;
+    }
+
+    function stopPlay() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      document.getElementById("playBtn").textContent = "▶ 播放";
+    }
+
+    function togglePlay() {
+      if (state.timer) {
+        stopPlay();
+        return;
+      }
+      if (state.stepIdx >= state.steps.length - 1) {
+        state.stepIdx = 0;
+      }
+      document.getElementById("playBtn").textContent = "⏸ 暂停";
+      state.timer = setInterval(() => {
+        if (state.stepIdx < state.steps.length - 1) {
+          state.stepIdx++;
+          renderAll();
+        } else {
+          stopPlay();
+        }
+      }, state.speedMs);
+    }
+
+    function applyInput(raw) {
+      const errEl = document.getElementById("inputError");
+      const trimmed = raw.trim();
+      let parsed = [];
+      if (trimmed !== "") {
+        const parts = trimmed.split(/[,，\s]+/).filter(Boolean);
+        parsed = parts.map(Number);
+        if (parsed.some(Number.isNaN) || parsed.length > 5 || new Set(parsed).size !== parsed.length) {
+          errEl.style.display = "inline";
+          return;
+        }
+      }
+      errEl.style.display = "none";
+      state.nums = parsed;
+      rebuild();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // Event Listeners
+    document.getElementById("algoTabs").addEventListener("click", (e) => {
+      const btn = e.target.closest(".tab-btn");
+      if (!btn) return;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.algo = btn.dataset.algo;
+      rebuild();
+    });
+
+    document.getElementById("applyBtn").addEventListener("click", () => {
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active-preset"));
+      applyInput(document.getElementById("numsInput").value);
+    });
+
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active-preset"));
+        btn.classList.add("active-preset");
+        const val = btn.dataset.preset;
+        document.getElementById("numsInput").value = val;
+        applyInput(val);
+      });
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      stopPlay();
+      state.stepIdx = 0;
+      renderAll();
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      stopPlay();
+      if (state.stepIdx > 0) {
+        state.stepIdx--;
+        renderAll();
+      }
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      stopPlay();
+      if (state.stepIdx < state.steps.length - 1) {
+        state.stepIdx++;
+        renderAll();
+      }
+    });
+
+    document.getElementById("playBtn").addEventListener("click", togglePlay);
+
+    document.getElementById("stepScrubber").addEventListener("input", (e) => {
+      stopPlay();
+      state.stepIdx = Number(e.target.value);
+      renderAll();
+    });
+
+    document.getElementById("speedRange").addEventListener("input", (e) => {
+      const val = Number(e.target.value);
+      // Invert so higher slider = faster
+      state.speedMs = 1650 - val;
+      const mult = (700 / state.speedMs).toFixed(1);
+      document.getElementById("speedLabel").textContent = `${mult}x`;
+      if (state.timer) {
+        stopPlay();
+        togglePlay();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (document.activeElement.tagName === "INPUT") return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        stopPlay();
+        if (state.stepIdx < state.steps.length - 1) { state.stepIdx++; renderAll(); }
+      } else if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        stopPlay();
+        if (state.stepIdx > 0) { state.stepIdx--; renderAll(); }
+      } else if (e.key === "r" || e.key === "R") {
+        stopPlay();
+        state.stepIdx = 0;
+        renderAll();
+      }
+    });
+
+    // Init
+    rebuild();
+  </script>
+</body>
+</html>

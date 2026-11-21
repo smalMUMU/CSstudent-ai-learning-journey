@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 46. 全排列 — 回溯算法交互式可视化</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #273449;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-bg: rgba(56, 189, 248, 0.14);
+      --accent: #818cf8;
+      --success: #34d399;
+      --success-bg: rgba(52, 211, 153, 0.14);
+      --warn: #fbbf24;
+      --warn-bg: rgba(251, 191, 36, 0.14);
+      --danger: #fb7185;
+      --danger-bg: rgba(251, 113, 133, 0.14);
+      --radius: 12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+    }
+
+    .title-group h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-ghost {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Motivation Banner */
+    .motivation-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(129, 140, 248, 0.08));
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .motivation-card.hidden {
+      display: none;
+    }
+
+    .mot-item strong {
+      color: var(--primary);
+      display: block;
+      margin-bottom: 3px;
+      font-size: 0.85rem;
+    }
+
+    .mot-item p {
+      color: #cbd5e1;
+      font-size: 0.82rem;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    input[type="text"] {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      width: 140px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    .preset-btn {
+      background: var(--surface-2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .preset-btn:hover,
+    .preset-btn.active {
+      color: var(--text);
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .playback-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #7dd3fc;
+      border-color: #7dd3fc;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .step-progress {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(51, 65, 85, 0.6);
+    }
+
+    .step-progress input[type="range"] {
+      flex: 1;
+    }
+
+    .step-counter {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      min-width: 92px;
+      text-align: right;
+    }
+
+    .error-toast {
+      font-size: 0.8rem;
+      color: var(--danger);
+      display: none;
+    }
+
+    .error-toast.visible {
+      display: inline-block;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .panel-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Step Explanation Banner */
+    .step-narration {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .phase-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+    }
+
+    .phase-START { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+    .phase-CHOOSE { background: var(--primary-bg); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.4); }
+    .phase-RECORD { background: var(--success-bg); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.4); }
+    .phase-BACKTRACK { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(251, 191, 36, 0.4); }
+    .phase-DONE { background: rgba(129, 140, 248, 0.16); color: var(--accent); border: 1px solid rgba(129, 140, 248, 0.4); }
+
+    .narration-text {
+      font-size: 0.9rem;
+      color: var(--text);
+      flex: 1;
+    }
+
+    /* Tree SVG Area */
+    .tree-wrapper {
+      position: relative;
+      width: 100%;
+      min-height: 410px;
+      max-height: 520px;
+      overflow: auto;
+      background: radial-gradient(circle at top center, rgba(56, 189, 248, 0.04), transparent 65%);
+      padding: 10px;
+    }
+
+    svg#tree-svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .tree-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Right Column Stack */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .state-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .state-section-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* nums & used array */
+    .nums-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .num-card {
+      flex: 1;
+      min-width: 68px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .num-card.is-used {
+      border-color: var(--danger);
+      background: var(--danger-bg);
+      opacity: 0.88;
+    }
+
+    .num-card.is-picking {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    .num-card.is-releasing {
+      border-color: var(--warn);
+      background: var(--warn-bg);
+    }
+
+    .num-idx {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    .num-val {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      margin: 2px 0;
+    }
+
+    .used-tag {
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      padding: 1px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .used-true {
+      background: rgba(251, 113, 133, 0.2);
+      color: #fda4af;
+    }
+
+    .used-false {
+      background: rgba(52, 211, 153, 0.16);
+      color: #6ee7b7;
+    }
+
+    /* Path slots */
+    .path-slots {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .path-slot {
+      width: 48px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1.5px dashed var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .path-slot.filled {
+      border-style: solid;
+      border-color: var(--primary);
+      background: var(--primary-bg);
+      color: var(--text);
+    }
+
+    .path-slot.just-added {
+      border-color: var(--success);
+      background: var(--success-bg);
+      color: var(--success);
+      transform: translateY(-2px);
+    }
+
+    /* Call Stack */
+    .stack-list {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 5px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .stack-frame {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 7px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+    }
+
+    .stack-frame.top {
+      border-color: var(--accent);
+      background: rgba(129, 140, 248, 0.12);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Res results */
+    .res-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .res-chip {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+    }
+
+    .res-chip.newest {
+      background: var(--success-bg);
+      border-color: var(--success);
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Code Viewer */
+    .code-container {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      padding: 10px 0;
+      overflow-x: auto;
+      background: #0b1120;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 1px 14px;
+      border-left: 3px solid transparent;
+      white-space: pre;
+      transition: background 0.15s;
+    }
+
+    .code-line.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-left-color: var(--primary);
+    }
+
+    .code-line.active-record {
+      background: rgba(52, 211, 153, 0.15);
+      border-left-color: var(--success);
+    }
+
+    .code-line.active-backtrack {
+      background: rgba(251, 191, 36, 0.14);
+      border-left-color: var(--warn);
+    }
+
+    .ln {
+      color: #475569;
+      width: 28px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .kw { color: #c084fc; }
+    .fn { color: #38bdf8; }
+    .num { color: #fbbf24; }
+    .cm { color: #64748b; font-style: italic; }
+
+    .kbd-hint {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding-bottom: 8px;
+    }
+
+    kbd {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>
+          LeetCode 46. 全排列 (Permutations)
+          <span class="badge">回溯算法 Backtracking</span>
+        </h1>
+        <div class="subtitle">同步追踪：决策树生长与回退 · <code>path</code> 路径 · <code>used</code> 占用状态 · <code>backtrack()</code> 调用栈</div>
+      </div>
+      <button id="toggle-motivation-btn" class="btn-ghost" type="button">收起核心思路</button>
+    </header>
+
+    <section id="motivation-card" class="motivation-card">
+      <div class="mot-item">
+        <strong>1. 为什么不能只用嵌套 for 循环？</strong>
+        <p>数组长度 <code>n</code> 是动态的，无法写死 <code>n</code> 层循环；回溯本质上是把“每层选一个数”写成递归，用调用栈自动管理任意深度的嵌套。</p>
+      </div>
+      <div class="mot-item">
+        <strong>2. used 数组解决了什么问题？</strong>
+        <p>全排列要求每个元素只能用一次。<code>used[i] == True</code> 表示下标 <code>i</code> 的元素已在当前 <code>path</code> 中，本层循环直接跳过，避免重复选取。</p>
+      </div>
+      <div class="mot-item">
+        <strong>3. 为什么要 pop() 和重置 used[i] = False？</strong>
+        <p>当一个分支走到底（<code>res.append(path[:])</code>）后，必须“撤销选择”恢复现场，父节点才能继续尝试下一个未用过的数字。</p>
+      </div>
+    </section>
+
+    <section class="controls-bar">
+      <div class="input-group">
+        <label for="nums-input">nums =</label>
+        <input id="nums-input" type="text" value="1, 2, 3" placeholder="例如: 1, 2, 3" />
+        <button id="apply-btn" class="btn" type="button">应用</button>
+        <span id="error-toast" class="error-toast"></span>
+        <button class="preset-btn active" data-preset="1, 2, 3" type="button">经典 [1,2,3]</button>
+        <button class="preset-btn" data-preset="0, 1" type="button">双元素 [0,1]</button>
+        <button class="preset-btn" data-preset="1" type="button">边界 [1]</button>
+        <button class="preset-btn" data-preset="1, 2, 3, 4" type="button">4元素 [1,2,3,4]</button>
+      </div>
+
+      <div class="playback-group">
+        <button id="reset-btn" class="btn" type="button">⏮ 重置</button>
+        <button id="prev-btn" class="btn" type="button">◀ 上一步</button>
+        <button id="play-btn" class="btn btn-primary" type="button">▶ 播放</button>
+        <button id="next-btn" class="btn" type="button">下一步 ▶</button>
+        <div class="speed-control">
+          <span>速度</span>
+          <input id="speed-slider" type="range" min="0.5" max="3" step="0.5" value="1" />
+          <span id="speed-label">1.0x</span>
+        </div>
+      </div>
+
+      <div class="step-progress">
+        <input id="step-slider" type="range" min="0" max="0" value="0" />
+        <span id="step-counter" class="step-counter">第 0 / 0 步</span>
+      </div>
+    </section>
+
+    <section class="step-narration">
+      <span id="phase-pill" class="phase-pill phase-START">初始化</span>
+      <div id="narration-text" class="narration-text">准备开始回溯搜索。</div>
+    </section>
+
+    <section class="main-grid">
+      <!-- Left: Decision Tree -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">回溯决策树 (State Space Tree)</div>
+          <div class="tree-legend">
+            <span class="legend-dot"><i style="background:#38bdf8"></i>当前节点</span>
+            <span class="legend-dot"><i style="background:#818cf8"></i>当前路径</span>
+            <span class="legend-dot"><i style="background:#34d399"></i>已收集排列</span>
+            <span class="legend-dot"><i style="background:#475569"></i>已回溯</span>
+          </div>
+        </div>
+        <div class="tree-wrapper" id="tree-wrapper">
+          <svg id="tree-svg"></svg>
+        </div>
+        <div class="panel-header" style="border-top:1px solid var(--border); border-bottom:none;">
+          <span class="panel-hint">提示：点击树上的任意节点，可直接跳转到该节点对应的执行步骤</span>
+        </div>
+      </div>
+
+      <!-- Right: State + Code -->
+      <div class="right-col">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">实时变量与调用栈</div>
+            <span id="depth-badge" class="panel-hint">深度 depth = 0</span>
+          </div>
+          <div class="state-body">
+            <div>
+              <div class="state-section-label">
+                <span>nums 与 used 占用状态</span>
+                <span id="skipped-hint" style="font-weight:400; text-transform:none; color:#94a3b8;"></span>
+              </div>
+              <div id="nums-grid" class="nums-grid"></div>
+            </div>
+
+            <div>
+              <div class="state-section-label">
+                <span>path (当前已选路径)</span>
+                <span id="path-len-hint" style="font-family:var(--mono);">len(path) = 0</span>
+              </div>
+              <div id="path-slots" class="path-slots"></div>
+            </div>
+
+            <div>
+              <div class="state-section-label">
+                <span>backtrack() 递归调用栈</span>
+              </div>
+              <div id="stack-list" class="stack-list"></div>
+            </div>
+
+            <div>
+              <div class="state-section-label">
+                <span>res (已收集的结果集)</span>
+                <span id="res-count" style="font-family:var(--mono);">0 个</span>
+              </div>
+              <div id="res-grid" class="res-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Python 代码同步高亮</div>
+            <span class="panel-hint">LeetCode 46</span>
+          </div>
+          <div id="code-container" class="code-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="kbd-hint">
+      快捷键：<kbd>Space</kbd> 播放/暂停 · <kbd>←</kbd> 上一步 · <kbd>→</kbd> 下一步 · <kbd>R</kbd> 重置
+    </div>
+  </div>
+
+  <script>
+    const CODE_LINES = [
+      'class Solution:',
+      '    def permute(self, nums: list[int]) -> list[list[int]]:',
+      '        res = []',
+      '        path = []',
+      '        used = [False] * len(nums)',
+      '',
+      '        def backtrack():',
+      '            if len(path) == len(nums):',
+      '                res.append(path[:])',
+      '                return',
+      '',
+      '            for i in range(len(nums)):',
+      '                if used[i]:',
+      '                    continue',
+      '                path.append(nums[i])',
+      '                used[i] = True',
+      '                backtrack()',
+      '                path.pop()',
+      '                used[i] = False',
+      '',
+      '        backtrack()',
+      '        return res'
+    ];
+
+    let state = {
+      nums: [1, 2, 3],
+      steps: [],
+      treeNodes: [],
+      treeEdges: [],
+      currentStep: 0,
+      isPlaying: false,
+      timer: null,
+      speed: 1
+    };
+
+    function formatCodeLine(line) {
+      let escaped = line
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      escaped = escaped
+        .replace(/\b(class|def|if|for|in|return|continue|True|False)\b/g, '<span class="kw">$1</span>')
+        .replace(/\b(permute|backtrack|len|range|append|pop)\b/g, '<span class="fn">$1</span>');
+      return escaped || ' ';
+    }
+
+    function renderCodeSkeleton() {
+      const container = document.getElementById('code-container');
+      container.innerHTML = CODE_LINES.map((line, idx) => {
+        const lineNum = idx + 1;
+        return `<div class="code-line" data-line="${lineNum}"><span class="ln">${lineNum}</span><span>${formatCodeLine(line)}</span></div>`;
+      }).join('');
+    }
+
+    function generateTrace(nums) {
+      const n = nums.length;
+      const steps = [];
+      const treeNodes = [];
+      const treeEdges = [];
+      let nextNodeId = 0;
+
+      const rootId = nextNodeId++;
+      treeNodes.push({
+        id: rootId,
+        parentId: null,
+        depth: 0,
+        path: [],
+        choiceVal: null,
+        choiceIdx: null,
+        isLeaf: false,
+        firstStep: 0
+      });
+
+      const res = [];
+      const path = [];
+      const used = new Array(n).fill(false);
+      const callStack = [{ depth: 0, i: null, nodeId: rootId }];
+
+      function cloneStack() {
+        return callStack.map(f => ({ ...f }));
+      }
+
+      steps.push({
+        phase: 'START',
+        activeLines: [3, 4, 5, 21],
+        activeNodeId: rootId,
+        activePathNodeIds: [rootId],
+        path: [],
+        used: [...used],
+        res: [],
+        stack: cloneStack(),
+        pickingIdx: null,
+        releasingIdx: null,
+        skippedIndices: [],
+        narration: `初始化 res = []，path = []，used = [${used.map(u => u ? 'True' : 'False').join(', ')}]，调用 backtrack() 从根节点出发。`
+      });
+
+      function backtrack(depth, parentNodeId, pathNodeIds) {
+        if (path.length === n) {
+          res.push([...path]);
+          const node = treeNodes.find(nd => nd.id === parentNodeId);
+          if (node) node.isLeaf = true;
+
+          steps.push({
+            phase: 'RECORD',
+            activeLines: [8, 9, 10],
+            activeNodeId: parentNodeId,
+            activePathNodeIds: [...pathNodeIds],
+            path: [...path],
+            used: [...used],
+            res: res.map(r => [...r]),
+            stack: cloneStack(),
+            pickingIdx: null,
+            releasingIdx: null,
+            skippedIndices: [],
+            narration: `到达叶子节点！len(path) == ${n}，通过 path[:] 拷贝当前排列 [${path.join(', ')}] 存入 res，然后 return 返回上一层。`
+          });
+          return;
+        }
+
+        const skippedSoFar = [];
+        for (let i = 0; i < n; i++) {
+          callStack[callStack.length - 1].i = i;
+          if (used[i]) {
+            skippedSoFar.push(i);
+            continue;
+          }
+
+          path.push(nums[i]);
+          used[i] = true;
+
+          const childId = nextNodeId++;
+          const stepIdx = steps.length;
+          treeNodes.push({
+            id: childId,
+            parentId: parentNodeId,
+            depth: depth + 1,
+            path: [...path],
+            choiceVal: nums[i],
+            choiceIdx: i,
+            isLeaf: false,
+            firstStep: stepIdx
+          });
+          treeEdges.push({
+            from: parentNodeId,
+            to: childId,
+            label: `${nums[i]}`
+          });
+
+          const nextPathIds = [...pathNodeIds, childId];
+          callStack.push({ depth: depth + 1, i: null, nodeId: childId });
+
+          const skipNote = skippedSoFar.length > 0
+            ? `（跳过已使用的 ${skippedSoFar.map(idx => `nums[${idx}]=${nums[idx]}`).join('、')}）`
+            : '';
+
+          steps.push({
+            phase: 'CHOOSE',
+            activeLines: [15, 16, 17],
+            activeNodeId: childId,
+            activePathNodeIds: nextPathIds,
+            path: [...path],
+            used: [...used],
+            res: res.map(r => [...r]),
+            stack: cloneStack(),
+            pickingIdx: i,
+            releasingIdx: null,
+            skippedIndices: [...skippedSoFar],
+            narration: `第 ${depth} 层选择 nums[${i}] = ${nums[i]}${skipNote}：加入 path → [${path.join(', ')}]，标记 used[${i}] = True，递归进入第 ${depth + 1} 层。`
+          });
+
+          backtrack(depth + 1, childId, nextPathIds);
+
+          // Backtrack (undo)
+          callStack.pop();
+          const popped = path.pop();
+          used[i] = false;
+
+          steps.push({
+            phase: 'BACKTRACK',
+            activeLines: [18, 19],
+            activeNodeId: parentNodeId,
+            activePathNodeIds: [...pathNodeIds],
+            path: [...path],
+            used: [...used],
+            res: res.map(r => [...r]),
+            stack: cloneStack(),
+            pickingIdx: null,
+            releasingIdx: i,
+            skippedIndices: [],
+            narration: `从分支 [${[...path, popped].join(', ')}] 回溯：path.pop() 弹出 ${popped}，重置 used[${i}] = False，回到第 ${depth} 层继续枚举。`
+          });
+        }
+      }
+
+      backtrack(0, rootId, [rootId]);
+
+      steps.push({
+        phase: 'DONE',
+        activeLines: [22],
+        activeNodeId: rootId,
+        activePathNodeIds: [rootId],
+        path: [],
+        used: new Array(n).fill(false),
+        res: res.map(r => [...r]),
+        stack: [],
+        pickingIdx: null,
+        releasingIdx: null,
+        skippedIndices: [],
+        narration: `全部决策分支搜索完毕！共找到 ${res.length} 个全排列（${n}! = ${res.length}），返回 res。`
+      });
+
+      layoutTree(treeNodes, n);
+      return { steps, treeNodes, treeEdges };
+    }
+
+    function layoutTree(nodes, n) {
+      const childrenMap = new Map();
+      nodes.forEach(nd => {
+        if (!childrenMap.has(nd.id)) childrenMap.set(nd.id, []);
+        if (nd.parentId !== null) {
+          childrenMap.get(nd.parentId).push(nd);
+        }
+      });
+
+      const leafSpacing = n >= 4 ? 46 : 74;
+      const levelHeight = n >= 4 ? 76 : 86;
+      let leafCursor = 0;
+
+      function assignX(node) {
+        const children = childrenMap.get(node.id) || [];
+        if (children.length === 0) {
+          node.x = leafCursor * leafSpacing + 45;
+          leafCursor++;
+        } else {
+          children.forEach(assignX);
+          node.x = (children[0].x + children[children.length - 1].x) / 2;
+        }
+        node.y = node.depth * levelHeight + 36;
+      }
+
+      if (nodes.length > 0) {
+        assignX(nodes[0]);
+      }
+    }
+
+    function renderTree(step) {
+      const svg = document.getElementById('tree-svg');
+      const nodes = state.treeNodes;
+      const edges = state.treeEdges;
+      if (nodes.length === 0) return;
+
+      const maxX = Math.max(...nodes.map(nd => nd.x)) + 45;
+      const maxY = Math.max(...nodes.map(nd => nd.y)) + 45;
+      svg.setAttribute('width', Math.max(maxX, 460));
+      svg.setAttribute('height', Math.max(maxY, 260));
+
+      const visitedNodeIds = new Set();
+      const recordedLeafIds = new Set();
+      for (let s = 0; s <= state.currentStep; s++) {
+        visitedNodeIds.add(state.steps[s].activeNodeId);
+        if (state.steps[s].phase === 'RECORD') {
+          recordedLeafIds.add(state.steps[s].activeNodeId);
+        }
+      }
+      const activePathSet = new Set(step.activePathNodeIds);
+      const nodeById = new Map(nodes.map(nd => [nd.id, nd]));
+
+      let html = '';
+
+      edges.forEach(e => {
+        const from = nodeById.get(e.from);
+        const to = nodeById.get(e.to);
+        const isVisited = visitedNodeIds.has(to.id);
+        const isOnActivePath = activePathSet.has(from.id) && activePathSet.has(to.id);
+
+        const stroke = isOnActivePath ? '#818cf8' : (isVisited ? '#475569' : '#1e293b');
+        const strokeWidth = isOnActivePath ? 2.5 : 1.5;
+        const dash = isVisited ? '' : 'stroke-dasharray="4 4"';
+
+        html += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${stroke}" stroke-width="${strokeWidth}" ${dash} />`;
+
+        const mx = (from.x + to.x) / 2;
+        const my = (from.y + to.y) / 2;
+        if (isVisited || state.nums.length <= 3) {
+          html += `<rect x="${mx - 10}" y="${my - 9}" width="20" height="16" rx="4" fill="#0f172a" stroke="${isOnActivePath ? '#818cf8' : '#334155'}" stroke-width="1"/>`;
+          html += `<text x="${mx}" y="${my + 3}" text-anchor="middle" font-size="10" font-family="monospace" fill="${isOnActivePath ? '#e0e7ff' : '#94a3b8'}">${e.label}</text>`;
+        }
+      });
+
+      const radius = state.nums.length >= 4 ? 16 : 20;
+      nodes.forEach(nd => {
+        const isActive = nd.id === step.activeNodeId;
+        const isOnPath = activePathSet.has(nd.id);
+        const isRecorded = recordedLeafIds.has(nd.id);
+        const isVisited = visitedNodeIds.has(nd.id);
+
+        let fill = '#0f172a';
+        let stroke = '#334155';
+        let textColor = '#64748b';
+
+        if (isVisited) {
+          fill = '#1e293b';
+          stroke = '#475569';
+          textColor = '#cbd5e1';
+        }
+        if (isRecorded) {
+          fill = 'rgba(52, 211, 153, 0.18)';
+          stroke = '#34d399';
+          textColor = '#6ee7b7';
+        }
+        if (isOnPath && !isActive) {
+          fill = 'rgba(129, 140, 248, 0.22)';
+          stroke = '#818cf8';
+          textColor = '#e0e7ff';
+        }
+        if (isActive) {
+          fill = 'rgba(56, 189, 248, 0.28)';
+          stroke = '#38bdf8';
+          textColor = '#f8fafc';
+        }
+
+        const label = nd.path.length === 0 ? '[]' : nd.path.join(',');
+        const fontSize = state.nums.length >= 4 ? (label.length > 5 ? 8.5 : 10) : (label.length > 4 ? 10 : 11);
+
+        html += `<g class="tree-node" data-step="${nd.firstStep}" style="cursor:pointer;">`;
+        if (isActive) {
+          html += `<circle cx="${nd.x}" cy="${nd.y}" r="${radius + 5}" fill="none" stroke="rgba(56, 189, 248, 0.4)" stroke-width="3" />`;
+        }
+        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${isActive ? 2.5 : 1.8}" />`;
+        html += `<text x="${nd.x}" y="${nd.y + 4}" text-anchor="middle" font-size="${fontSize}" font-weight="600" font-family="monospace" fill="${textColor}">${label}</text>`;
+        html += `</g>`;
+      });
+
+      svg.innerHTML = html;
+
+      svg.querySelectorAll('.tree-node').forEach(el => {
+        el.addEventListener('click', () => {
+          stopPlay();
+          const targetStep = parseInt(el.getAttribute('data-step'), 10);
+          if (!isNaN(targetStep)) {
+            state.currentStep = targetStep;
+            renderCurrentStep();
+          }
+        });
+      });
+    }
+
+    function renderCurrentStep() {
+      const step = state.steps[state.currentStep];
+      if (!step) return;
+
+      const slider = document.getElementById('step-slider');
+      slider.max = state.steps.length - 1;
+      slider.value = state.currentStep;
+      document.getElementById('step-counter').textContent = `第 ${state.currentStep} / ${state.steps.length - 1} 步`;
+
+      document.getElementById('prev-btn').disabled = state.currentStep === 0;
+      document.getElementById('next-btn').disabled = state.currentStep >= state.steps.length - 1;
+
+      const phaseNames = {
+        START: '初始化',
+        CHOOSE: '选择并递归',
+        RECORD: '收集结果',
+        BACKTRACK: '回溯撤销',
+        DONE: '完成'
+      };
+      const pill = document.getElementById('phase-pill');
+      pill.className = `phase-pill phase-${step.phase}`;
+      pill.textContent = phaseNames[step.phase] || step.phase;
+      document.getElementById('narration-text').textContent = step.narration;
+
+      const curDepth = step.stack.length > 0 ? step.stack[step.stack.length - 1].depth : 0;
+      document.getElementById('depth-badge').textContent = `递归深度 depth = ${curDepth}`;
+
+      const numsGrid = document.getElementById('nums-grid');
+      numsGrid.innerHTML = state.nums.map((val, idx) => {
+        const isUsed = step.used[idx];
+        let cls = 'num-card';
+        if (idx === step.pickingIdx) cls += ' is-picking';
+        else if (idx === step.releasingIdx) cls += ' is-releasing';
+        else if (isUsed) cls += ' is-used';
+
+        return `
+          <div class="${cls}">
+            <div class="num-idx">i = ${idx}</div>
+            <div class="num-val">${val}</div>
+            <span class="used-tag ${isUsed ? 'used-true' : 'used-false'}">${isUsed ? 'True' : 'False'}</span>
+          </div>
+        `;
+      }).join('');
+
+      const skippedHint = document.getElementById('skipped-hint');
+      if (step.skippedIndices.length > 0) {
+        skippedHint.textContent = `本层跳过下标: ${step.skippedIndices.join(', ')}`;
+      } else {
+        skippedHint.textContent = '';
+      }
+
+      const pathSlots = document.getElementById('path-slots');
+      document.getElementById('path-len-hint').textContent = `len(path) = ${step.path.length} / ${state.nums.length}`;
+      let slotsHtml = '';
+      for (let i = 0; i < state.nums.length; i++) {
+        const hasVal = i < step.path.length;
+        const isJustAdded = step.phase === 'CHOOSE' && i === step.path.length - 1;
+        slotsHtml += `<div class="path-slot ${hasVal ? 'filled' : ''} ${isJustAdded ? 'just-added' : ''}">${hasVal ? step.path[i] : '·'}</div>`;
+      }
+      pathSlots.innerHTML = slotsHtml;
+
+      const stackList = document.getElementById('stack-list');
+      if (step.stack.length === 0) {
+        stackList.innerHTML = `<div class="stack-frame">调用栈已清空（执行结束）</div>`;
+      } else {
+        stackList.innerHTML = step.stack.map((frame, idx) => {
+          const isTop = idx === step.stack.length - 1;
+          const iText = frame.i === null ? '准备进入' : `for i = ${frame.i}`;
+          return `<div class="stack-frame ${isTop ? 'top' : ''}"><span>backtrack() [层 ${frame.depth}]</span><span>${iText}</span></div>`;
+        }).join('');
+      }
+
+      const resGrid = document.getElementById('res-grid');
+      document.getElementById('res-count').textContent = `${step.res.length} 个`;
+      if (step.res.length === 0) {
+        resGrid.innerHTML = `<span style="font-size:0.8rem; color:var(--text-muted);">暂未收集到完整排列</span>`;
+      } else {
+        resGrid.innerHTML = step.res.map((arr, idx) => {
+          const isNewest = step.phase === 'RECORD' && idx === step.res.length - 1;
+          return `<span class="res-chip ${isNewest ? 'newest' : ''}">[${arr.join(', ')}]</span>`;
+        }).join('');
+      }
+
+      const lineSet = new Set(step.activeLines);
+      document.querySelectorAll('.code-line').forEach(el => {
+        const ln = parseInt(el.getAttribute('data-line'), 10);
+        el.classList.remove('active', 'active-record', 'active-backtrack');
+        if (lineSet.has(ln)) {
+          if (step.phase === 'RECORD') el.classList.add('active-record');
+          else if (step.phase === 'BACKTRACK') el.classList.add('active-backtrack');
+          else el.classList.add('active');
+        }
+      });
+
+      renderTree(step);
+    }
+
+    function stopPlay() {
+      state.isPlaying = false;
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      const btn = document.getElementById('play-btn');
+      btn.textContent = '▶ 播放';
+    }
+
+    function startPlay() {
+      if (state.currentStep >= state.steps.length - 1) {
+        state.currentStep = 0;
+      }
+      state.isPlaying = true;
+      document.getElementById('play-btn').textContent = '⏸ 暂停';
+      const intervalMs = Math.round(950 / state.speed);
+      state.timer = setInterval(() => {
+        if (state.currentStep < state.steps.length - 1) {
+          state.currentStep++;
+          renderCurrentStep();
+        } else {
+          stopPlay();
+        }
+      }, intervalMs);
+    }
+
+    function loadInput(rawStr) {
+      stopPlay();
+      const toast = document.getElementById('error-toast');
+      toast.classList.remove('visible');
+
+      const parts = rawStr.split(/[,，\s]+/).filter(Boolean);
+      if (parts.length === 0 || parts.length > 4) {
+        toast.textContent = '请输入 1 到 4 个整数（超过 4 个节点树会过大）';
+        toast.classList.add('visible');
+        return;
+      }
+
+      const nums = parts.map(Number);
+      if (nums.some(x => !Number.isInteger(x))) {
+        toast.textContent = '请确保输入的都是整数，例如: 1, 2, 3';
+        toast.classList.add('visible');
+        return;
+      }
+
+      if (new Set(nums).size !== nums.length) {
+        toast.textContent = 'LeetCode 46 题目要求数组中不含重复数字';
+        toast.classList.add('visible');
+        return;
+      }
+
+      state.nums = nums;
+      const traced = generateTrace(nums);
+      state.steps = traced.steps;
+      state.treeNodes = traced.treeNodes;
+      state.treeEdges = traced.treeEdges;
+      state.currentStep = 0;
+      renderCurrentStep();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCodeSkeleton();
+      loadInput('1, 2, 3');
+
+      document.getElementById('toggle-motivation-btn').addEventListener('click', (e) => {
+        const card = document.getElementById('motivation-card');
+        card.classList.toggle('hidden');
+        e.target.textContent = card.classList.contains('hidden') ? '展开核心思路' : '收起核心思路';
+      });
+
+      document.getElementById('apply-btn').addEventListener('click', () => {
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        loadInput(document.getElementById('nums-input').value);
+      });
+
+      document.getElementById('nums-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+          loadInput(e.target.value);
+        }
+      });
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const val = btn.getAttribute('data-preset');
+          document.getElementById('nums-input').value = val;
+          loadInput(val);
+        });
+      });
+
+      document.getElementById('play-btn').addEventListener('click', () => {
+        if (state.isPlaying) stopPlay();
+        else startPlay();
+      });
+
+      document.getElementById('prev-btn').addEventListener('click', () => {
+        stopPlay();
+        if (state.currentStep > 0) {
+          state.currentStep--;
+          renderCurrentStep();
+        }
+      });
+
+      document.getElementById('next-btn').addEventListener('click', () => {
+        stopPlay();
+        if (state.currentStep < state.steps.length - 1) {
+          state.currentStep++;
+          renderCurrentStep();
+        }
+      });
+
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        stopPlay();
+        state.currentStep = 0;
+        renderCurrentStep();
+      });
+
+      document.getElementById('step-slider').addEventListener('input', (e) => {
+        stopPlay();
+        state.currentStep = parseInt(e.target.value, 10);
+        renderCurrentStep();
+      });
+
+      document.getElementById('speed-slider').addEventListener('input', (e) => {
+        state.speed = parseFloat(e.target.value);
+        document.getElementById('speed-label').textContent = `${state.speed.toFixed(1)}x`;
+        if (state.isPlaying) {
+          stopPlay();
+          startPlay();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          if (state.isPlaying) stopPlay();
+          else startPlay();
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          stopPlay();
+          if (state.currentStep < state.steps.length - 1) {
+            state.currentStep++;
+            renderCurrentStep();
+          }
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          stopPlay();
+          if (state.currentStep > 0) {
+            state.currentStep--;
+            renderCurrentStep();
+          }
+        } else if (e.key === 'r' || e.key === 'R') {
+          stopPlay();
+          state.currentStep = 0;
+          renderCurrentStep();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
