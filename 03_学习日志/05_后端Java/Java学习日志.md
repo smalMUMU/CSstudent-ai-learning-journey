@@ -125,6 +125,7 @@
 | **乱 import（IDE 自动补错）** | `import javax.management.relation.Role;` —— 完全无关的类，IDE 自动补的（11-17 `wenzigedoulianxi.java`） | **import 只留你真的用到的**；IDEA 弹"是否导入"时先看包名对不对（`java.util.*` 常见，`javax.management.*` 几乎不碰） |
 | **删除留下 `null` ⇒ 所有遍历必须判空** | 对象数组里 `arr[index] = null` 删掉一个学生，`printArr` 直接 `temp.getId()` ⇒ **NullPointerException**（11-19 `TestSstudent.java`） | 选了"置 null 删除"这条路，**每个遍历都要能处理 null**：`if (temp == null) continue;`。用 `continue` 不用 `break`（洞可能在中间） |
 | **"遇 null 就 break"的计数，和"置 null 删除"不兼容** | `getCount` 原本是 `if (arr[i] == null) break;`——删**中间**那个就会少算后面的人（删 `arr[1]` 后只数出 1 个）（11-19 同一文件） | 要么改成**数非 null 的个数**（`if (arr[i] != null) count++;`），要么删除时**前移元素**让数组保持紧凑（`ArrayList.remove` 就是自动前移的） |
+| **前导 0 的整数是【八进制】** | `new TStudent(01, …)`、`check(arr, 04)` —— 这次碰巧和十进制一致所以没露馅（11-22 `TTStudent.java`） | **Java 里 `0` 开头 = 八进制**：`010` 是 **8**，`011` 是 9。**id / 编号一律不写前导 0**（要补零显示就用 `String`） |
 | **`int` 方法找不到东西时返回 `-1`（不是 null）** | `indexPosition` 写成"找到返回下标、找不到返回 -1"，我自己注释"感觉有点太奇怪"（11-19） | **这是标准写法**：`int` 不能返回 `null`，所以用 `-1` 当哨兵（C 里也这样）。好处：找到就顺手拿到下标，删/改都能直接用 |
 | **空指针 NPE** |  |  |
 | 集合选型 |  |  |
