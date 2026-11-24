@@ -1,130 +1,111 @@
 public class TTStudent {
     public static void main(String[] args) {
         TStudent[] arr = new TStudent[3];
-        TStudent stu1 = new TStudent(01, "zhangsan", 16);
-        TStudent stu2 = new TStudent(02, "lisi", 17);
-        TStudent stu3 = new TStudent(03, "xiaohong", 18);
-        
-        arr[0] = stu1;
-        arr[1] = stu2;
-        arr[2] = stu3;
+        arr[0] = new TStudent(1, "zhangsan", 16);
+        arr[1] = new TStudent(2, "lisi", 17);
+        arr[2] = new TStudent(3, "xiaohong", 18);
 
+        System.out.println("===== 初始 =====");
+        printArr(arr);
 
-        TStudent stu4 = new TStudent(04, "yunbao", 19);
+        // ===== 增：加第 4 个（数组已满 → 自动扩容） =====
+        System.out.println("===== 增：加 id=4 =====");
+        arr = addStudent(arr, new TStudent(4, "yunbao", 19));
+        printArr(arr);
 
-        boolean flag = check(arr, 04);
+        // 再试一个重复 id
+        System.out.println("===== 增：加重复 id=2（应被拒绝） =====");
+        arr = addStudent(arr, new TStudent(2, "重复的", 20));
+        printArr(arr);
 
-        int index = index(arr);
+        // ===== 删：删中间的 id=2 =====
+        System.out.println("===== 删：id=2（中间那个） =====");
+        arr = deleteStudent(arr, 2);
+        printArr(arr);
 
-        boolean len = lengthArr(arr);
+        // ===== 删：删不存在的 id=99 =====
+        System.out.println("===== 删：id=99（不存在） =====");
+        arr = deleteStudent(arr, 99);
+        printArr(arr);
 
-        //这个是增
-        if (flag){
-            if (index < arr.length){
-                arr[index] = stu4;
-                printArr(arr);
-            }else{
-                TStudent[] new_arr = creatArr(arr);
-                new_arr[index] = stu4;
-                arr = new_arr;
-                printArr(new_arr);
-            }
-        }else{
-            System.out.println("你录入的这个学生id重复，请重新录入！！！");
+        // ===== 改：把 id=3 的年龄 +1 =====
+        System.out.println("===== 改：id=3 年龄 +1 =====");
+        int idx = indexPosition(arr, 3);
+        if (idx != -1) {
+            TStudent s = arr[idx];
+            s.setAge(s.getAge() + 1);
         }
-
-        //下面的是删
-
-        boolean delete = check(arr, 02);
-        if (delete){
-            //还要写一个删除的方法
-            if (arr[1] == null){
-                System.out.println("没有这个学生！！！");
-            }else{
-                TStudent[] dnew_arr = deleteArr(arr, 02);
-                printArr(dnew_arr);
-
-            }
-        }else{
-            System.out.println("你想删除的这个学生不存在，请重新输入！！！");
-        }
-
+        printArr(arr);
     }
 
-    public static TStudent[] deleteArr(TStudent[] arr, int id){
-        TStudent stu = arr[id];
-        stu = null;
-        arr[id] = stu;
+    // ========== 增：返回（可能已扩容的）数组 ==========
+    public static TStudent[] addStudent(TStudent[] arr, TStudent stu) {
+        // ① 查重
+        if (indexPosition(arr, stu.getId()) != -1) {
+            System.out.println("id 重复，拒绝录入：" + stu.getId());
+            return arr;
+        }
+        // ② 有没有空位：有 → 直接放；满 → 扩容后放
+        int count = getCount(arr);
+        if (count < arr.length) {
+            arr[count] = stu;
+        } else {
+            TStudent[] newArr = createNewArr(arr);
+            newArr[count] = stu;
+            arr = newArr;
+        }
         return arr;
     }
 
-    //删除的话还要看要删除的下标在不在但是这个不是和增的重复了？，直接用增的吧
-
-    //遍历打印数组的方法
-    public static void printArr(TStudent[] arr){
-        for (int i = 0; i < arr.length; i++) {
-            TStudent stu = arr[i];
-            if (stu != null){
-                System.out.println(stu.getId() + "," + stu.getName() + "," + stu.getAge());
-            }else{
-                continue;
-            }
+    // ========== 删：置 null ==========
+    public static TStudent[] deleteStudent(TStudent[] arr, int id) {
+        int idx = indexPosition(arr, id);
+        if (idx == -1) {
+            System.out.println("没有该学生：" + id);
+            return arr;
         }
+        arr[idx] = null;
+        return arr;
     }
 
-    //确定要增了还要判断长度够不够，还要写一个判断长度的方法
-    public static boolean lengthArr(TStudent[] arr){
+    // ========== 查：返回下标，找不到返回 -1 ==========
+    public static int indexPosition(TStudent[] arr, int id) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != null && arr[i].getId() == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // ========== 统计实际学生数（数非 null） ==========
+    public static int getCount(TStudent[] arr) {
         int count = 0;
         for (int i = 0; i < arr.length; i++) {
-            TStudent temp = arr[i];
-            if (temp != null){
+            if (arr[i] != null) {
                 count++;
             }
         }
-        if (count == arr.length){
-            return false;
-        }else{
-            return true;
-        }
-    }
-    //这个方法和index这个方重合了，因为直接拿index和那个长度比较就能判断是否创建新的数组，
-
-    //这里我还要统计一下插入位置，方便增
-
-    public static int index(TStudent[] arr){
-        int count = 0;
-        for (int i = 0; i < arr.length; i++) {
-            TStudent temp = arr[i];
-            if (temp != null){
-                count++;
-            }
-        }
-
         return count;
     }
-    
-    public static boolean check(TStudent[] arr, int id){
-        boolean flag = true;
+
+    // ========== 扩容：新数组长一位 + 复制旧内容 ==========
+    public static TStudent[] createNewArr(TStudent[] arr) {
+        TStudent[] newArr = new TStudent[arr.length + 1];
         for (int i = 0; i < arr.length; i++) {
-            TStudent temp = arr[i];
-            if (temp == null){
+            newArr[i] = arr[i];
+        }
+        return newArr;
+    }
+
+    // ========== 打印：跳过 null ==========
+    public static void printArr(TStudent[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            TStudent s = arr[i];
+            if (s == null) {
                 continue;
             }
-            if (temp.getId() == id){
-                flag = false;
-                break;
-            }
+            System.out.println(s.getId() + "," + s.getName() + "," + s.getAge());
         }
-
-        return flag;
-    }
-    
-    public static TStudent[] creatArr(TStudent[] arr){
-        TStudent[] new_arr = new TStudent[arr.length + 1];
-        for (int i = 0; i < arr.length; i++) {
-            new_arr[i] = arr[i];
-        }
-
-        return new_arr;
     }
 }

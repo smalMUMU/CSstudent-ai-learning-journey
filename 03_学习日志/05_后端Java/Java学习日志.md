@@ -123,6 +123,7 @@
 | **类声明的括号位置（`class` 是唯一不带括号的）** | `public class X() {` ❌ / `public X {` ❌（11-17 格斗游戏，改了一次还把括号挪反了） | **只有 `class` 那一行不带 `()`**；构造方法、普通方法都要 `()`。判据：看到 `class X(` 就是错 |
 | **语句写在类体里（缺 `main`）** | 把 `while` 循环、对象创建直接写在 `class { }` 里（11-17 `Gametest.java`） | 类体里只能放**字段**和**方法**。所有"要执行的动作"必须待在方法（通常是 `main`）里 |
 | **乱 import（IDE 自动补错）** | `import javax.management.relation.Role;` —— 完全无关的类，IDE 自动补的（11-17 `wenzigedoulianxi.java`） | **import 只留你真的用到的**；IDEA 弹"是否导入"时先看包名对不对（`java.util.*` 常见，`javax.management.*` 几乎不碰） |
+| **IDE 自动补全补错类型（第二次）** | 敲 `StringB` 让 IDEA 补全，补成了 `StringBuffer strr = new StringBuilder();` ⇒ **类型不匹配编译错误**（11-24 `luoma1.java`） | **补全后看一眼类型再按 Tab**。易混对：`StringBuffer`（老、线程安全、慢）vs `StringBuilder`（新、单线程快）；`ArrayList` vs `LinkedList`；`int` vs `Integer` |
 | **删除留下 `null` ⇒ 所有遍历必须判空** | 对象数组里 `arr[index] = null` 删掉一个学生，`printArr` 直接 `temp.getId()` ⇒ **NullPointerException**（11-19 `TestSstudent.java`） | 选了"置 null 删除"这条路，**每个遍历都要能处理 null**：`if (temp == null) continue;`。用 `continue` 不用 `break`（洞可能在中间） |
 | **"遇 null 就 break"的计数，和"置 null 删除"不兼容** | `getCount` 原本是 `if (arr[i] == null) break;`——删**中间**那个就会少算后面的人（删 `arr[1]` 后只数出 1 个）（11-19 同一文件） | 要么改成**数非 null 的个数**（`if (arr[i] != null) count++;`），要么删除时**前移元素**让数组保持紧凑（`ArrayList.remove` 就是自动前移的） |
 | **前导 0 的整数是【八进制】** | `new TStudent(01, …)`、`check(arr, 04)` —— 这次碰巧和十进制一致所以没露馅（11-22 `TTStudent.java`） | **Java 里 `0` 开头 = 八进制**：`010` 是 **8**，`011` 是 9。**id / 编号一律不写前导 0**（要补零显示就用 `String`） |
