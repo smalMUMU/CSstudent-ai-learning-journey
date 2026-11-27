@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeetCode 47. 全排列 II (Permutations II) - 交互式算法可视化</title>
+    <!-- 引入 Tailwind CSS 进行响应式与现代化样式布局 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts: Inter & JetBrains Mono 代码字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        lab: {
+                            bg: '#F8FAFC',
+                            card: '#FFFFFF',
+                            border: '#E2E8F0',
+                            primary: '#2563EB',
+                            primaryLight: '#EFF6FF',
+                            accent: '#7C3AED',
+                            success: '#10B981',
+                            danger: '#EF4444',
+                            warning: '#F59E0B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 代码行高亮过渡 */
+        .code-line {
+            transition: background-color 0.2s ease, border-left-color 0.2s ease;
+        }
+        .code-line-active {
+            background-color: rgba(59, 130, 246, 0.22);
+            border-left: 3px solid #60A5FA;
+        }
+
+        /* SVG 树节点与连线动画 */
+        .tree-edge {
+            transition: stroke 0.25s ease, stroke-width 0.25s ease, opacity 0.25s ease;
+        }
+        .tree-node circle {
+            transition: fill 0.25s ease, stroke 0.25s ease, r 0.2s ease;
+        }
+
+        /* 隐藏默认数字输入框箭头 */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-lab-bg text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
+                    47
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">LeetCode 47. 全排列 II</h1>
+                        <span class="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">中等</span>
+                    </div>
+                    <p class="text-xs text-slate-500 hidden sm:block">回溯算法决策树与“同层重复剪枝”交互式实验室</p>
+                </div>
+            </div>
+
+            <!-- 预设与自定义输入区 -->
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <span class="text-xs font-medium text-slate-500 px-2">预设:</span>
+                    <button onclick="setPreset([1, 1, 2])" class="preset-btn px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-white text-blue-600 shadow-sm transition">[1,1,2]</button>
+                    <button onclick="setPreset([1, 1, 1])" class="preset-btn px-2.5 py-1 text-xs font-mono font-medium rounded-lg text-slate-600 hover:text-slate-900 transition">[1,1,1]</button>
+                    <button onclick="setPreset([1, 2, 2, 3])" class="preset-btn px-2.5 py-1 text-xs font-mono font-medium rounded-lg text-slate-600 hover:text-slate-900 transition">[1,2,2,3]</button>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <input id="customInput" type="text" value="1, 1, 2" placeholder="例如: 1,1,2"
+                        class="w-28 sm:w-32 px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        title="输入 1~4 个整数，用逗号或空格分隔">
+                    <button onclick="applyCustomInput()"
+                        class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition shadow-sm">
+                        应用
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 消息提示条（替代 alert） -->
+    <div id="toastBanner" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-medium shadow-lg flex items-center gap-2 transition-all">
+        <span id="toastIcon">⚠️</span>
+        <span id="toastMsg">提示信息</span>
+    </div>
+
+    <!-- 主内容区域 -->
+    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
+
+        <!-- 控制栏与剪枝开关 -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <!-- 播放控制按钮组 -->
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="btnReset" onclick="resetPlayer()" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition" title="重置到第一步">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span>重置</span>
+                </button>
+                <button id="btnPrev" onclick="prevStep()" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1 transition" title="上一步 (左方向键)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    <span>上一步</span>
+                </button>
+                <button id="btnPlay" onclick="togglePlay()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                    <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <span id="playText">自动播放</span>
+                </button>
+                <button id="btnNext" onclick="nextStep()" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1 transition" title="下一步 (右方向键)">
+                    <span>下一步</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- 步数指示器 -->
+                <div class="ml-1 px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-mono text-slate-600">
+                    步骤: <span id="stepCounter" class="font-bold text-slate-900">0 / 0</span>
+                </div>
+            </div>
+
+            <!-- 速度调节与剪枝对比开关 -->
+            <div class="flex flex-wrap items-center gap-4">
+                <!-- 速度选择 -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500">速度:</span>
+                    <select id="speedSelect" onchange="updateSpeed()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="1300">0.5x 慢速精讲</option>
+                        <option value="800" selected>1.0x 正常</option>
+                        <option value="400">2.0x 快速</option>
+                        <option value="150">4.0x 极速</option>
+                    </select>
+                </div>
+
+                <!-- 剪枝对比开关 -->
+                <label class="flex items-center gap-2.5 cursor-pointer select-none bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-blue-300 transition">
+                    <input id="pruningToggle" type="checkbox" checked onchange="togglePruningMode()" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 relative"></div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-slate-800">开启同层去重剪枝</span>
+                        <span id="pruningStatsBadge" class="text-[10px] text-emerald-600 font-medium">已节省重复节点计算</span>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <!-- 核心可视化三栏/双栏工作台 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+            <!-- 左侧：代码执行追踪 + 当前步骤深度解析 (5列) -->
+            <div class="lg:col-span-5 flex flex-col gap-5">
+
+                <!-- 当前步骤解说卡片 -->
+                <div id="explanationCard" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm border-l-4 border-l-blue-500 transition-all">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span id="stepTag" class="px-2.5 py-0.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700">准备开始</span>
+                        <span id="recursionDepth" class="text-xs font-mono text-slate-400">递归深度: 0</span>
+                    </div>
+                    <h3 id="stepTitle" class="text-sm sm:text-base font-bold text-slate-900 mb-1">点击“下一步”或“自动播放”开始演示</h3>
+                    <p id="stepDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        我们将从排序后的数组出发，观察回溯算法如何逐层挑选数字，以及关键条件 <code class="px-1 py-0.5 bg-slate-100 rounded text-rose-600 font-mono text-xs">not used[i - 1]</code> 是如何精准拦截同一树层中的重复分支的。
+                    </p>
+                </div>
+
+                <!-- 内存状态面板 (nums, used, path, res) -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">实时变量状态监视器</h3>
+                        <span id="compareSummary" class="text-[11px] font-mono text-slate-400"></span>
+                    </div>
+
+                    <!-- nums 与 used 数组对齐展示 -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-700 font-mono">nums (已排序) & used 状态</span>
+                            <span class="text-[11px] text-slate-400">蓝色边框为当前指针 i</span>
+                        </div>
+                        <div id="arraysContainer" class="flex flex-wrap gap-2.5">
+                            <!-- 动态注入数组卡片 -->
+                        </div>
+                    </div>
+
+                    <!-- path 当前路径 -->
+                    <div class="pt-1">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-semibold text-slate-700 font-mono">path (当前递归路径)</span>
+                            <span id="pathLenInfo" class="text-[11px] font-mono text-slate-400">len: 0</span>
+                        </div>
+                        <div id="pathContainer" class="min-h-[42px] p-2 bg-slate-50 rounded-xl border border-dashed border-slate-300 flex items-center flex-wrap gap-2">
+                            <span class="text-xs text-slate-400 italic">[] (空路径)</span>
+                        </div>
+                    </div>
+
+                    <!-- res 已收集结果 -->
+                    <div class="pt-1">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-semibold text-slate-700 font-mono">res (已收集的全排列结果)</span>
+                            <span id="resCountInfo" class="text-[11px] font-mono text-emerald-600 font-semibold">0 个结果</span>
+                        </div>
+                        <div id="resContainer" class="min-h-[44px] max-h-[120px] overflow-y-auto p-2 bg-emerald-50/40 rounded-xl border border-emerald-200/70 flex items-center flex-wrap gap-2">
+                            <span class="text-xs text-slate-400 italic">暂无完整排列</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Python 代码同步高亮面板 -->
+                <div class="bg-[#0F172A] text-slate-200 rounded-2xl shadow-sm overflow-hidden border border-slate-800 flex-1 flex flex-col">
+                    <div class="px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="ml-1.5 text-xs font-mono text-slate-400">Solution.py (你的解法)</span>
+                        </div>
+                        <span class="text-[11px] font-mono text-blue-400">Backtracking</span>
+                    </div>
+                    <div id="codeViewer" class="p-3 font-mono text-xs sm:text-[13px] leading-6 overflow-x-auto select-text">
+                        <!-- 代码行由 JS 动态渲染以便精确行高亮 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：回溯决策树 SVG 动态画布 (7列) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[540px]">
+                <!-- 树面板头部与图例 -->
+                <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                            <span>回溯决策树 (Recursion Decision Tree)</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">观察树层与树枝的区别：同层相同数字只允许选第一个</p>
+                    </div>
+
+                    <!-- 图例说明 -->
+                    <div class="flex flex-wrap items-center gap-3 text-[11px] font-medium">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-blue-600 inline-block ring-2 ring-blue-200"></span>
+                            <span class="text-slate-600">当前探索</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                            <span class="text-slate-600">完整排列</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-rose-100 border border-rose-500 inline-flex items-center justify-center text-[8px] text-rose-600 font-bold">✕</span>
+                            <span class="text-slate-600">同层重复剪枝</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-slate-100 border border-dashed border-slate-400 inline-block"></span>
+                            <span class="text-slate-500">已用跳过 (used)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 剪枝效率对比条 -->
+                <div id="efficiencyBanner" class="px-4 py-2 bg-indigo-50/70 border-b border-indigo-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 text-indigo-900">
+                        <span class="font-semibold">📊 搜索树规模统计：</span>
+                        <span>总尝试分支 <strong id="statTotalBranches" class="font-mono">0</strong> 次</span>
+                        <span class="text-indigo-300">|</span>
+                        <span class="text-rose-600">同层剪枝拦截 <strong id="statPrunedCount" class="font-mono">0</strong> 次</span>
+                        <span class="text-indigo-300">|</span>
+                        <span class="text-emerald-700">有效结果 <strong id="statValidCount" class="font-mono">0</strong> 个</span>
+                    </div>
+                    <span id="noPruneCompareText" class="text-[11px] text-indigo-600 font-medium"></span>
+                </div>
+
+                <!-- SVG 画布容器 -->
+                <div id="treeContainer" class="relative flex-1 w-full overflow-auto bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:18px_18px] flex items-center justify-center p-2">
+                    <svg id="decisionTreeSvg" class="w-full h-full min-h-[450px] select-none"></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心难点深度图解卡片：为什么是 not used[i - 1]？ -->
+        <section class="bg-gradient-to-r from-blue-50 via-indigo-50/60 to-purple-50 rounded-2xl border border-blue-100 p-5 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-2 max-w-3xl">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">
+                        <span>💡 核心灵魂解析</span>
+                    </div>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900">
+                        为什么剪枝条件是 <code class="px-1.5 py-0.5 bg-white rounded-lg text-rose-600 font-mono text-sm border border-rose-200">i > 0 and nums[i] == nums[i - 1] and not used[i - 1]</code> ？
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        以 <code class="font-mono bg-white px-1 rounded">[1a, 1b, 2]</code> 为例（为区分两个 1，记为 <code class="font-mono">1a</code> 和 <code class="font-mono">1b</code>）：
+                    </p>
+                    <ul class="text-xs sm:text-sm text-slate-700 space-y-1.5 list-disc list-inside">
+                        <li>
+                            <strong>树枝方向（纵向深入）：</strong>第一层选了 <code class="font-mono text-blue-700">1a</code>（此时 <code class="font-mono">used[0] = True</code>），进入第二层循环选 <code class="font-mono text-blue-700">1b</code>。虽然 <code class="font-mono">nums[1] == nums[0]</code>，但因为 <code class="font-mono">used[0]</code> 为 <code class="font-mono text-emerald-700">True</code>，说明 <code class="font-mono">1a</code> 是当前路径的“父辈”，<code class="font-mono">[1a, 1b, ...]</code> 是合法的新排列，<strong>不能剪枝</strong>！
+                        </li>
+                        <li>
+                            <strong>树层方向（横向兄弟）：</strong>当以 <code class="font-mono">1a</code> 开头的整棵子树都搜索完毕并回溯撤销后，<code class="font-mono">used[0]</code> 变回了 <code class="font-mono text-rose-600">False</code>。此时第一层的 <code class="font-mono">for</code> 循环走到 <code class="font-mono">1b</code>，发现 <code class="font-mono">nums[1] == nums[0]</code> 且 <code class="font-mono font-bold text-rose-600">not used[0]</code> 成立——这说明 <code class="font-mono">1a</code> 刚刚在<strong>同一层</strong>被用过并撤销了，再选 <code class="font-mono">1b</code> 只会重演一模一样的子树，<strong>果断剪枝</strong>！
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur p-4 rounded-xl border border-indigo-100 shrink-0 md:w-72 space-y-2">
+                    <div class="text-xs font-bold text-slate-800">🤔 思考：写成 <code class="font-mono text-indigo-600">used[i - 1]</code> 可以吗？</div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        <strong>也可以通过题目！</strong>但含义变成了“树枝去重”（强制重复元素必须倒序使用，即先用 <code class="font-mono">1b</code> 再用 <code class="font-mono">1a</code>）。不过 <code class="font-mono text-rose-600">not used[i - 1]</code> 属于<strong>树层去重</strong>，剪枝发生得更早、更彻底，搜索节点更少，是工业界和算法竞赛最推荐的标准写法。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 多解法对比教学面板 -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900">多解法全解析与复杂度对比</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">掌握不同视角下的去重策略，应对面试官的 Follow-up 追问</p>
+                </div>
+
+                <!-- 解法切换 Tabs -->
+                <div class="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchSolutionTab(0)" id="solTab0" class="sol-tab px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-blue-600 shadow-sm transition">
+                        解法一：排序 + used 剪枝
+                    </button>
+                    <button onclick="switchSolutionTab(1)" id="solTab1" class="sol-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                        解法二：哈希计数 (Counter)
+                    </button>
+                    <button onclick="switchSolutionTab(2)" id="solTab2" class="sol-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                        解法三：原地交换 + 局部 Set
+                    </button>
+                    <button onclick="switchSolutionTab(3)" id="solTab3" class="sol-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+                        解法四：字典序迭代法 (Next Perm)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 解法内容展示区 -->
+            <div id="solutionContent" class="p-4 sm:p-6">
+                <!-- 动态渲染对应解法 -->
+            </div>
+
+            <!-- 复杂度总览对比表 -->
+            <div class="px-4 sm:px-6 pb-6">
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-2.5 px-4 font-semibold">解法名称</th>
+                                <th class="py-2.5 px-4 font-semibold">时间复杂度</th>
+                                <th class="py-2.5 px-4 font-semibold">空间复杂度</th>
+                                <th class="py-2.5 px-4 font-semibold">核心去重机制</th>
+                                <th class="py-2.5 px-4 font-semibold">面试推荐度</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="py-2.5 px-4 font-semibold text-blue-700">1. 排序 + used 剪枝</td>
+                                <td class="py-2.5 px-4 font-mono">O(N × N!)</td>
+                                <td class="py-2.5 px-4 font-mono">O(N)</td>
+                                <td class="py-2.5 px-4">相邻相同元素且前驱未使用时跳过（同层去重）</td>
+                                <td class="py-2.5 px-4">⭐⭐⭐⭐⭐ 最经典通用</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="py-2.5 px-4 font-semibold text-purple-700">2. 哈希频次统计 (Counter)</td>
+                                <td class="py-2.5 px-4 font-mono">O(N × N!)</td>
+                                <td class="py-2.5 px-4 font-mono">O(N)</td>
+                                <td class="py-2.5 px-4">按“数值桶”枚举而非按“下标”枚举，天然无同层重复</td>
+                                <td class="py-2.5 px-4">⭐⭐⭐⭐⭐ 代码最优雅</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="py-2.5 px-4 font-semibold text-emerald-700">3. 原地 Swap + 局部 Set</td>
+                                <td class="py-2.5 px-4 font-mono">O(N × N!)</td>
+                                <td class="py-2.5 px-4 font-mono">O(N²)</td>
+                                <td class="py-2.5 px-4">固定第 idx 位时，用局部哈希集合记录已放过的数字</td>
+                                <td class="py-2.5 px-4">⭐⭐⭐⭐ 无需预先排序</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="py-2.5 px-4 font-semibold text-amber-700">4. 字典序迭代 (Next Perm)</td>
+                                <td class="py-2.5 px-4 font-mono">O(N × N!)</td>
+                                <td class="py-2.5 px-4 font-mono">O(1) (不含输出)</td>
+                                <td class="py-2.5 px-4">从最小字典序开始，每次寻找严格更大的下一个排列</td>
+                                <td class="py-2.5 px-4">⭐⭐⭐⭐ 非递归防爆栈</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        LeetCode 47. Permutations II 交互式算法可视化教学工具 · 支持键盘左右方向键 (← / →) 单步调试，空格键播放/暂停
+    </footer>
+
+    <script>
+        // ==========================================
+        // 1. Python 代码行定义（用于同步高亮）
+        // ==========================================
+        const PYTHON_CODE_LINES = [
+            { line: 1, text: "class Solution:" },
+            { line: 2, text: "    def permuteUnique(self, nums: list[int]) -> list[list[int]]:" },
+            { line: 3, text: "        res = []" },
+            { line: 4, text: "        path = []" },
+            { line: 5, text: "        used = [False] * len(nums)" },
+            { line: 6, text: "        nums.sort()" },
+            { line: 7, text: "" },
+            { line: 8, text: "        def backTrack():" },
+            { line: 9, text: "            if len(path) == len(nums):" },
+            { line: 10, text: "                res.append(path[:])" },
+            { line: 11, text: "                return" },
+            { line: 12, text: "" },
+            { line: 13, text: "            for i in range(len(nums)):" },
+            { line: 14, text: "                if used[i] or (i > 0 and nums[i] == nums[i - 1] and not used[i - 1]):" },
+            { line: 15, text: "                    continue" },
+            { line: 16, text: "                path.append(nums[i])" },
+            { line: 17, text: "                used[i] = True" },
+            { line: 18, text: "                backTrack()" },
+            { line: 19, text: "                path.pop()" },
+            { line: 20, text: "                used[i] = False" },
+            { line: 21, text: "" },
+            { line: 22, text: "        backTrack()" },
+            { line: 23, text: "        return res" }
+        ];
+
+        // ==========================================
+        // 2. 多解法百科数据
+        // ==========================================
+        const SOLUTIONS_DATA = [
+            {
+                title: "解法一：排序 + used 数组同层剪枝（标准回溯）",
+                badge: "当前可视化方案",
+                badgeColor: "bg-blue-100 text-blue-700",
+                idea: `先对数组进行升序排序，使得所有相同的元素紧挨在一起。在每一层递归中，我们按顺序枚举下标 <code>i</code>。如果发现当前元素与前一个元素相等（<code>nums[i] == nums[i - 1]</code>），并且前一个元素处于未使用状态（<code>not used[i - 1]</code>），说明前一个相同元素刚刚在这一层被尝试过并回溯了，此时直接跳过即可实现“同层去重”。`,
+                pros: "逻辑严谨，剪枝位置极其靠前（直接在树的上层砍掉整棵重复子树），是解决所有组合/排列去重问题的通用模板。",
+                code: `class Solution:
+    def permuteUnique(self, nums: list[int]) -> list[list[int]]:
+        res = []
+        path = []
+        used = [False] * len(nums)
+        nums.sort()  # 关键：必须先排序，让重复元素相邻
+
+        def backTrack():
+            if len(path) == len(nums):
+                res.append(path[:])
+                return
+            
+            for i in range(len(nums)):
+                # 1. used[i]: 纵向树枝上已经被选过的下标不能再用
+                # 2. i > 0 and nums[i] == nums[i - 1] and not used[i - 1]: 横向树层同值剪枝
+                if used[i] or (i > 0 and nums[i] == nums[i - 1] and not used[i - 1]):
+                    continue
+                
+                path.append(nums[i])
+                used[i] = True
+                backTrack()
+                path.pop()
+                used[i] = False
+        
+        backTrack()
+        return res`
+            },
+            {
+                title: "解法二：基于 Counter 哈希频次统计的回溯（无需排序）",
+                badge: "代码最简洁",
+                badgeColor: "bg-purple-100 text-purple-700",
+                idea: `为什么原数组会出现重复排列？因为我们按“下标”去枚举，导致相同数值被当成了不同选项。如果我们换个角度，先用 <code>collections.Counter(nums)</code> 统计每个数字出现的频次，然后在每一层递归中<strong>直接遍历哈希表中的不同数字（Key）</strong>，只要该数字剩余次数 <code>counter[num] > 0</code> 就选择它并减 1。由于哈希表的 Key 天然唯一，同一层绝对不会选出两个相同的数字！`,
+                pros: "完全不需要预先排序，也不需要复杂的 <code>not used[i - 1]</code> 边界判断，思维负担极低，面试手写极不易出错。",
+                code: `from collections import Counter
+
+class Solution:
+    def permuteUnique(self, nums: list[int]) -> list[list[int]]:
+        res = []
+        path = []
+        counter = Counter(nums)  # 统计每个唯一数字的可用次数
+
+        def backTrack():
+            if len(path) == len(nums):
+                res.append(path[:])
+                return
+            
+            # 直接遍历不同的数字，天然避免同层重复选择
+            for num in counter:
+                if counter[num] > 0:
+                    path.append(num)
+                    counter[num] -= 1
+                    backTrack()
+                    path.pop()
+                    counter[num] += 1
+
+        backTrack()
+        return res`
+            },
+            {
+                title: "解法三：原地交换 (Swap) + 局部 Set 去重",
+                badge: "原地空间优化",
+                badgeColor: "bg-emerald-100 text-emerald-700",
+                idea: `不额外开辟 <code>path</code> 和 <code>used</code> 数组，而是直接通过交换原数组元素来划分“已固定区域” <code>[0, idx-1]</code> 和“待选择区域” <code>[idx, n-1]</code>。在决定第 <code>idx</code> 个位置放什么数字时，我们在当前递归层级创建一个局部集合 <code>seen = set()</code>，记录已经交换到 <code>idx</code> 位置的数值。如果 <code>nums[i]</code> 在 <code>seen</code> 中出现过，说明这个数值已经当过第 <code>idx</code> 位的老大，直接跳过。`,
+                pros: "无需提前排序，代码结构紧贴全排列 I（LeetCode 46）的交换法，容易由 46 题直接迁移推导。",
+                code: `class Solution:
+    def permuteUnique(self, nums: list[int]) -> list[list[int]]:
+        res = []
+        n = len(nums)
+
+        def backTrack(idx: int):
+            if idx == n:
+                res.append(nums[:])
+                return
+            
+            seen = set()  # 记录当前层（第 idx 位）已经放置过的数字
+            for i in range(idx, n):
+                if nums[i] in seen:
+                    continue
+                seen.add(nums[i])
+                
+                # 交换元素，将 nums[i] 固定到 idx 位置
+                nums[idx], nums[i] = nums[i], nums[idx]
+                backTrack(idx + 1)
+                # 回溯撤销交换
+                nums[idx], nums[i] = nums[i], nums[idx]
+
+        backTrack(0)
+        return res`
+            },
+            {
+                title: "解法四：字典序迭代法（Next Permutation 下一个排列）",
+                badge: "非递归 / O(1) 辅助空间",
+                badgeColor: "bg-amber-100 text-amber-700",
+                idea: `先将数组升序排列，得到字典序最小的第一个排列。随后不断调用“寻找下一个更大字典序排列”（即 LeetCode 31 题算法），直到整个数组变成完全降序为止。因为每次找的都是“严格大于”当前排列的下一个排列，所以天然跳过所有重复排列，且完全不使用递归栈！`,
+                pros: "彻底摆脱递归调用栈空间，支持按需流式生成下一个排列（类似 C++ STL 的 <code>std::next_permutation</code>）。",
+                code: `class Solution:
+    def permuteUnique(self, nums: list[int]) -> list[list[int]]:
+        nums.sort()
+        res = [nums[:]]
+        n = len(nums)
+
+        while True:
+            # 1. 从右向左找第一个满足 nums[i] < nums[i + 1] 的位置
+            i = n - 2
+            while i >= 0 and nums[i] >= nums[i + 1]:
+                i -= 1
+            if i < 0:
+                break  # 已经达到最大字典序（完全降序），结束循环
+
+            # 2. 从右向左找第一个大于 nums[i] 的数字 nums[j]
+            j = n - 1
+            while nums[j] <= nums[i]:
+                j -= 1
+
+            # 3. 交换并反转 i 之后的降序后缀，使其变为最小升序
+            nums[i], nums[j] = nums[j], nums[i]
+            nums[i + 1:] = reversed(nums[i + 1:])
+            res.append(nums[:])
+
+        return res`
+            }
+        ];
+
+        // ==========================================
+        // 3. 全局状态与模拟器核心
+        // ==========================================
+        let currentInput = [1, 1, 2];
+        let enablePruning = true;
+        let frames = [];          // 所有执行快照帧
+        let treeNodes = [];       // 完整决策树节点列表
+        let treeEdges = [];       // 完整决策树边列表
+        let currentStep = 0;      // 当前播放步数索引
+        let isPlaying = false;
+        let playTimer = null;
+        let playSpeed = 800;
+
+        // 统计信息
+        let stats = {
+            totalBranches: 0,
+            prunedCount: 0,
+            validCount: 0,
+            unprunedBranches: 0
+        };
+
+        // 提示框函数
+        function showToast(msg, icon = "⚠️") {
+            const banner = document.getElementById("toastBanner");
+            document.getElementById("toastMsg").textContent = msg;
+            document.getElementById("toastIcon").textContent = icon;
+            banner.classList.remove("hidden");
+            clearTimeout(banner._timer);
+            banner._timer = setTimeout(() => {
+                banner.classList.add("hidden");
+            }, 2800);
+        }
+
+        // 预设按钮点击
+        function setPreset(arr) {
+            document.getElementById("customInput").value = arr.join(", ");
+            updateActivePresetStyle(arr);
+            runSimulation(arr);
+        }
+
+        function updateActivePresetStyle(arr) {
+            const btns = document.querySelectorAll(".preset-btn");
+            const targetStr = JSON.stringify(arr);
+            btns.forEach(btn => {
+                const btnArr = JSON.parse(btn.textContent);
+                if (JSON.stringify(btnArr) === targetStr) {
+                    btn.className = "preset-btn px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-white text-blue-600 shadow-sm transition";
+                } else {
+                    btn.className = "preset-btn px-2.5 py-1 text-xs font-mono font-medium rounded-lg text-slate-600 hover:text-slate-900 transition";
+                }
+            });
+        }
+
+        // 自定义输入应用
+        function applyCustomInput() {
+            const raw = document.getElementById("customInput").value.trim();
+            if (!raw) {
+                showToast("请输入 1 到 4 个整数，例如: 1, 1, 2");
+                return;
+            }
+            const parts = raw.split(/[\s,，\[\]]+/).filter(Boolean);
+            const parsed = parts.map(Number);
+
+            if (parsed.some(isNaN)) {
+                showToast("输入包含非数字字符，请检查格式！");
+                return;
+            }
+            if (parsed.length < 1 || parsed.length > 4) {
+                showToast("为保证决策树清晰展示，请输入 1 ~ 4 个数字！");
+                return;
+            }
+            updateActivePresetStyle(parsed);
+            runSimulation(parsed);
+            showToast(`已加载自定义数组 [${parsed.join(", ")}]`, "✅");
+        }
+
+        // 切换剪枝模式开关
+        function togglePruningMode() {
+            enablePruning = document.getElementById("pruningToggle").checked;
+            runSimulation(currentInput);
+            if (enablePruning) {
+                showToast("已开启同层重复剪枝 (not used[i - 1])", "✂️");
+            } else {
+                showToast("已关闭剪枝：观察会产生多少重复搜索分支！", "🔍");
+            }
+        }
+
+        // ==========================================
+        // 4. 回溯算法执行器与决策树构建器
+        // ==========================================
+        function runSimulation(rawArr) {
+            pausePlay();
+            currentInput = [...rawArr];
+            const nums = [...rawArr].sort((a, b) => a - b);
+            const n = nums.length;
+            const used = new Array(n).fill(false);
+            const path = [];
+            const res = [];
+
+            frames = [];
+            treeNodes = [];
+            treeEdges = [];
+
+            let nodeIdCounter = 0;
+            let totalBranches = 0;
+            let prunedCount = 0;
+
+            // 先计算不剪枝时的总分支数，用于效率对比
+            const unprunedBranches = countUnprunedBranches(n);
+
+            // 创建根节点
+            const rootNode = {
+                id: nodeIdCounter++,
+                parentId: null,
+                depth: 0,
+                val: "Root",
+                indexUsed: -1,
+                status: "root", // root, active, visited, pruned, used_skip, solution
+                pathSnapshot: [],
+                label: "[]"
+            };
+            treeNodes.push(rootNode);
+
+            // 记录快照辅助函数
+            function recordFrame({ line, tag, tagType, title, desc, activeI = -1, currentNodeId = 0, activePathNodeIds = [0], compareInfo = "" }) {
+                frames.push({
+                    line,
+                    tag,
+                    tagType,
+                    title,
+                    desc,
+                    nums: [...nums],
+                    used: [...used],
+                    path: [...path],
+                    res: res.map(r => [...r]),
+                    activeI,
+                    currentNodeId,
+                    activePathNodeIds: [...activePathNodeIds],
+                    compareInfo,
+                    // 深拷贝当前树节点状态快照
+                    nodeStates: treeNodes.map(nd => ({ id: nd.id, status: nd.status })),
+                    edgeStates: treeEdges.map(ed => ({ id: ed.id, status: ed.status }))
+                });
+            }
+
+            // 初始帧：排序与变量初始化
+            recordFrame({
+                line: 6,
+                tag: "初始化",
+                tagType: "info",
+                title: "数组升序排序与状态初始化",
+                desc: `原数组 [${rawArr.join(", ")}] 排序后变为 [${nums.join(", ")}]。排序是去重的前提，这样相同的数字会紧挨在一起。`,
+                activeI: -1,
+                currentNodeId: 0,
+                activePathNodeIds: [0]
+            });
+
+            // 递归模拟函数
+            function backtrack(parentNodeId, activePathIds) {
+                const depth = path.length;
+
+                // 检查终止条件
+                if (path.length === n) {
+                    const solCopy = [...path];
+                    res.push(solCopy);
+                    const leafNode = treeNodes.find(nd => nd.id === parentNodeId);
+                    if (leafNode) leafNode.status = "solution";
+
+                    recordFrame({
+                        line: 10,
+                        tag: "收集结果",
+                        tagType: "success",
+                        title: `找到一个完整排列：[${solCopy.join(", ")}]`,
+                        desc: `当前 path 长度达到 ${n}，将其拷贝加入结果集 res（当前共 ${res.length} 个），随后 return 回溯到上一层。`,
+                        activeI: -1,
+                        currentNodeId: parentNodeId,
+                        activePathNodeIds: activePathIds
+                    });
+                    return;
+                }
+
+                // 遍历所有候选元素
+                for (let i = 0; i < n; i++) {
+                    totalBranches++;
+
+                    // 情况 A：当前下标 i 已经在当前树枝（纵向路径）中被使用过
+                    if (used[i]) {
+                        const skipNode = {
+                            id: nodeIdCounter++,
+                            parentId: parentNodeId,
+                            depth: depth + 1,
+                            val: nums[i],
+                            indexUsed: i,
+                            status: "used_skip",
+                            pathSnapshot: [...path, nums[i]],
+                            label: `${nums[i]}`
+                        };
+                        treeNodes.push(skipNode);
+                        const edge = {
+                            id: `${parentNodeId}-${skipNode.id}`,
+                            from: parentNodeId,
+                            to: skipNode.id,
+                            indexUsed: i,
+                            status: "used_skip"
+                        };
+                        treeEdges.push(edge);
+
+                        recordFrame({
+                            line: 14,
+                            tag: "纵向跳过",
+                            tagType: "muted",
+                            title: `下标 i=${i} (数值 ${nums[i]}) 已在路径中，跳过`,
+                            desc: `检查 used[${i}] == True，说明这个位置的元素已经在当前递归路径 path 中被选过了，不能重复使用同一位置的元素。`,
+                            activeI: i,
+                            currentNodeId: skipNode.id,
+                            activePathNodeIds: [...activePathIds, skipNode.id],
+                            compareInfo: `used[${i}] == True`
+                        });
+                        continue;
+                    }
+
+                    // 情况 B：同层重复剪枝判断
+                    const isSameAsPrev = i > 0 && nums[i] === nums[i - 1];
+                    const prevNotUsed = i > 0 && !used[i - 1];
+
+                    if (enablePruning && isSameAsPrev && prevNotUsed) {
+                        prunedCount++;
+                        const prunedNode = {
+                            id: nodeIdCounter++,
+                            parentId: parentNodeId,
+                            depth: depth + 1,
+                            val: nums[i],
+                            indexUsed: i,
+                            status: "pruned",
+                            pathSnapshot: [...path, nums[i]],
+                            label: `${nums[i]}`
+                        };
+                        treeNodes.push(prunedNode);
+                        const edge = {
+                            id: `${parentNodeId}-${prunedNode.id}`,
+                            from: parentNodeId,
+                            to: prunedNode.id,
+                            indexUsed: i,
+                            status: "pruned"
+                        };
+                        treeEdges.push(edge);
+
+                        recordFrame({
+                            line: 15,
+                            tag: "✂️ 同层剪枝",
+                            tagType: "danger",
+                            title: `触发同层剪枝！跳过下标 i=${i} (数值 ${nums[i]})`,
+                            desc: `nums[${i}] == nums[${i - 1}] (${nums[i]}) 且 not used[${i - 1}] 为真！说明前一个相同的 ${nums[i - 1]} 刚刚在【同一树层】被尝试过并回溯撤销了，再选它会产生完全相同的子树，直接剪枝！`,
+                            activeI: i,
+                            currentNodeId: prunedNode.id,
+                            activePathNodeIds: [...activePathIds, prunedNode.id],
+                            compareInfo: `nums[${i}]==nums[${i-1}] && !used[${i-1}]`
+                        });
+                        continue;
+                    }
+
+                    // 情况 C：合法选择，做出决策并进入下一层
+                    path.push(nums[i]);
+                    used[i] = true;
+
+                    const childNode = {
+                        id: nodeIdCounter++,
+                        parentId: parentNodeId,
+                        depth: depth + 1,
+                        val: nums[i],
+                        indexUsed: i,
+                        status: "active",
+                        pathSnapshot: [...path],
+                        label: `${nums[i]}`
+                    };
+                    treeNodes.push(childNode);
+
+                    const edge = {
+                        id: `${parentNodeId}-${childNode.id}`,
+                        from: parentNodeId,
+                        to: childNode.id,
+                        indexUsed: i,
+                        status: "active"
+                    };
+                    treeEdges.push(edge);
+
+                    const extraNote = (isSameAsPrev && used[i - 1])
+                        ? `（注意：虽然 nums[${i}] == nums[${i - 1}]，但 used[${i - 1}] == True，说明前一个相同数字在当前路径的父辈节点中，属于合法的树枝深入，不剪枝！）`
+                        : "";
+
+                    recordFrame({
+                        line: 17,
+                        tag: "做出选择",
+                        tagType: "primary",
+                        title: `选择 nums[${i}] = ${nums[i]} 加入路径`,
+                        desc: `将 ${nums[i]} 压入 path（当前 path = [${path.join(", ")}]），并标记 used[${i}] = True，准备向下递归探索。${extraNote}`,
+                        activeI: i,
+                        currentNodeId: childNode.id,
+                        activePathNodeIds: [...activePathIds, childNode.id],
+                        compareInfo: isSameAsPrev ? `nums[${i}]==nums[${i-1}] 但 used[${i-1}]==True (允许)` : `选择下标 i=${i}`
+                    });
+
+                    // 递归调用
+                    backtrack(childNode.id, [...activePathIds, childNode.id]);
+
+                    // 回溯撤销选择
+                    const popped = path.pop();
+                    used[i] = false;
+                    if (childNode.status !== "solution") {
+                        childNode.status = "visited";
+                    }
+                    edge.status = "visited";
+
+                    recordFrame({
+                        line: 20,
+                        tag: "回溯撤销",
+                        tagType: "warning",
+                        title: `撤销选择：弹出 ${popped}，恢复 used[${i}] = False`,
+                        desc: `以 [${[...path, popped].join(", ")}] 为前缀的子树已探索完毕。弹出 ${popped} 并重置 used[${i}] = False，回到第 ${depth + 1} 层的下一个循环。`,
+                        activeI: i,
+                        currentNodeId: parentNodeId,
+                        activePathNodeIds: activePathIds,
+                        compareInfo: `回溯释放下标 i=${i}`
+                    });
+                }
+            }
+
+            backtrack(0, [0]);
+
+            // 结束帧
+            recordFrame({
+                line: 23,
+                tag: "执行完毕",
+                tagType: "success",
+                title: `回溯全部结束！共找到 ${res.length} 个不重复全排列`,
+                desc: enablePruning
+                    ? `开启剪枝后，共尝试 ${totalBranches} 次分支，成功拦截 ${prunedCount} 次同层重复分支（相比无剪枝节省了大量无效搜索）。`
+                    : `未开启剪枝模式下，共尝试了 ${totalBranches} 次分支，结果集中包含了重复排列！建议开启剪枝开关对比效果。`,
+                activeI: -1,
+                currentNodeId: 0,
+                activePathNodeIds: [0]
+            });
+
+            // 更新统计数据
+            stats = {
+                totalBranches,
+                prunedCount,
+                validCount: res.length,
+                unprunedBranches
+            };
+            updateStatsUI();
+
+            // 计算树节点坐标布局
+            computeTreeLayout();
+
+            // 渲染初始第一帧
+            currentStep = 0;
+            renderFrame(0);
+        }
+
+        // 计算无剪枝时的总分支调用次数（用于对比展示）
+        function countUnprunedBranches(n) {
+            let count = 0;
+            function dfs(depth) {
+                if (depth === n) return;
+                for (let i = 0; i < n; i++) {
+                    count++;
+                    dfs(depth + 1);
+                }
+            }
+            dfs(0);
+            return count;
+        }
+
+        // 更新统计面板
+        function updateStatsUI() {
+            document.getElementById("statTotalBranches").textContent = stats.totalBranches;
+            document.getElementById("statPrunedCount").textContent = stats.prunedCount;
+            document.getElementById("statValidCount").textContent = stats.validCount;
+
+            const badge = document.getElementById("pruningStatsBadge");
+            const compareText = document.getElementById("noPruneCompareText");
+
+            if (enablePruning) {
+                const saved = stats.unprunedBranches - stats.totalBranches;
+                badge.textContent = `已拦截 ${stats.prunedCount} 个重复分支`;
+                badge.className = "text-[10px] text-emerald-600 font-medium";
+                compareText.textContent = saved > 0
+                    ? `💡 若关闭剪枝，总分支数将暴增至 ${stats.unprunedBranches} 次`
+                    : `当前数组无重复元素，剪枝与否分支数相同`;
+            } else {
+                badge.textContent = `剪枝已关闭 (会产生重复结果)`;
+                badge.className = "text-[10px] text-rose-600 font-medium";
+                compareText.textContent = `⚠️ 当前未去重，结果集中存在重复排列`;
+            }
+        }
+
+        // ==========================================
+        // 5. 决策树坐标布局计算 (Reingold-Tilford 简化版)
+        // ==========================================
+        function computeTreeLayout() {
+            // 构建 children 引用
+            const nodeMap = new Map();
+            treeNodes.forEach(nd => {
+                nd.children = [];
+                nodeMap.set(nd.id, nd);
+            });
+            treeNodes.forEach(nd => {
+                if (nd.parentId !== null && nodeMap.has(nd.parentId)) {
+                    nodeMap.get(nd.parentId).children.push(nd);
+                }
+            });
+
+            // 递归计算叶子节点宽度分配
+            let leafCounter = 0;
+            const horizontalSpacing = treeNodes.length > 35 ? 36 : (treeNodes.length > 20 ? 46 : 62);
+            const verticalSpacing = 88;
+
+            function assignX(node) {
+                if (node.children.length === 0) {
+                    node.x = leafCounter * horizontalSpacing;
+                    leafCounter++;
+                } else {
+                    node.children.forEach(assignX);
+                    const firstX = node.children[0].x;
+                    const lastX = node.children[node.children.length - 1].x;
+                    node.x = (firstX + lastX) / 2;
+                }
+                node.y = node.depth * verticalSpacing + 45;
+            }
+
+            const root = nodeMap.get(0);
+            if (root) assignX(root);
+
+            // 归一化坐标并计算 SVG viewBox
+            let minX = Infinity, maxX = -Infinity, maxY = 0;
+            treeNodes.forEach(nd => {
+                if (nd.x < minX) minX = nd.x;
+                if (nd.x > maxX) maxX = nd.x;
+                if (nd.y > maxY) maxY = nd.y;
+            });
+
+            const paddingX = 55;
+            const paddingBottom = 55;
+            const totalWidth = Math.max(520, (maxX - minX) + paddingX * 2);
+            const totalHeight = Math.max(420, maxY + paddingBottom);
+
+            const offsetX = (totalWidth - (maxX - minX)) / 2 - minX;
+            treeNodes.forEach(nd => {
+                nd.x += offsetX;
+            });
+
+            const svg = document.getElementById("decisionTreeSvg");
+            svg.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+        }
+
+        // ==========================================
+        // 6. 渲染每一帧的 UI 与 SVG 决策树
+        // ==========================================
+        function renderFrame(stepIdx) {
+            if (!frames.length) return;
+            const frame = frames[stepIdx];
+
+            // 1. 更新步数计数器与按钮状态
+            document.getElementById("stepCounter").textContent = `${stepIdx + 1} / ${frames.length}`;
+            document.getElementById("btnPrev").disabled = stepIdx === 0;
+            document.getElementById("btnNext").disabled = stepIdx === frames.length - 1;
+            document.getElementById("btnPrev").classList.toggle("opacity-40", stepIdx === 0);
+            document.getElementById("btnNext").classList.toggle("opacity-40", stepIdx === frames.length - 1);
+
+            // 2. 更新步骤解析卡片
+            const card = document.getElementById("explanationCard");
+            const tagEl = document.getElementById("stepTag");
+            document.getElementById("stepTitle").textContent = frame.title;
+            document.getElementById("stepDesc").textContent = frame.desc;
+            document.getElementById("recursionDepth").textContent = `递归深度: ${frame.path.length}`;
+            document.getElementById("compareSummary").textContent = frame.compareInfo;
+            tagEl.textContent = frame.tag;
+
+            const styleMap = {
+                info: { border: "border-l-blue-500", tag: "bg-blue-50 text-blue-700" },
+                primary: { border: "border-l-indigo-600", tag: "bg-indigo-50 text-indigo-700" },
+                success: { border: "border-l-emerald-500", tag: "bg-emerald-50 text-emerald-700" },
+                danger: { border: "border-l-rose-500", tag: "bg-rose-50 text-rose-700" },
+                warning: { border: "border-l-amber-500", tag: "bg-amber-50 text-amber-700" },
+                muted: { border: "border-l-slate-400", tag: "bg-slate-100 text-slate-600" }
+            };
+            const st = styleMap[frame.tagType] || styleMap.info;
+            card.className = `bg-white rounded-2xl border border-slate-200 p-4 shadow-sm border-l-4 ${st.border} transition-all`;
+            tagEl.className = `px-2.5 py-0.5 text-xs font-semibold rounded-lg ${st.tag}`;
+
+            // 3. 渲染 nums & used 数组卡片
+            const arraysContainer = document.getElementById("arraysContainer");
+            arraysContainer.innerHTML = frame.nums.map((val, idx) => {
+                const isUsed = frame.used[idx];
+                const isActive = frame.activeI === idx;
+                const isPrevCompared = frame.activeI > 0 && (frame.activeI - 1 === idx) && frame.nums[frame.activeI] === val;
+
+                let ringClass = "border-slate-200 bg-white";
+                if (isActive) {
+                    ringClass = "border-blue-600 ring-2 ring-blue-200 bg-blue-50/40 scale-105";
+                } else if (isPrevCompared) {
+                    ringClass = "border-amber-400 ring-1 ring-amber-200 bg-amber-50/30";
+                } else if (isUsed) {
+                    ringClass = "border-slate-200 bg-slate-100 opacity-75";
+                }
+
+                return `
+                    <div class="flex flex-col items-center px-3 py-2 rounded-xl border ${ringClass} transition-all min-w-[58px]">
+                        <span class="text-[10px] font-mono text-slate-400">i=${idx}</span>
+                        <span class="text-base font-bold font-mono ${isUsed ? 'text-slate-400 line-through' : 'text-slate-900'} my-0.5">${val}</span>
+                        <span class="px-1.5 py-0.5 text-[10px] font-mono rounded ${isUsed ? 'bg-amber-100 text-amber-800 font-semibold' : 'bg-slate-100 text-slate-500'}">
+                            ${isUsed ? 'True' : 'False'}
+                        </span>
+                    </div>
+                `;
+            }).join("");
+
+            // 4. 渲染 path 当前路径
+            const pathContainer = document.getElementById("pathContainer");
+            document.getElementById("pathLenInfo").textContent = `len: ${frame.path.length} / ${frame.nums.length}`;
+            if (frame.path.length === 0) {
+                pathContainer.innerHTML = `<span class="text-xs text-slate-400 italic">[] (空路径)</span>`;
+            } else {
+                pathContainer.innerHTML = frame.path.map((val, i) => `
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-mono text-xs font-bold shadow-sm">${val}</span>
+                        ${i < frame.path.length - 1 ? '<span class="text-slate-300 text-xs">→</span>' : ''}
+                    </div>
+                `).join("");
+            }
+
+            // 5. 渲染 res 结果列表
+            const resContainer = document.getElementById("resContainer");
+            document.getElementById("resCountInfo").textContent = `${frame.res.length} 个结果`;
+            if (frame.res.length === 0) {
+                resContainer.innerHTML = `<span class="text-xs text-slate-400 italic">暂无完整排列</span>`;
+            } else {
+                resContainer.innerHTML = frame.res.map((arr, idx) => {
+                    const isLatest = idx === frame.res.length - 1 && frame.tagType === "success";
+                    return `
+                        <span class="px-2.5 py-1 rounded-lg font-mono text-xs font-semibold border transition-all ${
+                            isLatest
+                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-105'
+                                : 'bg-white text-emerald-800 border-emerald-200'
+                        }">
+                            [${arr.join(", ")}]
+                        </span>
+                    `;
+                }).join("");
+            }
+
+            // 6. 高亮 Python 代码行
+            highlightCodeLine(frame.line);
+
+            // 7. 绘制 SVG 决策树
+            renderDecisionTreeSvg(frame);
+        }
+
+        // 高亮代码行
+        function highlightCodeLine(activeLine) {
+            const viewer = document.getElementById("codeViewer");
+            viewer.innerHTML = PYTHON_CODE_LINES.map(item => {
+                const isActive = item.line === activeLine;
+                const escaped = escapeHtml(item.text) || "&nbsp;";
+                return `
+                    <div class="code-line flex items-start px-2 py-0.5 rounded ${isActive ? 'code-line-active text-white font-semibold' : 'text-slate-300'}">
+                        <span class="w-7 shrink-0 text-right pr-3 select-none text-slate-500 text-xs">${item.line}</span>
+                        <pre class="font-mono whitespace-pre">${escaped}</pre>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // 渲染 SVG 决策树
+        function renderDecisionTreeSvg(frame) {
+            const svg = document.getElementById("decisionTreeSvg");
+            const activePathSet = new Set(frame.activePathNodeIds);
+            const stateMap = new Map(frame.nodeStates.map(s => [s.id, s.status]));
+            const edgeStateMap = new Map(frame.edgeStates.map(e => [e.id, e.status]));
+
+            const nodeMap = new Map(treeNodes.map(nd => [nd.id, nd]));
+            let svgHtml = "";
+
+            // 1. 绘制连线 (Edges)
+            treeEdges.forEach(edge => {
+                const fromNode = nodeMap.get(edge.from);
+                const toNode = nodeMap.get(edge.to);
+                if (!fromNode || !toNode) return;
+
+                const status = edgeStateMap.get(edge.id) || edge.status;
+                const isOnActivePath = activePathSet.has(fromNode.id) && activePathSet.has(toNode.id);
+
+                let stroke = "#CBD5E1";
+                let strokeWidth = "1.8";
+                let dashArray = "";
+                let opacity = "0.75";
+
+                if (isOnActivePath) {
+                    if (status === "pruned") {
+                        stroke = "#EF4444";
+                        strokeWidth = "2.5";
+                        dashArray = "4,3";
+                        opacity = "1";
+                    } else if (status === "used_skip") {
+                        stroke = "#94A3B8";
+                        strokeWidth = "2";
+                        dashArray = "3,3";
+                        opacity = "0.9";
+                    } else {
+                        stroke = "#2563EB";
+                        strokeWidth = "3";
+                        opacity = "1";
+                    }
+                } else if (status === "pruned") {
+                    stroke = "#FCA5A5";
+                    strokeWidth = "1.5";
+                    dashArray = "4,3";
+                    opacity = "0.65";
+                } else if (status === "used_skip") {
+                    stroke = "#E2E8F0";
+                    strokeWidth = "1.2";
+                    dashArray = "2,3";
+                    opacity = "0.45";
+                } else if (status === "visited") {
+                    stroke = "#94A3B8";
+                    strokeWidth = "1.8";
+                    opacity = "0.65";
+                }
+
+                // 贝塞尔曲线连接父子节点
+                const midY = (fromNode.y + toNode.y) / 2;
+                const d = `M ${fromNode.x} ${fromNode.y} C ${fromNode.x} ${midY}, ${toNode.x} ${midY}, ${toNode.x} ${toNode.y}`;
+
+                svgHtml += `<path class="tree-edge" d="${d}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}" opacity="${opacity}" />`;
+
+                // 在连线中点标注选择的下标 i
+                const labelX = (fromNode.x + toNode.x) / 2;
+                const labelY = midY;
+                if (status !== "used_skip" || isOnActivePath) {
+                    svgHtml += `
+                        <g transform="translate(${labelX}, ${labelY})">
+                            <rect x="-13" y="-8" width="26" height="16" rx="4" fill="#FFFFFF" stroke="${isOnActivePath ? stroke : '#E2E8F0'}" stroke-width="1"/>
+                            <text text-anchor="middle" dy="3.5" font-size="9" font-family="JetBrains Mono, monospace" fill="${isOnActivePath ? '#1E293B' : '#64748B'}">i=${edge.indexUsed}</text>
+                        </g>
+                    `;
+                }
+            });
+
+            // 2. 绘制节点 (Nodes)
+            const radius = treeNodes.length > 35 ? 13 : 16;
+
+            treeNodes.forEach(nd => {
+                const status = stateMap.get(nd.id) || nd.status;
+                const isCurrent = nd.id === frame.currentNodeId;
+                const isOnActivePath = activePathSet.has(nd.id);
+
+                let fill = "#FFFFFF";
+                let stroke = "#94A3B8";
+                let textFill = "#334155";
+                let dash = "";
+                let opacity = "1";
+
+                if (nd.depth === 0) {
+                    fill = "#1E293B";
+                    stroke = "#0F172A";
+                    textFill = "#FFFFFF";
+                } else if (status === "solution") {
+                    fill = "#10B981";
+                    stroke = "#059669";
+                    textFill = "#FFFFFF";
+                } else if (status === "pruned") {
+                    fill = "#FEF2F2";
+                    stroke = "#EF4444";
+                    textFill = "#DC2626";
+                    dash = "3,2";
+                    opacity = isCurrent ? "1" : "0.8";
+                } else if (status === "used_skip") {
+                    fill = "#F8FAFC";
+                    stroke = "#CBD5E1";
+                    textFill = "#94A3B8";
+                    dash = "2,2";
+                    opacity = isCurrent ? "0.95" : "0.45";
+                } else if (isOnActivePath) {
+                    fill = "#2563EB";
+                    stroke = "#1D4ED8";
+                    textFill = "#FFFFFF";
+                } else if (status === "visited") {
+                    fill = "#F1F5F9";
+                    stroke = "#64748B";
+                    textFill = "#475569";
+                }
+
+                svgHtml += `<g class="tree-node" transform="translate(${nd.x}, ${nd.y})" opacity="${opacity}">`;
+
+                // 当前激活节点外圈光晕
+                if (isCurrent) {
+                    const haloColor = status === "pruned" ? "#FCA5A5" : (status === "solution" ? "#6EE7B7" : "#93C5FD");
+                    svgHtml += `<circle r="${radius + 5}" fill="none" stroke="${haloColor}" stroke-width="3" opacity="0.85" />`;
+                }
+
+                svgHtml += `<circle r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="2" stroke-dasharray="${dash}" />`;
+
+                // 节点中心文字
+                const displayLabel = nd.depth === 0 ? "根" : nd.label;
+                svgHtml += `<text text-anchor="middle" dy="4" font-size="${nd.depth === 0 ? '10' : '12'}" font-weight="700" font-family="JetBrains Mono, monospace" fill="${textFill}">${displayLabel}</text>`;
+
+                // 剪枝节点右上角红色叉号徽章
+                if (status === "pruned") {
+                    svgHtml += `
+                        <g transform="translate(${radius * 0.75}, ${-radius * 0.75})">
+                            <circle r="6.5" fill="#EF4444" stroke="#FFFFFF" stroke-width="1.2"/>
+                            <text text-anchor="middle" dy="3" font-size="8.5" font-weight="bold" fill="#FFFFFF">✕</text>
+                        </g>
+                    `;
+                }
+
+                // 叶子完整排列下方显示完整数组标签
+                if (status === "solution") {
+                    svgHtml += `
+                        <g transform="translate(0, ${radius + 14})">
+                            <rect x="-26" y="-8" width="52" height="15" rx="4" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+                            <text text-anchor="middle" dy="3" font-size="9" font-weight="600" font-family="JetBrains Mono, monospace" fill="#047857">[${nd.pathSnapshot.join(",")}]</text>
+                        </g>
+                    `;
+                }
+
+                svgHtml += `</g>`;
+            });
+
+            svg.innerHTML = svgHtml;
+        }
+
+        // ==========================================
+        // 7. 播放控制与交互函数
+        // ==========================================
+        function nextStep() {
+            if (currentStep < frames.length - 1) {
+                currentStep++;
+                renderFrame(currentStep);
+            } else {
+                pausePlay();
+            }
+        }
+
+        function prevStep() {
+            pausePlay();
+            if (currentStep > 0) {
+                currentStep--;
+                renderFrame(currentStep);
+            }
+        }
+
+        function resetPlayer() {
+            pausePlay();
+            currentStep = 0;
+            renderFrame(0);
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pausePlay();
+            } else {
+                startPlay();
+            }
+        }
+
+        function startPlay() {
+            if (currentStep >= frames.length - 1) {
+                currentStep = 0;
+            }
+            isPlaying = true;
+            document.getElementById("playText").textContent = "暂停";
+            document.getElementById("playIcon").innerHTML = `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
+
+            playTimer = setInterval(() => {
+                if (currentStep < frames.length - 1) {
+                    currentStep++;
+                    renderFrame(currentStep);
+                } else {
+                    pausePlay();
+                }
+            }, playSpeed);
+        }
+
+        function pausePlay() {
+            isPlaying = false;
+            clearInterval(playTimer);
+            document.getElementById("playText").textContent = "自动播放";
+            document.getElementById("playIcon").innerHTML = `<path d="M8 5v14l11-7z"/>`;
+        }
+
+        function updateSpeed() {
+            playSpeed = Number(document.getElementById("speedSelect").value);
+            if (isPlaying) {
+                pausePlay();
+                startPlay();
+            }
+        }
+
+        // ==========================================
+        // 8. 多解法 Tab 切换与复制代码
+        // ==========================================
+        function switchSolutionTab(idx) {
+            const tabs = document.querySelectorAll(".sol-tab");
+            tabs.forEach((tab, i) => {
+                if (i === idx) {
+                    tab.className = "sol-tab px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-blue-600 shadow-sm transition";
+                } else {
+                    tab.className = "sol-tab px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+                }
+            });
+
+            const sol = SOLUTIONS_DATA[idx];
+            const container = document.getElementById("solutionContent");
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div class="lg:col-span-5 space-y-3">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full ${sol.badgeColor}">${sol.badge}</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">${sol.title}</h3>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                            <div class="text-xs font-bold text-slate-700">🎯 核心解题思路</div>
+                            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${sol.idea}</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100 space-y-1">
+                            <div class="text-xs font-bold text-emerald-800">✨ 优势与适用场景</div>
+                            <p class="text-xs text-emerald-700 leading-relaxed">${sol.pros}</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 bg-[#0F172A] rounded-2xl overflow-hidden border border-slate-800 shadow-sm">
+                        <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                            <span class="text-xs font-mono text-slate-400">Python 3 完整实现</span>
+                            <button onclick="copySolutionCode(${idx})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition flex items-center gap-1">
+                                <span>📋 复制代码</span>
+                            </button>
+                        </div>
+                        <pre class="p-4 text-xs sm:text-[13px] font-mono text-slate-200 leading-6 overflow-x-auto"><code>${escapeHtml(sol.code)}</code></pre>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 复制代码功能（兼容 iframe 环境的 execCommand）
+        function copySolutionCode(idx) {
+            const text = SOLUTIONS_DATA[idx].code;
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand("copy");
+                showToast("Python 代码已复制到剪贴板！", "📋");
+            } catch (err) {
+                showToast("复制失败，请手动选中代码复制", "⚠️");
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // 键盘快捷键绑定
+        document.addEventListener("keydown", (e) => {
+            if (document.activeElement.tagName === "INPUT") {
+                if (e.key === "Enter") applyCustomInput();
+                return;
+            }
+            if (e.key === "ArrowRight") {
+                e.preventDefault();
+                nextStep();
+            } else if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                prevStep();
+            } else if (e.key === " ") {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        // 页面加载完成后初始化
+        window.onload = function () {
+            switchSolutionTab(0);
+            runSimulation([1, 1, 2]);
+        };
+    </script>
+</body>
+</html>

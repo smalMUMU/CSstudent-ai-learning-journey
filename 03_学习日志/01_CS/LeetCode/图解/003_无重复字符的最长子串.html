@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode 3. 无重复字符的最长子串 — 滑动窗口交互实验室</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-2: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-subtle: #64748b;
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+      --primary-border: #bfdbfe;
+      --success: #059669;
+      --success-soft: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warn: #d97706;
+      --warn-soft: #fffbeb;
+      --warn-border: #fde68a;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --danger-border: #fecaca;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --code-highlight: rgba(59, 130, 246, 0.28);
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .title-group h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .title-group p {
+      margin: 4px 0 0;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+    }
+
+    /* Motivation Banner */
+    .motivation-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .motivation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      gap: 8px;
+    }
+    .motivation-header strong {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .motivation-toggle {
+      font-size: 0.82rem;
+      color: var(--primary);
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .motivation-body {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px;
+    }
+    .motivation-body.hidden { display: none; }
+    .m-box {
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .m-box .m-title {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      flex: 1 1 180px;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow);
+    }
+    .tab-btn:hover { border-color: var(--primary-border); }
+    .tab-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+    }
+    .tab-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-meta {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+      margin-top: 2px;
+    }
+    .pill {
+      font-size: 0.72rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .pill-warn { background: var(--warn-soft); color: var(--warn); }
+    .pill-good { background: var(--success-soft); color: var(--success); }
+
+    /* Controls Bar */
+    .controls-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-row label {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .str-input {
+      flex: 1 1 200px;
+      max-width: 340px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92rem;
+      outline: none;
+    }
+    .str-input:focus { border-color: var(--primary); }
+    .btn {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .btn:hover:not(:disabled) { background: var(--surface-2); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .preset-label {
+      font-size: 0.8rem;
+      color: var(--text-subtle);
+      margin-right: 2px;
+    }
+    .preset-btn {
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .preset-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .playback-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .playback-btns {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .speed-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .step-counter {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .panel-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text);
+    }
+
+    /* Narrative */
+    .narrative-box {
+      padding: 11px 14px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      border: 1px solid var(--primary-border);
+      color: #1e3a8a;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 14px;
+      min-height: 46px;
+    }
+    .narrative-box.warn {
+      background: var(--warn-soft);
+      border-color: var(--warn-border);
+      color: #92400e;
+    }
+    .narrative-box.success {
+      background: var(--success-soft);
+      border-color: var(--success-border);
+      color: #065f46;
+    }
+
+    /* Tape */
+    .tape-wrap {
+      overflow-x: auto;
+      padding: 16px 8px 18px;
+      background: var(--surface-2);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      min-height: 132px;
+      display: flex;
+      align-items: center;
+    }
+    .tape {
+      display: flex;
+      gap: 8px;
+      margin: 0 auto;
+    }
+    .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 46px;
+    }
+    .cell-idx {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      font-family: ui-monospace, monospace;
+      margin-bottom: 4px;
+    }
+    .cell-char {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .cell.in-window .cell-char {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .cell.current .cell-char {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+      transform: translateY(-2px);
+    }
+    .cell.conflict .cell-char {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .cell.best-span .cell-idx {
+      color: var(--success);
+      font-weight: 700;
+    }
+    .cell-ptrs {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-height: 22px;
+    }
+    .ptr-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: ui-monospace, monospace;
+    }
+    .ptr-l { background: #fef3c7; color: #b45309; }
+    .ptr-r { background: #dbeafe; color: #1d4ed8; }
+
+    /* Stats Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stat-card {
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .stat-label {
+      font-size: 0.74rem;
+      color: var(--text-subtle);
+    }
+    .stat-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: ui-monospace, monospace;
+      color: var(--text);
+      margin-top: 2px;
+    }
+    .stat-val.good { color: var(--success); }
+
+    /* Data Structure Box */
+    .ds-box {
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .ds-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .ds-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 32px;
+      align-items: center;
+    }
+    .ds-chip {
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-family: ui-monospace, monospace;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .ds-chip.highlight {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .ds-chip.removed {
+      background: var(--danger-soft);
+      border-color: var(--danger-border);
+      color: var(--danger);
+      text-decoration: line-through;
+    }
+    .empty-note {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      font-style: italic;
+    }
+
+    /* Code Panel */
+    .code-container {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 10px;
+      padding: 12px 0;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    .code-line {
+      display: flex;
+      padding: 1px 14px;
+      white-space: pre;
+    }
+    .code-line.active {
+      background: var(--code-highlight);
+      border-left: 3px solid #60a5fa;
+      padding-left: 11px;
+    }
+    .line-no {
+      color: #64748b;
+      width: 26px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    /* Comparison Table */
+    .compare-card {
+      margin-top: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--text-subtle);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    .mono { font-family: ui-monospace, monospace; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="title-group">
+        <h1>LeetCode 3. 无重复字符的最长子串 — 滑动窗口交互实验室</h1>
+        <p>对比你的原解法与 3 种渐进优化方案，直观观察指针移动、窗口收缩与跳跃逻辑</p>
+      </div>
+      <span class="badge">离线可用 · 步进追踪</span>
+    </header>
+
+    <section class="motivation-card">
+      <div class="motivation-header" id="motivationToggle">
+        <strong>为什么原解法可以继续优化？（点击展开 / 收起核心思路）</strong>
+        <button type="button" class="motivation-toggle" id="motivationBtn">收起</button>
+      </div>
+      <div class="motivation-body" id="motivationBody">
+        <div class="m-box">
+          <div class="m-title">1. 原解法的瓶颈：线性查找 + 头部出队</div>
+          <code>s[i] in path</code> 需要遍历列表，<code>path.pop(0)</code> 会把后续元素整体前移，两者都是 O(K) 操作。
+        </div>
+        <div class="m-box">
+          <div class="m-title">2. 第一步优化：Set + 左指针</div>
+          用 <code>seen = set()</code> 实现 O(1) 判重，用 <code>left</code> 指针代替 <code>pop(0)</code>，总时间降到 O(N)。
+        </div>
+        <div class="m-box">
+          <div class="m-title">3. 第二步优化：HashMap 一次跳跃</div>
+          记录每个字符上次出现的下标 <code>last_seen[c]</code>，遇到重复时直接把 <code>left</code> 跳到 <code>max(left, last_seen[c] + 1)</code>，省去内层 while。
+        </div>
+        <div class="m-box">
+          <div class="m-title">4. 常数级极致：ASCII 128 定长数组</div>
+          如果字符集为 ASCII，用 <code>[-1] * 128</code> 替代字典，避免哈希计算，空间 O(1) 且运行最快。
+        </div>
+      </div>
+    </section>
+
+    <div class="tabs" id="algoTabs">
+      <button type="button" class="tab-btn active" data-algo="list">
+        <div class="tab-title">原解法：List + pop(0) <span class="pill pill-warn">O(N²)</span></div>
+        <div class="tab-meta">你的原始代码，适合理解滑动窗口雏形</div>
+      </button>
+      <button type="button" class="tab-btn" data-algo="set">
+        <div class="tab-title">优化 1：Set + 双指针 <span class="pill pill-good">O(N)</span></div>
+        <div class="tab-meta">O(1) 判重与删左边界，面试标准写法</div>
+      </button>
+      <button type="button" class="tab-btn" data-algo="map">
+        <div class="tab-title">优化 2：HashMap 跳跃 <span class="pill pill-good">O(N)</span></div>
+        <div class="tab-meta">无内层 while，left 直接跳到重复位+1</div>
+      </button>
+      <button type="button" class="tab-btn" data-algo="ascii">
+        <div class="tab-title">优化 3：ASCII 数组桶 <span class="pill pill-good">O(N) / O(1)</span></div>
+        <div class="tab-meta">定长 128 数组，消除哈希开销</div>
+      </button>
+    </div>
+
+    <section class="controls-card">
+      <div class="input-row">
+        <label for="strInput">测试字符串 s =</label>
+        <input id="strInput" class="str-input" type="text" value="abcabcbb" maxlength="24" placeholder="输入任意字符串 (最多24字符)" />
+        <button type="button" class="btn btn-primary" id="applyBtn">应用输入</button>
+        <div class="presets">
+          <span class="preset-label">经典/边界预设：</span>
+          <button type="button" class="preset-btn" data-preset="abcabcbb">"abcabcbb"</button>
+          <button type="button" class="preset-btn" data-preset="abba">"abba" (跳跃防回退)</button>
+          <button type="button" class="preset-btn" data-preset="pwwkew">"pwwkew"</button>
+          <button type="button" class="preset-btn" data-preset="dvdf">"dvdf"</button>
+          <button type="button" class="preset-btn" data-preset="bbbbb">"bbbbb"</button>
+          <button type="button" class="preset-btn" data-preset="">"" (空串)</button>
+        </div>
+      </div>
+
+      <div class="playback-row">
+        <div class="playback-btns">
+          <button type="button" class="btn" id="resetBtn">重置</button>
+          <button type="button" class="btn" id="prevBtn">上一步</button>
+          <button type="button" class="btn btn-primary" id="playBtn">播放</button>
+          <button type="button" class="btn" id="nextBtn">下一步</button>
+        </div>
+        <div class="speed-group">
+          <label for="speedRange">速度</label>
+          <input id="speedRange" type="range" min="250" max="1500" step="50" value="800" />
+          <span id="speedText">0.8s</span>
+        </div>
+        <div class="step-counter" id="stepCounter">Step 0 / 0</div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+      <section class="panel">
+        <div class="panel-title">
+          <span>滑动窗口与状态追踪</span>
+          <span id="windowLabel" style="font-size:0.82rem;color:var(--text-subtle);font-weight:600;"></span>
+        </div>
+
+        <div class="narrative-box" id="narrativeBox">准备就绪，点击「下一步」或「播放」开始演示。</div>
+
+        <div class="tape-wrap">
+          <div class="tape" id="tape"></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">当前最优 best</div>
+            <div class="stat-val good" id="statBest">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">最优子串</div>
+            <div class="stat-val" id="statBestSub">""</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">当前窗口长度</div>
+            <div class="stat-val" id="statWinLen">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">累计内部操作</div>
+            <div class="stat-val" id="statOps">0</div>
+          </div>
+        </div>
+
+        <div class="ds-box">
+          <div class="ds-title">
+            <span id="dsTitle">数据结构状态</span>
+            <span id="dsSub" style="font-weight:500;color:var(--text-subtle);"></span>
+          </div>
+          <div class="ds-items" id="dsItems"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <span id="codeTitle">Python 代码同步高亮</span>
+          <span style="font-size:0.78rem;color:var(--text-subtle);font-weight:500;">当前执行行</span>
+        </div>
+        <div class="code-container" id="codeContainer"></div>
+      </section>
+    </div>
+
+    <section class="compare-card">
+      <div class="panel-title" style="margin-bottom:8px;">4 种解法复杂度与适用场景对比</div>
+      <table>
+        <thead>
+          <tr>
+            <th>解法</th>
+            <th>时间复杂度</th>
+            <th>空间复杂度</th>
+            <th>核心优势 / 注意事项</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>原解法：List + pop(0)</strong></td>
+            <td class="mono">O(N²)</td>
+            <td class="mono">O(min(N, M))</td>
+            <td>直观易写，但 <code>in</code> 查找与 <code>pop(0)</code> 均耗时。</td>
+          </tr>
+          <tr>
+            <td><strong>优化 1：Set + 双指针</strong></td>
+            <td class="mono">O(N)</td>
+            <td class="mono">O(min(N, M))</td>
+            <td>左右指针各最多走 N 步，面试最推荐的清晰写法。</td>
+          </tr>
+          <tr>
+            <td><strong>优化 2：HashMap 跳跃</strong></td>
+            <td class="mono">O(N)</td>
+            <td class="mono">O(min(N, M))</td>
+            <td>直接跳过重复字符；必须用 <code>max(left, last[c]+1)</code> 防止 <code>left</code> 回退。</td>
+          </tr>
+          <tr>
+            <td><strong>优化 3：ASCII 128 数组</strong></td>
+            <td class="mono">O(N)</td>
+            <td class="mono">O(1)</td>
+            <td>定长数组代替哈希表，仅限 ASCII 字符（若含 Unicode 请用优化 2）。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    const CODES = {
+      list: [
+        "def lengthOfLongestSubstring(self, s: str) -> int:",
+        "    if not s: return 0",
+        "    path, best = [], 0",
+        "    for i in range(len(s)):",
+        "        while s[i] in path:",
+        "            path.pop(0)",
+        "        path.append(s[i])",
+        "        best = max(best, len(path))",
+        "    return best"
+      ],
+      set: [
+        "def lengthOfLongestSubstring(self, s: str) -> int:",
+        "    seen = set()",
+        "    left = best = 0",
+        "    for right, ch in enumerate(s):",
+        "        while ch in seen:",
+        "            seen.remove(s[left])",
+        "            left += 1",
+        "        seen.add(ch)",
+        "        best = max(best, right - left + 1)",
+        "    return best"
+      ],
+      map: [
+        "def lengthOfLongestSubstring(self, s: str) -> int:",
+        "    last_seen = {}",
+        "    left = best = 0",
+        "    for right, ch in enumerate(s):",
+        "        if ch in last_seen:",
+        "            left = max(left, last_seen[ch] + 1)",
+        "        last_seen[ch] = right",
+        "        best = max(best, right - left + 1)",
+        "    return best"
+      ],
+      ascii: [
+        "def lengthOfLongestSubstring(self, s: str) -> int:",
+        "    last_pos = [-1] * 128",
+        "    left = best = 0",
+        "    for right, ch in enumerate(s):",
+        "        code = ord(ch)",
+        "        left = max(left, last_pos[code] + 1)",
+        "        last_pos[code] = right",
+        "        best = max(best, right - left + 1)",
+        "    return best"
+      ]
+    };
+
+    function buildSteps(algo, s) {
+      const steps = [];
+      if (!s) {
+        steps.push({
+          l: 0, r: -1, best: 0, bestSpan: [-1, -1], ops: 0,
+          line: 2, tone: "warn",
+          msg: "输入为空字符串，直接返回 0。",
+          dsType: algo, ds: algo === "list" ? [] : (algo === "set" ? [] : {}),
+          conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+        return steps;
+      }
+
+      if (algo === "list") {
+        let path = [], best = 0, bestSpan = [0, -1], ops = 0;
+        steps.push({
+          l: 0, r: -1, best: 0, bestSpan: [0, -1], ops: 0,
+          line: 3, tone: "info",
+          msg: "初始化空列表 path = [] 和 best = 0。",
+          dsType: "list", ds: [], conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+        for (let i = 0; i < s.length; i++) {
+          const ch = s[i];
+          let popped = false;
+          while (path.includes(ch)) {
+            ops += path.length; // linear scan + pop(0) shift
+            const rem = path.shift();
+            popped = true;
+            const winStart = i - path.length;
+            steps.push({
+              l: winStart, r: i, best, bestSpan: [...bestSpan], ops,
+              line: 6, tone: "warn",
+              msg: `s[${i}]='${ch}' 已在 path 中！线性查找并执行 path.pop(0) 移出 '${rem}'（数组元素前移）。`,
+              dsType: "list", ds: [...path], conflictIdx: i, removedItem: rem, highlightKey: null
+            });
+          }
+          if (!popped) ops += Math.max(1, path.length); // 'in' check
+          path.push(ch);
+          ops += 1;
+          const winStart = i - path.length + 1;
+          let tone = "info";
+          let extra = "";
+          if (path.length > best) {
+            best = path.length;
+            bestSpan = [winStart, i];
+            tone = "success";
+            extra = ` 更新最优长度 best = ${best} ("${s.slice(winStart, i + 1)}")。`;
+          }
+          steps.push({
+            l: winStart, r: i, best, bestSpan: [...bestSpan], ops,
+            line: 8, tone,
+            msg: `将 '${ch}' 加入 path 末尾，当前窗口 "${s.slice(winStart, i + 1)}" 长度 ${path.length}。${extra}`,
+            dsType: "list", ds: [...path], conflictIdx: -1, removedItem: null, highlightKey: path.length - 1
+          });
+        }
+        steps.push({
+          l: bestSpan[0], r: bestSpan[1], best, bestSpan: [...bestSpan], ops,
+          line: 9, tone: "success",
+          msg: `遍历完成！最长无重复子串长度为 ${best}（例如 "${s.slice(bestSpan[0], bestSpan[1] + 1)}"），累计内部操作 ${ops} 次。`,
+          dsType: "list", ds: [...path], conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+      } else if (algo === "set") {
+        const seen = new Set();
+        let left = 0, best = 0, bestSpan = [0, -1], ops = 0;
+        steps.push({
+          l: 0, r: -1, best: 0, bestSpan: [0, -1], ops: 0,
+          line: 3, tone: "info",
+          msg: "初始化空集合 seen = set()，left = 0，best = 0。",
+          dsType: "set", ds: [], conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+        for (let right = 0; right < s.length; right++) {
+          const ch = s[right];
+          ops += 1; // O(1) lookup
+          while (seen.has(ch)) {
+            const rem = s[left];
+            seen.delete(rem);
+            left += 1;
+            ops += 2;
+            steps.push({
+              l: left, r: right, best, bestSpan: [...bestSpan], ops,
+              line: 6, tone: "warn",
+              msg: `s[${right}]='${ch}' 在 seen 中重复！O(1) 移出左边界 '${rem}' 并令 left 右移至 ${left}。`,
+              dsType: "set", ds: Array.from(seen), conflictIdx: right, removedItem: rem, highlightKey: null
+            });
+          }
+          seen.add(ch);
+          ops += 1;
+          const curLen = right - left + 1;
+          let tone = "info", extra = "";
+          if (curLen > best) {
+            best = curLen;
+            bestSpan = [left, right];
+            tone = "success";
+            extra = ` 更新最优长度 best = ${best} ("${s.slice(left, right + 1)}")。`;
+          }
+          steps.push({
+            l: left, r: right, best, bestSpan: [...bestSpan], ops,
+            line: 9, tone,
+            msg: `将 '${ch}' 加入 seen，当前窗口 [${left}..${right}] 长度 ${curLen}。${extra}`,
+            dsType: "set", ds: Array.from(seen), conflictIdx: -1, removedItem: null, highlightKey: ch
+          });
+        }
+        steps.push({
+          l: bestSpan[0], r: bestSpan[1], best, bestSpan: [...bestSpan], ops,
+          line: 10, tone: "success",
+          msg: `遍历完成！最长无重复子串长度为 ${best}（"${s.slice(bestSpan[0], bestSpan[1] + 1)}"），累计 O(1) 操作 ${ops} 次。`,
+          dsType: "set", ds: Array.from(seen), conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+      } else if (algo === "map") {
+        const lastSeen = {};
+        let left = 0, best = 0, bestSpan = [0, -1], ops = 0;
+        steps.push({
+          l: 0, r: -1, best: 0, bestSpan: [0, -1], ops: 0,
+          line: 3, tone: "info",
+          msg: "初始化字典 last_seen = {}，left = 0，best = 0。",
+          dsType: "map", ds: {}, conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+        for (let right = 0; right < s.length; right++) {
+          const ch = s[right];
+          ops += 1;
+          let jumpedMsg = "";
+          let tone = "info";
+          let conflict = -1;
+          if (ch in lastSeen) {
+            const prevIdx = lastSeen[ch];
+            const candidate = prevIdx + 1;
+            const oldLeft = left;
+            left = Math.max(left, candidate);
+            ops += 1;
+            conflict = right;
+            if (left > oldLeft) {
+              tone = "warn";
+              jumpedMsg = `发现 '${ch}' 上次出现在下标 ${prevIdx}，left 直接从 ${oldLeft} 跳至 ${left}！`;
+            } else {
+              tone = "warn";
+              jumpedMsg = `发现 '${ch}' 上次出现在 ${prevIdx}，但 left=${oldLeft} 已在其右侧，max(${oldLeft}, ${candidate})=${left} 防止回退！`;
+            }
+          }
+          lastSeen[ch] = right;
+          ops += 1;
+          const curLen = right - left + 1;
+          if (curLen > best) {
+            best = curLen;
+            bestSpan = [left, right];
+            if (!jumpedMsg) tone = "success";
+            jumpedMsg += ` 更新 best = ${best} ("${s.slice(left, right + 1)}")。`;
+          } else if (!jumpedMsg) {
+            jumpedMsg = `'${ch}' 未在窗口内重复，记录 last_seen['${ch}'] = ${right}，窗口长度 ${curLen}。`;
+          }
+          steps.push({
+            l: left, r: right, best, bestSpan: [...bestSpan], ops,
+            line: 8, tone,
+            msg: jumpedMsg.trim(),
+            dsType: "map", ds: { ...lastSeen }, conflictIdx: conflict, removedItem: null, highlightKey: ch
+          });
+        }
+        steps.push({
+          l: bestSpan[0], r: bestSpan[1], best, bestSpan: [...bestSpan], ops,
+          line: 9, tone: "success",
+          msg: `遍历完成！单次扫描无需内层 while，答案 ${best}（"${s.slice(bestSpan[0], bestSpan[1] + 1)}"），仅 ${ops} 次操作。`,
+          dsType: "map", ds: { ...lastSeen }, conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+      } else {
+        // ascii 128
+        const lastPos = new Array(128).fill(-1);
+        let left = 0, best = 0, bestSpan = [0, -1], ops = 0;
+        steps.push({
+          l: 0, r: -1, best: 0, bestSpan: [0, -1], ops: 0,
+          line: 3, tone: "info",
+          msg: "初始化定长数组 last_pos = [-1] * 128，left = 0，best = 0。",
+          dsType: "ascii", ds: {}, conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+        for (let right = 0; right < s.length; right++) {
+          const ch = s[right];
+          const code = ch.charCodeAt(0);
+          const prevIdx = code < 128 ? lastPos[code] : -1;
+          const oldLeft = left;
+          left = Math.max(left, prevIdx + 1);
+          if (code < 128) lastPos[code] = right;
+          ops += 2;
+          const curLen = right - left + 1;
+          let tone = "info";
+          let msg = `ord('${ch}')=${code}，`;
+          if (prevIdx !== -1 && left > oldLeft) {
+            tone = "warn";
+            msg += `last_pos[${code}]=${prevIdx}，left 跳至 ${left}；`;
+          } else if (prevIdx !== -1) {
+            tone = "warn";
+            msg += `last_pos[${code}]=${prevIdx}，left 保持 ${left}（防回退）；`;
+          } else {
+            msg += `首次出现，`;
+          }
+          if (curLen > best) {
+            best = curLen;
+            bestSpan = [left, right];
+            if (tone !== "warn") tone = "success";
+            msg += `更新 best = ${best} ("${s.slice(left, right + 1)}")。`;
+          } else {
+            msg += `窗口长度 ${curLen}。`;
+          }
+
+          const nonNeg = {};
+          for (let c = 0; c < 128; c++) {
+            if (lastPos[c] !== -1) nonNeg[`${c}('${String.fromCharCode(c)}')`] = lastPos[c];
+          }
+          steps.push({
+            l: left, r: right, best, bestSpan: [...bestSpan], ops,
+            line: 8, tone,
+            msg,
+            dsType: "ascii", ds: nonNeg, conflictIdx: (prevIdx !== -1 ? right : -1),
+            removedItem: null, highlightKey: `${code}('${ch}')`
+          });
+        }
+        const finalNonNeg = {};
+        for (let c = 0; c < 128; c++) {
+          if (lastPos[c] !== -1) finalNonNeg[`${c}('${String.fromCharCode(c)}')`] = lastPos[c];
+        }
+        steps.push({
+          l: bestSpan[0], r: bestSpan[1], best, bestSpan: [...bestSpan], ops,
+          line: 9, tone: "success",
+          msg: `遍历完成！ASCII 数组桶实现 O(N) 时间 / O(1) 空间，答案 ${best}，操作 ${ops} 次。`,
+          dsType: "ascii", ds: finalNonNeg, conflictIdx: -1, removedItem: null, highlightKey: null
+        });
+      }
+      return steps;
+    }
+
+    const state = {
+      algo: "list",
+      str: "abcabcbb",
+      steps: [],
+      idx: 0,
+      timer: null,
+      speed: 800
+    };
+
+    const el = {
+      motivationToggle: document.getElementById("motivationToggle"),
+      motivationBtn: document.getElementById("motivationBtn"),
+      motivationBody: document.getElementById("motivationBody"),
+      algoTabs: document.getElementById("algoTabs"),
+      strInput: document.getElementById("strInput"),
+      applyBtn: document.getElementById("applyBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      prevBtn: document.getElementById("prevBtn"),
+      playBtn: document.getElementById("playBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      speedRange: document.getElementById("speedRange"),
+      speedText: document.getElementById("speedText"),
+      stepCounter: document.getElementById("stepCounter"),
+      windowLabel: document.getElementById("windowLabel"),
+      narrativeBox: document.getElementById("narrativeBox"),
+      tape: document.getElementById("tape"),
+      statBest: document.getElementById("statBest"),
+      statBestSub: document.getElementById("statBestSub"),
+      statWinLen: document.getElementById("statWinLen"),
+      statOps: document.getElementById("statOps"),
+      dsTitle: document.getElementById("dsTitle"),
+      dsSub: document.getElementById("dsSub"),
+      dsItems: document.getElementById("dsItems"),
+      codeContainer: document.getElementById("codeContainer"),
+      codeTitle: document.getElementById("codeTitle")
+    };
+
+    function stopPlay() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      el.playBtn.textContent = "播放";
+    }
+
+    function recompute() {
+      stopPlay();
+      state.steps = buildSteps(state.algo, state.str);
+      state.idx = 0;
+      render();
+    }
+
+    function renderCode(activeLine) {
+      const lines = CODES[state.algo];
+      const names = {
+        list: "原解法：List + pop(0)",
+        set: "优化 1：Set + 双指针",
+        map: "优化 2：HashMap 跳跃",
+        ascii: "优化 3：ASCII 128 数组"
+      };
+      el.codeTitle.textContent = names[state.algo];
+      el.codeContainer.innerHTML = lines.map((line, i) => {
+        const lineNo = i + 1;
+        const cls = lineNo === activeLine ? "code-line active" : "code-line";
+        const escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return `<div class="${cls}"><span class="line-no">${lineNo}</span><span>${escaped}</span></div>`;
+      }).join("");
+    }
+
+    function render() {
+      const step = state.steps[state.idx];
+      const total = state.steps.length;
+      el.stepCounter.textContent = `Step ${state.idx + 1} / ${total}`;
+
+      el.prevBtn.disabled = state.idx <= 0;
+      el.nextBtn.disabled = state.idx >= total - 1;
+
+      el.narrativeBox.className = "narrative-box" + (step.tone === "warn" ? " warn" : step.tone === "success" ? " success" : "");
+      el.narrativeBox.textContent = step.msg;
+
+      // Tape
+      if (!state.str) {
+        el.tape.innerHTML = `<span class="empty-note">空字符串 ""</span>`;
+        el.windowLabel.textContent = "窗口: 空";
+      } else {
+        const winLen = step.r >= step.l ? step.r - step.l + 1 : 0;
+        el.windowLabel.textContent = winLen > 0 ? `当前窗口 [${step.l}..${step.r}] = "${state.str.slice(step.l, step.r + 1)}"` : "窗口: 空";
+        el.tape.innerHTML = state.str.split("").map((ch, idx) => {
+          const inWin = step.r >= step.l && idx >= step.l && idx <= step.r;
+          const isCur = idx === step.r;
+          const isConf = idx === step.conflictIdx;
+          const inBest = step.bestSpan[1] >= step.bestSpan[0] && idx >= step.bestSpan[0] && idx <= step.bestSpan[1];
+          const classes = ["cell"];
+          if (inWin) classes.push("in-window");
+          if (isCur) classes.push("current");
+          if (isConf) classes.push("conflict");
+          if (inBest) classes.push("best-span");
+
+          let ptrs = "";
+          if (step.r >= 0 && idx === step.l) ptrs += `<span class="ptr-tag ptr-l">left</span>`;
+          if (idx === step.r) ptrs += `<span class="ptr-tag ptr-r">${state.algo === "list" ? "i" : "right"}</span>`;
+
+          return `
+            <div class="${classes.join(" ")}">
+              <div class="cell-idx">${idx}</div>
+              <div class="cell-char">${ch === " " ? "␣" : ch}</div>
+              <div class="cell-ptrs">${ptrs}</div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      // Stats
+      const curWinLen = step.r >= step.l && state.str ? step.r - step.l + 1 : 0;
+      const bestSub = step.best > 0 ? state.str.slice(step.bestSpan[0], step.bestSpan[1] + 1) : "";
+      el.statBest.textContent = step.best;
+      el.statBestSub.textContent = `"${bestSub}"`;
+      el.statWinLen.textContent = curWinLen;
+      el.statOps.textContent = step.ops;
+
+      // DS Box
+      const dsTitles = {
+        list: ["path 列表 (有序)", "pop(0) 从左侧移出，append 从右侧加入"],
+        set: ["seen 哈希集合 (无序)", "O(1) 判重与 remove"],
+        map: ["last_seen 字典 (字符 → 最新下标)", "记录历史最新位置"],
+        ascii: ["last_pos[128] 非空槽位", "ASCII 码 → 最新下标"]
+      };
+      el.dsTitle.textContent = dsTitles[state.algo][0];
+      el.dsSub.textContent = dsTitles[state.algo][1];
+
+      let dsHtml = "";
+      if (state.algo === "list" || state.algo === "set") {
+        if (step.removedItem !== null) {
+          dsHtml += `<span class="ds-chip removed">'${step.removedItem}' (移出)</span>`;
+        }
+        if (step.ds.length === 0 && step.removedItem === null) {
+          dsHtml = `<span class="empty-note">空</span>`;
+        } else {
+          dsHtml += step.ds.map((item, i) => {
+            const hl = (state.algo === "list" && i === step.highlightKey) || (state.algo === "set" && item === step.highlightKey);
+            return `<span class="ds-chip ${hl ? "highlight" : ""}">'${item}'</span>`;
+          }).join("");
+        }
+      } else {
+        const entries = Object.entries(step.ds);
+        if (entries.length === 0) {
+          dsHtml = `<span class="empty-note">空</span>`;
+        } else {
+          dsHtml = entries.map(([k, v]) => {
+            const hl = k === step.highlightKey;
+            const label = state.algo === "map" ? `'${k}': ${v}` : `${k}: ${v}`;
+            return `<span class="ds-chip ${hl ? "highlight" : ""}">${label}</span>`;
+          }).join("");
+        }
+      }
+      el.dsItems.innerHTML = dsHtml;
+
+      renderCode(step.line);
+    }
+
+    // Event Listeners
+    el.motivationToggle.addEventListener("click", () => {
+      const hidden = el.motivationBody.classList.toggle("hidden");
+      el.motivationBtn.textContent = hidden ? "展开" : "收起";
+    });
+
+    el.algoTabs.addEventListener("click", (e) => {
+      const btn = e.target.closest(".tab-btn");
+      if (!btn) return;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.algo = btn.dataset.algo;
+      recompute();
+    });
+
+    el.applyBtn.addEventListener("click", () => {
+      state.str = el.strInput.value;
+      recompute();
+    });
+
+    el.strInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        state.str = el.strInput.value;
+        recompute();
+      }
+    });
+
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.str = btn.dataset.preset;
+        el.strInput.value = state.str;
+        recompute();
+      });
+    });
+
+    el.resetBtn.addEventListener("click", () => {
+      stopPlay();
+      state.idx = 0;
+      render();
+    });
+
+    el.prevBtn.addEventListener("click", () => {
+      stopPlay();
+      if (state.idx > 0) {
+        state.idx--;
+        render();
+      }
+    });
+
+    el.nextBtn.addEventListener("click", () => {
+      stopPlay();
+      if (state.idx < state.steps.length - 1) {
+        state.idx++;
+        render();
+      }
+    });
+
+    el.playBtn.addEventListener("click", () => {
+      if (state.timer) {
+        stopPlay();
+        return;
+      }
+      if (state.idx >= state.steps.length - 1) {
+        state.idx = 0;
+        render();
+      }
+      el.playBtn.textContent = "暂停";
+      state.timer = setInterval(() => {
+        if (state.idx < state.steps.length - 1) {
+          state.idx++;
+          render();
+        } else {
+          stopPlay();
+        }
+      }, state.speed);
+    });
+
+    el.speedRange.addEventListener("input", (e) => {
+      state.speed = Number(e.target.value);
+      el.speedText.textContent = (state.speed / 1000).toFixed(2).replace(/\.00$/, "") + "s";
+      if (state.timer) {
+        stopPlay();
+        el.playBtn.click();
+      }
+    });
+
+    recompute();
+  </script>
+</body>
+</html>
