@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetCode 11 · 盛最多水的容器 交互式可视化</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --text-light: #64748b;
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-soft: #eef2ff;
+    --left-color: #2563eb;
+    --left-soft: #dbeafe;
+    --right-color: #e11d48;
+    --right-soft: #ffe4e6;
+    --water-fill: rgba(14, 165, 233, 0.24);
+    --water-stroke: #0284c7;
+    --best-fill: rgba(245, 158, 11, 0.14);
+    --best-stroke: #d97706;
+    --skip-color: #94a3b8;
+    --success: #059669;
+    --success-soft: #d1fae5;
+    --warn: #d97706;
+    --warn-soft: #fef3c7;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --code-hl: rgba(56, 189, 248, 0.22);
+    --code-hl-border: #38bdf8;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 16px 32px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .badge-lc {
+    background: var(--primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .badge-tag {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  /* Motivation Banner */
+  .motivation-card {
+    background: linear-gradient(135deg, #eef2ff 0%, #f0f9ff 100%);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 14px;
+  }
+
+  .motivation-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .motivation-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #312e81;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .motivation-toggle {
+    background: transparent;
+    border: none;
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  .motivation-toggle:hover {
+    background: rgba(79, 70, 229, 0.08);
+  }
+
+  .motivation-body {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #1e293b;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+  }
+
+  .motivation-body.hidden {
+    display: none;
+  }
+
+  .m-item {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(199, 210, 254, 0.8);
+    border-radius: var(--radius-sm);
+    padding: 8px 11px;
+  }
+
+  .m-item strong {
+    color: #3730a3;
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12.5px;
+  }
+
+  /* Mode Tabs */
+  .tabs-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .tab-btn {
+    flex: 1 1 200px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .tab-btn:hover {
+    border-color: var(--primary);
+    background: #fafaff;
+  }
+
+  .tab-btn.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+  }
+
+  .tab-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+  }
+
+  .tab-desc {
+    font-size: 11.5px;
+    color: var(--text-light);
+    display: block;
+  }
+
+  .tab-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+
+  .tab-btn.active .tab-pill {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  /* Controls Bar (Input + Presets) */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .input-bar {
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .input-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .array-input {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 7px 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .array-input:focus {
+    border-color: var(--primary);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn:hover:not(:disabled) {
+    background: var(--surface-2);
+    border-color: #94a3b8;
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  .preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .preset-chip {
+    font-size: 12px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .preset-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+
+  .preset-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  .input-error {
+    font-size: 12px;
+    color: #dc2626;
+    display: none;
+  }
+
+  .input-error.show {
+    display: block;
+  }
+
+  /* Main 2-column layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.32fr) minmax(0, 1.08fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  @media (max-width: 960px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .col-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  /* Visualizer Panel */
+  .viz-card {
+    padding: 14px 16px;
+  }
+
+  .card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  .stage-wrap {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    background: #fcfdff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    padding: 8px;
+  }
+
+  #tankSvg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Step Narration */
+  .narration-box {
+    margin-top: 12px;
+    padding: 10px 13px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border-left: 4px solid var(--primary);
+    font-size: 13.5px;
+    color: var(--text);
+    min-height: 54px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .narration-box.is-best {
+    background: var(--warn-soft);
+    border-left-color: var(--warn);
+  }
+
+  .narration-box.is-skip {
+    background: var(--success-soft);
+    border-left-color: var(--success);
+  }
+
+  .narration-badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .narration-box.is-best .narration-badge {
+    color: #b45309;
+  }
+
+  .narration-box.is-skip .narration-badge {
+    color: #047857;
+  }
+
+  /* Playback Controls */
+  .playback-bar {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .play-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .speed-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .speed-wrap input[type="range"] {
+    width: 82px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .scrubber-row {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .scrubber-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* Metrics Grid */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .metric-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+
+  .metric-box.m-left {
+    background: var(--left-soft);
+    border-color: #bfdbfe;
+  }
+
+  .metric-box.m-right {
+    background: var(--right-soft);
+    border-color: #fecdd3;
+  }
+
+  .metric-box.m-best {
+    background: var(--warn-soft);
+    border-color: #fde68a;
+  }
+
+  .metric-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .metric-val {
+    font-size: 16px;
+    font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--text);
+    margin-top: 1px;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text-light);
+  }
+
+  /* 2D Search Space Matrix Card */
+  .matrix-card {
+    padding: 14px 16px;
+  }
+
+  .matrix-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .matrix-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .matrix-grid-container {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .matrix-table {
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+  }
+
+  .matrix-table th {
+    color: var(--text-light);
+    font-weight: 600;
+    padding: 1px 3px;
+    text-align: center;
+  }
+
+  .matrix-cell {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    text-align: center;
+    vertical-align: middle;
+    transition: transform 0.15s, background 0.15s;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .cell-empty {
+    background: transparent;
+  }
+
+  .cell-unvisited {
+    background: #e2e8f0;
+    color: #64748b;
+  }
+
+  .cell-pruned {
+    background: #f1f5f9;
+    color: #cbd5e1;
+    border: 1px dashed #cbd5e1;
+  }
+
+  .cell-pruned-now {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+  }
+
+  .cell-checked {
+    background: #bae6fd;
+    color: #0369a1;
+  }
+
+  .cell-current {
+    background: var(--primary);
+    color: #fff;
+    transform: scale(1.12);
+  }
+
+  .cell-best {
+    background: #f59e0b;
+    color: #fff;
+    box-shadow: 0 0 0 1.5px #b45309;
+  }
+
+  .matrix-stats {
+    flex: 1 1 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12.5px;
+  }
+
+  .stat-pill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+
+  /* Code Panel */
+  .code-card {
+    overflow: hidden;
+  }
+
+  .code-header {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .code-title {
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .copy-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .code-body {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 10px 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11.8px;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  .code-line {
+    display: flex;
+    padding: 1px 12px 1px 8px;
+    border-left: 3px solid transparent;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: background 0.15s;
+  }
+
+  .code-line.active {
+    background: var(--code-hl);
+    border-left-color: var(--code-hl-border);
+  }
+
+  .line-no {
+    width: 24px;
+    color: #64748b;
+    user-select: none;
+    text-align: right;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .code-note {
+    padding: 10px 14px;
+    background: #fffbeb;
+    border-top: 1px solid #fde68a;
+    font-size: 12.5px;
+    color: #78350f;
+  }
+
+  /* Comparison Table Card */
+  .compare-card {
+    padding: 14px 16px;
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    margin-top: 8px;
+  }
+
+  .compare-table th,
+  .compare-table td {
+    padding: 8px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .compare-table th {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 11.5px;
+    background: var(--surface-2);
+  }
+
+  .compare-table tr.active-row {
+    background: var(--primary-soft);
+    font-weight: 600;
+  }
+
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .kbd-hint {
+    font-size: 11.5px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+
+  kbd {
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #0f172a;
+    color: #fff;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 100;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Header -->
+  <header class="header">
+    <div class="title-group">
+      <span class="badge-lc">LeetCode 11</span>
+      <h1>盛最多水的容器 · 交互式算法可视化</h1>
+      <span class="badge-tag">双指针 / 贪心剪枝</span>
+    </div>
+    <div class="badge-tag">支持单文件离线本地运行</div>
+  </header>
+
+  <!-- Core Motivation -->
+  <section class="motivation-card">
+    <div class="motivation-top" id="motivationToggleRow">
+      <div class="motivation-title">💡 核心动机：为什么不能暴力枚举？为什么双指针只移动「短板」？</div>
+      <button type="button" class="motivation-toggle" id="motivationToggleBtn">收起</button>
+    </div>
+    <div class="motivation-body" id="motivationBody">
+      <div class="m-item">
+        <strong>1. 暴力解法的痛点（O(n²)）</strong>
+        枚举所有 (i, j) 柱子对需要计算 n(n-1)/2 次面积。当 n = 10⁵ 时约 50 亿次运算，必然超时。
+      </div>
+      <div class="m-item">
+        <strong>2. 为什么只移动短板？（贪心缩减搜索空间）</strong>
+        面积 = 宽 × 短板高。若固定短板、向内移动长板，宽度必然减小，且水面高度不可能超过短板，面积<b>绝对不可能变大</b>。所以淘汰短板等于一次性剪掉一整行/列的无效组合！
+      </div>
+      <div class="m-item">
+        <strong>3. 还能更优化吗？（跳跃剪枝 + 上界提前终止）</strong>
+        记当前短板高为 h。向内移动时，所有高度 ≤ h 的柱子由于宽度更小且高不增，可直接跳过；若 <code>max_h × (R - L) ≤ best</code>，剩余区间再怎么组合也无法超过当前最优，直接结束！
+      </div>
+    </div>
+  </section>
+
+  <!-- Algorithm Mode Tabs -->
+  <nav class="tabs-bar" aria-label="算法模式切换">
+    <button type="button" class="tab-btn active" data-mode="standard">
+      <div>
+        <span class="tab-name">解法一：你的双指针（标准版）</span>
+        <span class="tab-desc">每步淘汰短板，O(n) 时间 / O(1) 空间</span>
+      </div>
+      <span class="tab-pill">O(n)</span>
+    </button>
+    <button type="button" class="tab-btn" data-mode="fastskip">
+      <div>
+        <span class="tab-name">解法二：跳跃剪枝 + 提前终止</span>
+        <span class="tab-desc">跳过更矮柱子 + 最大高度上界剪枝</span>
+      </div>
+      <span class="tab-pill">更少计算</span>
+    </button>
+    <button type="button" class="tab-btn" data-mode="bruteforce">
+      <div>
+        <span class="tab-name">解法三：暴力枚举对比</span>
+        <span class="tab-desc">逐对检查所有组合，直观感受 O(n²) 开销</span>
+      </div>
+      <span class="tab-pill">O(n²)</span>
+    </button>
+  </nav>
+
+  <!-- Input & Presets -->
+  <section class="card input-bar">
+    <div class="input-row">
+      <label class="input-label" for="arrayInput">柱子高度 height =</label>
+      <input type="text" id="arrayInput" class="array-input" value="1, 8, 6, 2, 5, 4, 8, 3, 7" aria-label="柱子高度数组">
+      <button type="button" class="btn btn-primary" id="applyBtn">应用输入</button>
+      <button type="button" class="btn" id="randomBtn">随机生成</button>
+    </div>
+    <div class="input-error" id="inputError"></div>
+    <div class="preset-row">
+      <span class="input-label">预设用例：</span>
+      <button type="button" class="preset-chip active" data-preset="1,8,6,2,5,4,8,3,7">经典示例 (49)</button>
+      <button type="button" class="preset-chip" data-preset="1,9,2,2,2,2,2,2,9,1">剪枝特效 (63)</button>
+      <button type="button" class="preset-chip" data-preset="2,3,10,5,7,8,9">中间高柱 (36)</button>
+      <button type="button" class="preset-chip" data-preset="1,2,3,4,5,6,7,8">单调递增 (16)</button>
+      <button type="button" class="preset-chip" data-preset="5,5,5,5,5">全等高度 (20)</button>
+      <button type="button" class="preset-chip" data-preset="1,1">边界最小 (1)</button>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <div class="main-grid">
+    <!-- Left Column: Tank Visualization + Search Space Matrix -->
+    <div class="col-stack">
+      <section class="card viz-card">
+        <div class="card-head">
+          <div class="card-title">容器状态演示</div>
+          <div class="legend">
+            <span class="legend-item"><span class="dot" style="background:var(--left-color)"></span>左指针 L</span>
+            <span class="legend-item"><span class="dot" style="background:var(--right-color)"></span>右指针 R</span>
+            <span class="legend-item"><span class="dot" style="background:var(--water-stroke)"></span>当前盛水</span>
+            <span class="legend-item"><span class="dot" style="background:var(--best-stroke)"></span>历史最优 best</span>
+            <span class="legend-item"><span class="dot" style="background:#cbd5e1"></span>已跳过/淘汰</span>
+          </div>
+        </div>
+
+        <div class="stage-wrap">
+          <svg id="tankSvg" viewBox="0 0 720 270" preserveAspectRatio="xMidYMid meet" role="img" aria-label="盛最多水的容器柱状图"></svg>
+        </div>
+
+        <!-- Live Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-box m-left">
+            <div class="metric-label">左指针 L</div>
+            <div class="metric-val" id="mLeft">0</div>
+            <div class="metric-sub" id="mLeftH">height[0] = 1</div>
+          </div>
+          <div class="metric-box m-right">
+            <div class="metric-label">右指针 R</div>
+            <div class="metric-val" id="mRight">8</div>
+            <div class="metric-sub" id="mRightH">height[8] = 7</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">当前面积</div>
+            <div class="metric-val" id="mArea">8</div>
+            <div class="metric-sub" id="mFormula">宽 8 × 高 1</div>
+          </div>
+          <div class="metric-box m-best">
+            <div class="metric-label">历史最优 best</div>
+            <div class="metric-val" id="mBest">8</div>
+            <div class="metric-sub" id="mBestPair">[0, 8]</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">面积计算次数</div>
+            <div class="metric-val" id="mCalcs">1</div>
+            <div class="metric-sub" id="mTotalPairs">总组合 36</div>
+          </div>
+        </div>
+
+        <!-- Step Narration -->
+        <div class="narration-box" id="narrationBox">
+          <span class="narration-badge" id="narrationBadge">初始状态</span>
+          <span id="narrationText">放置左右指针于数组两端，准备开始。</span>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="playback-bar">
+          <div class="play-btns">
+            <button type="button" class="btn" id="resetBtn">⏮ 重置</button>
+            <button type="button" class="btn" id="prevBtn">◀ 上一步</button>
+            <button type="button" class="btn btn-primary" id="playBtn">▶ 播放</button>
+            <button type="button" class="btn" id="nextBtn">下一步 ▶</button>
+            <button type="button" class="btn" id="endBtn">跳到末尾 ⏭</button>
+          </div>
+          <div class="speed-wrap">
+            <span>速度</span>
+            <input type="range" id="speedRange" min="1" max="5" step="1" value="3" aria-label="播放速度">
+            <span id="speedLabel" class="mono">1.0x</span>
+          </div>
+        </div>
+        <div class="scrubber-row">
+          <span class="mono" id="stepCounter">步骤 1 / 1</span>
+          <input type="range" id="stepSlider" min="0" max="0" value="0" aria-label="步骤进度条">
+        </div>
+        <div class="kbd-hint">快捷键：<kbd>Space</kbd> 播放/暂停 · <kbd>←</kbd> <kbd>→</kbd> 单步切换 · <kbd>R</kbd> 重置</div>
+      </section>
+
+      <!-- 2D Search Space Elimination Matrix -->
+      <section class="card matrix-card">
+        <div class="card-head">
+          <div class="card-title">状态空间剪枝矩阵（行 = L，列 = R，上三角为所有组合）</div>
+        </div>
+        <p class="matrix-desc" id="matrixDesc">
+          每一个格子代表一对柱子 (L, R)。每次移动短板，整行或整列的格子都会被直接剪枝（红色高亮为本步刚剪掉的无效组合）。
+        </p>
+        <div class="matrix-wrap">
+          <div class="matrix-grid-container" id="matrixContainer"></div>
+          <div class="matrix-stats">
+            <div class="stat-pill-row">
+              <span>总组合数 n(n-1)/2</span>
+              <strong class="mono" id="statTotal">36</strong>
+            </div>
+            <div class="stat-pill-row">
+              <span>已实际计算</span>
+              <strong class="mono" style="color:#0369a1" id="statChecked">1</strong>
+            </div>
+            <div class="stat-pill-row">
+              <span>已剪枝跳过</span>
+              <strong class="mono" style="color:#059669" id="statPruned">0</strong>
+            </div>
+            <div class="stat-pill-row">
+              <span>剪枝节省比例</span>
+              <strong class="mono" style="color:var(--primary)" id="statSavedPct">0%</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column: Synchronized Python Code + Comparison Table -->
+    <div class="col-stack">
+      <section class="card code-card">
+        <div class="code-header">
+          <div class="code-title" id="codeTitle">Python · 你的双指针解法</div>
+          <button type="button" class="copy-btn" id="copyCodeBtn">复制代码</button>
+        </div>
+        <div class="code-body" id="codeBody"></div>
+        <div class="code-note" id="codeNote"></div>
+      </section>
+
+      <section class="card compare-card">
+        <div class="card-head">
+          <div class="card-title">三种解法在当前输入下的实测对比</div>
+        </div>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>解法</th>
+              <th>时间 / 空间</th>
+              <th>面积计算次数</th>
+              <th>剪枝率</th>
+            </tr>
+          </thead>
+          <tbody id="compareTbody"></tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">已复制到剪贴板</div>
+
+<script>
+(function() {
+  // ===== Code Templates =====
+  const CODE_TEMPLATES = {
+    standard: {
+      title: 'Python · 你的双指针解法（标准 O(n)）',
+      note: '💡 代码小优化建议：你的思路已经是理论最优的 O(n)！细节上，循环内始终有 right >= left，可以去掉 abs()；把面积计算放在 while 循环开头、移动指针之前，能避免最后 left == right 时多算一次 0 面积。',
+      lines: [
+        'class Solution:',
+        '    def maxArea(self, height: list[int]) -> int:',
+        '        left, right = 0, len(height) - 1',
+        '        best = (right - left) * min(height[left], height[right])',
+        '        while left < right:',
+        '            if height[left] > height[right]:',
+        '                right -= 1',
+        '            else:',
+        '                left += 1',
+        '            best = max((right - left) * min(height[left], height[right]), best)',
+        '        return best'
+      ]
+    },
+    fastskip: {
+      title: 'Python · 进阶优化（跳跃剪枝 + 上界提前终止）',
+      note: '🚀 优化原理：① 记当前短板高度为 h，向内收缩时宽度变小，任何 ≤ h 的柱子都不可能产生更大面积，直接 while 跳过；② 若 max_h * (right - left) <= best，剩余区间理论上界已无法超越最优解，立刻 break！',
+      lines: [
+        'class Solution:',
+        '    def maxArea(self, height: list[int]) -> int:',
+        '        left, right = 0, len(height) - 1',
+        '        max_h = max(height)',
+        '        best = 0',
+        '        while left < right:',
+        '            if max_h * (right - left) <= best:',
+        '                break  # 上界剪枝：剩余宽度不可能超越 best',
+        '            h = min(height[left], height[right])',
+        '            best = max(best, (right - left) * h)',
+        '            while left < right and height[left] <= h:',
+        '                left += 1   # 跳过所有 <= h 的左侧矮柱',
+        '            while left < right and height[right] <= h:',
+        '                right -= 1  # 跳过所有 <= h 的右侧矮柱',
+        '        return best'
+      ]
+    },
+    bruteforce: {
+      title: 'Python · 暴力枚举（O(n²) 对照组）',
+      note: '⚠️ 暴力解法枚举每一对 (i, j)，没有任何剪枝。虽然逻辑最直观，但 n = 10⁵ 时会执行约 50 亿次计算导致超时（TLE）。切换回双指针可直观看到剪枝威力。',
+      lines: [
+        'class Solution:',
+        '    def maxArea(self, height: list[int]) -> int:',
+        '        n = len(height)',
+        '        best = 0',
+        '        for left in range(n):',
+        '            for right in range(left + 1, n):',
+        '                area = (right - left) * min(height[left], height[right])',
+        '                best = max(best, area)',
+        '        return best'
+      ]
+    }
+  };
+
+  // ===== State =====
+  let heights = [1, 8, 6, 2, 5, 4, 8, 3, 7];
+  let mode = 'standard'; // 'standard' | 'fastskip' | 'bruteforce'
+  let steps = [];
+  let currentStep = 0;
+  let timerId = null;
+  let speedLevel = 3; // 1..5
+  const SPEED_MS = { 1: 1500, 2: 1050, 3: 750, 4: 450, 5: 220 };
+  const SPEED_TEXT = { 1: '0.5x', 2: '0.75x', 3: '1.0x', 4: '1.7x', 5: '3.0x' };
+
+  // ===== Trace Generators =====
+  function totalPairs(n) {
+    return (n * (n - 1)) / 2;
+  }
+
+  function cloneSet(s) {
+    return new Set(s);
+  }
+
+  function key(l, r) {
+    return l + ',' + r;
+  }
+
+  function generateStandardSteps(arr) {
+    const n = arr.length;
+    const out = [];
+    const checked = new Set();
+    const pruned = new Set();
+    let left = 0;
+    let right = n - 1;
+    let calcs = 0;
+
+    let area = (right - left) * Math.min(arr[left], arr[right]);
+    let best = area;
+    let bestL = left, bestR = right;
+    calcs++;
+    checked.add(key(left, right));
+
+    out.push({
+      left, right, area, best, bestL, bestR, calcs,
+      activeLines: [3, 4],
+      badge: '初始状态',
+      tone: 'best',
+      skippedBars: [],
+      prunedNow: new Set(),
+      checked: cloneSet(checked),
+      pruned: cloneSet(pruned),
+      text: `初始化 L=0 (高 ${arr[left]}), R=${right} (高 ${arr[right]})，当前面积 = ${right - left} × ${Math.min(arr[left], arr[right])} = ${area}，设为初始 best。`
+    });
+
+    while (left < right) {
+      const prevL = left, prevR = right;
+      const prunedNow = new Set();
+      let movedSide = '';
+      let activeMoveLine = [];
+
+      if (arr[left] > arr[right]) {
+        // Eliminate column right for all k in (left, right)
+        for (let k = left + 1; k < right; k++) {
+          const pk = key(k, right);
+          if (!checked.has(pk) && !pruned.has(pk)) {
+            pruned.add(pk);
+            prunedNow.add(pk);
+          }
+        }
+        right -= 1;
+        movedSide = `右柱更矮 (${arr[prevR]} < ${arr[prevL]})，淘汰 R=${prevR} 并右指针左移至 ${right}`;
+        activeMoveLine = [6, 7, 10];
+      } else {
+        // Eliminate row left for all k in (left, right)
+        for (let k = left + 1; k < right; k++) {
+          const pk = key(left, k);
+          if (!checked.has(pk) && !pruned.has(pk)) {
+            pruned.add(pk);
+            prunedNow.add(pk);
+          }
+        }
+        left += 1;
+        const cmpText = arr[prevL] === arr[prevR] ? `两柱等高 (${arr[prevL]})` : `左柱更矮 (${arr[prevL]} < ${arr[prevR]})`;
+        movedSide = `${cmpText}，淘汰 L=${prevL} 并左指针右移至 ${left}`;
+        activeMoveLine = [8, 9, 10];
+      }
+
+      if (left === right) {
+        out.push({
+          left, right, area: 0, best, bestL, bestR, calcs,
+          activeLines: [5, 11],
+          badge: '指针相遇 · 结束',
+          tone: 'skip',
+          skippedBars: [],
+          prunedNow,
+          checked: cloneSet(checked),
+          pruned: cloneSet(pruned),
+          text: `${movedSide}。L 与 R 相遇于下标 ${left}，循环结束，返回最大面积 best = ${best}（由柱子 [${bestL}, ${bestR}] 构成）。`
+        });
+        break;
+      }
+
+      area = (right - left) * Math.min(arr[left], arr[right]);
+      calcs++;
+      checked.add(key(left, right));
+      const improved = area > best;
+      if (improved) {
+        best = area;
+        bestL = left;
+        bestR = right;
+      }
+
+      const pruneNote = prunedNow.size > 0 ? `（同时直接剪掉 ${prunedNow.size} 个必劣组合）` : '';
+      out.push({
+        left, right, area, best, bestL, bestR, calcs,
+        activeLines: activeMoveLine,
+        badge: improved ? '✨ 刷新最大面积' : '移动短板',
+        tone: improved ? 'best' : 'normal',
+        skippedBars: [],
+        prunedNow,
+        checked: cloneSet(checked),
+        pruned: cloneSet(pruned),
+        text: `${movedSide}${pruneNote}。新容器 [${left}, ${right}] 面积 = ${right - left} × ${Math.min(arr[left], arr[right])} = ${area}${improved ? '，超过旧最优，更新 best！' : `，未超过 best (${best})。`}`
+      });
+    }
+
+    return out;
+  }
+
+  function generateFastSkipSteps(arr) {
+    const n = arr.length;
+    const out = [];
+    const checked = new Set();
+    const pruned = new Set();
+    let left = 0;
+    let right = n - 1;
+    const maxH = Math.max(...arr);
+    let best = 0;
+    let bestL = 0, bestR = n - 1;
+    let calcs = 0;
+
+    while (left < right) {
+      if (maxH * (right - left) <= best) {
+        const prunedNow = new Set();
+        for (let i = left; i < right; i++) {
+          for (let j = i + 1; j <= right; j++) {
+            const pk = key(i, j);
+            if (!checked.has(pk) && !pruned.has(pk)) {
+              pruned.add(pk);
+              prunedNow.add(pk);
+            }
+          }
+        }
+        out.push({
+          left, right, area: (right - left) * Math.min(arr[left], arr[right]),
+          best, bestL, bestR, calcs,
+          activeLines: [7, 8, 15],
+          badge: '🚀 上界剪枝 · 提前终止',
+          tone: 'skip',
+          skippedBars: [],
+          prunedNow,
+          checked: cloneSet(checked),
+          pruned: cloneSet(pruned),
+          text: `理论最大可能面积 = max_h(${maxH}) × 当前宽(${right - left}) = ${maxH * (right - left)} ≤ best(${best})！一次性剪掉剩余全部 ${prunedNow.size} 个组合，直接返回 ${best}！`
+        });
+        return out;
+      }
+
+      const h = Math.min(arr[left], arr[right]);
+      const area = (right - left) * h;
+      calcs++;
+      checked.add(key(left, right));
+      const improved = area > best;
+      if (improved) {
+        best = area;
+        bestL = left;
+        bestR = right;
+      }
+
+      // Compute who gets skipped in this transition
+      let nextL = left, nextR = right;
+      const skippedBars = [];
+      const prunedNow = new Set();
+
+      while (nextL < nextR && arr[nextL] <= h) {
+        if (nextL !== left) skippedBars.push(nextL);
+        for (let k = nextL + 1; k <= nextR; k++) {
+          const pk = key(nextL, k);
+          if (!checked.has(pk) && !pruned.has(pk)) {
+            pruned.add(pk);
+            prunedNow.add(pk);
+          }
+        }
+        nextL++;
+      }
+      while (nextL < nextR && arr[nextR] <= h) {
+        if (nextR !== right) skippedBars.push(nextR);
+        for (let k = nextL; k < nextR; k++) {
+          const pk = key(k, nextR);
+          if (!checked.has(pk) && !pruned.has(pk)) {
+            pruned.add(pk);
+            prunedNow.add(pk);
+          }
+        }
+        nextR--;
+      }
+
+      const skipMsg = skippedBars.length > 0
+        ? `随后跳过 ${skippedBars.length} 根高度 ≤ ${h} 的矮柱（下标 ${skippedBars.join(', ')}），直接跳到 [${nextL}, ${nextR}]，共剪掉 ${prunedNow.size} 个组合。`
+        : `短板高 h=${h}，收缩指针至 [${nextL}, ${nextR}]，剪掉 ${prunedNow.size} 个必劣组合。`;
+
+      out.push({
+        left, right, area, best, bestL, bestR, calcs,
+        activeLines: skippedBars.length > 0 ? [9, 10, 11, 12, 13, 14] : [9, 10],
+        badge: improved ? '✨ 刷新 best + 跳跃剪枝' : (skippedBars.length > 0 ? '⚡ 批量跳过矮柱' : '收缩指针'),
+        tone: improved ? 'best' : (skippedBars.length > 0 ? 'skip' : 'normal'),
+        skippedBars,
+        prunedNow,
+        checked: cloneSet(checked),
+        pruned: cloneSet(pruned),
+        text: `检查 [${left}, ${right}]：面积 = ${right - left} × ${h} = ${area}${improved ? '（新最优！）' : ''}。${skipMsg}`
+      });
+
+      left = nextL;
+      right = nextR;
+    }
+
+    out.push({
+      left, right, area: 0, best, bestL, bestR, calcs,
+      activeLines: [15],
+      badge: '搜索完成',
+      tone: 'skip',
+      skippedBars: [],
+      prunedNow: new Set(),
+      checked: cloneSet(checked),
+      pruned: cloneSet(pruned),
+      text: `指针相遇于下标 ${left}，循环结束。总共仅计算 ${calcs} 次面积，返回最大面积 best = ${best}（[${bestL}, ${bestR}]）。`
+    });
+
+    return out;
+  }
+
+  function generateBruteForceSteps(arr) {
+    const n = arr.length;
+    const out = [];
+    const checked = new Set();
+    const pruned = new Set();
+    let best = 0;
+    let bestL = 0, bestR = 1;
+    let calcs = 0;
+
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const h = Math.min(arr[i], arr[j]);
+        const area = (j - i) * h;
+        calcs++;
+        checked.add(key(i, j));
+        const improved = area > best;
+        if (improved) {
+          best = area;
+          bestL = i;
+          bestR = j;
+        }
+        out.push({
+          left: i, right: j, area, best, bestL, bestR, calcs,
+          activeLines: improved ? [5, 6, 7, 8] : [6, 7],
+          badge: improved ? '✨ 发现更大面积' : `枚举第 ${calcs} 对`,
+          tone: improved ? 'best' : 'normal',
+          skippedBars: [],
+          prunedNow: new Set(),
+          checked: cloneSet(checked),
+          pruned: cloneSet(pruned),
+          text: `暴力检查 [${i}, ${j}]：宽 ${j - i} × 高 ${h} = ${area}${improved ? '，更新 best！' : `，未超过 best (${best})。`}（零剪枝，还剩 ${totalPairs(n) - calcs} 对）`
+        });
+      }
+    }
+
+    return out;
+  }
+
+  function buildSteps() {
+    if (mode === 'standard') return generateStandardSteps(heights);
+    if (mode === 'fastskip') return generateFastSkipSteps(heights);
+    return generateBruteForceSteps(heights);
+  }
+
+  // ===== Rendering =====
+  function renderTank(step) {
+    const svg = document.getElementById('tankSvg');
+    const n = heights.length;
+    const maxH = Math.max(1, ...heights);
+    const W = 720, H = 270;
+    const padL = 42, padR = 20, padT = 26, padB = 46;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const slotW = plotW / n;
+    const barW = Math.min(34, Math.max(10, slotW * 0.44));
+    const cx = (i) => padL + slotW * (i + 0.5);
+    const cy = (val) => padT + plotH - (val / maxH) * plotH;
+    const baseY = padT + plotH;
+
+    let html = '';
+
+    // Horizontal gridlines
+    const ticks = 4;
+    for (let t = 0; t <= ticks; t++) {
+      const v = Math.round((maxH * t) / ticks);
+      const y = cy(v);
+      html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="${t === 0 ? '' : '3 3'}"/>`;
+      html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#64748b" font-family="ui-monospace, monospace">${v}</text>`;
+    }
+
+    // Best container ghost overlay (if different from current and best > 0)
+    if (step.best > 0 && step.bestL < step.bestR) {
+      const bx1 = cx(step.bestL);
+      const bx2 = cx(step.bestR);
+      const bh = Math.min(heights[step.bestL], heights[step.bestR]);
+      const by = cy(bh);
+      html += `<rect x="${bx1}" y="${by}" width="${Math.max(0, bx2 - bx1)}" height="${baseY - by}" fill="rgba(245, 158, 11, 0.12)" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5 3" rx="2"/>`;
+      const bestLabelY = Math.max(padT + 12, by - 6);
+      const bestLabelX = (bx1 + bx2) / 2;
+      html += `<rect x="${bestLabelX - 42}" y="${bestLabelY - 12}" width="84" height="16" rx="8" fill="rgba(255, 251, 235, 0.92)" stroke="#f59e0b" stroke-width="1"/>`;
+      html += `<text x="${bestLabelX}" y="${bestLabelY}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b45309">最优: ${step.best}</text>`;
+    }
+
+    // Current water container
+    if (step.left < step.right) {
+      const wx1 = cx(step.left);
+      const wx2 = cx(step.right);
+      const wh = Math.min(heights[step.left], heights[step.right]);
+      const wy = cy(wh);
+      html += `<rect x="${wx1}" y="${wy}" width="${Math.max(0, wx2 - wx1)}" height="${baseY - wy}" fill="rgba(14, 165, 233, 0.25)" stroke="#0284c7" stroke-width="2" rx="2"/>`;
+      if (baseY - wy > 24 && wx2 - wx1 > 48) {
+        const ax = (wx1 + wx2) / 2;
+        const ay = (wy + baseY) / 2;
+        html += `<rect x="${ax - 24}" y="${ay - 11}" width="48" height="22" rx="11" fill="rgba(255, 255, 255, 0.9)" stroke="#0284c7" stroke-width="1"/>`;
+        html += `<text x="${ax}" y="${ay + 4.5}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0369a1">${step.area}</text>`;
+      }
+    }
+
+    const skippedSet = new Set(step.skippedBars || []);
+
+    // Bars
+    for (let i = 0; i < n; i++) {
+      const x = cx(i) - barW / 2;
+      const y = cy(heights[i]);
+      const bh = baseY - y;
+      const isL = i === step.left;
+      const isR = i === step.right;
+      const isSkipped = skippedSet.has(i);
+      const isOutside = mode !== 'bruteforce' && (i < step.left || i > step.right);
+
+      let fill = '#64748b';
+      let opacity = 1;
+      if (isL && isR) {
+        fill = '#7c3aed';
+      } else if (isL) {
+        fill = '#2563eb';
+      } else if (isR) {
+        fill = '#e11d48';
+      } else if (isSkipped) {
+        fill = '#10b981';
+        opacity = 0.55;
+      } else if (isOutside) {
+        fill = '#cbd5e1';
+        opacity = 0.7;
+      } else {
+        fill = '#475569';
+        opacity = 0.82;
+      }
+
+      html += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(2, bh)}" fill="${fill}" opacity="${opacity}" rx="3"/>`;
+
+      // Bar height value label
+      html += `<text x="${cx(i)}" y="${Math.max(14, y - 5)}" text-anchor="middle" font-size="11" font-weight="${isL || isR ? '800' : '600'}" fill="${isL ? '#1d4ed8' : isR ? '#be123c' : isOutside ? '#94a3b8' : '#334155'}" font-family="ui-monospace, monospace">${heights[i]}</text>`;
+
+      // Skipped tag
+      if (isSkipped) {
+        html += `<text x="${cx(i)}" y="${Math.max(24, y + 14)}" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">跳</text>`;
+      }
+
+      // Index label
+      html += `<text x="${cx(i)}" y="${baseY + 15}" text-anchor="middle" font-size="11" fill="#64748b" font-family="ui-monospace, monospace">${i}</text>`;
+
+      // Pointer badges
+      if (isL && isR) {
+        html += `<rect x="${cx(i) - 18}" y="${baseY + 21}" width="36" height="18" rx="9" fill="#7c3aed"/>`;
+        html += `<text x="${cx(i)}" y="${baseY + 34}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">L=R</text>`;
+      } else if (isL) {
+        html += `<rect x="${cx(i) - 12}" y="${baseY + 21}" width="24" height="18" rx="9" fill="#2563eb"/>`;
+        html += `<text x="${cx(i)}" y="${baseY + 34}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">L</text>`;
+      } else if (isR) {
+        html += `<rect x="${cx(i) - 12}" y="${baseY + 21}" width="24" height="18" rx="9" fill="#e11d48"/>`;
+        html += `<text x="${cx(i)}" y="${baseY + 34}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">R</text>`;
+      }
+    }
+
+    svg.innerHTML = html;
+  }
+
+  function renderMatrix(step) {
+    const container = document.getElementById('matrixContainer');
+    const n = heights.length;
+    const total = totalPairs(n);
+    const checkedCount = step.checked.size;
+    const prunedCount = step.pruned.size;
+    const savedPct = total > 0 ? Math.round((prunedCount / total) * 100) : 0;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statChecked').textContent = checkedCount;
+    document.getElementById('statPruned').textContent = prunedCount;
+    document.getElementById('statSavedPct').textContent = savedPct + '%';
+
+    if (n > 14) {
+      container.innerHTML = `<div style="padding:12px;color:#64748b;font-size:12.5px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">当前数组长度为 ${n}（超过 14 时隐藏二维格子以保持清晰，右侧统计数据仍实时更新）。</div>`;
+      return;
+    }
+
+    let html = '<table class="matrix-table"><thead><tr><th>L\\R</th>';
+    for (let j = 0; j < n; j++) html += `<th>${j}</th>`;
+    html += '</tr></thead><tbody>';
+
+    for (let i = 0; i < n; i++) {
+      html += `<tr><th>${i}</th>`;
+      for (let j = 0; j < n; j++) {
+        if (j <= i) {
+          html += '<td class="matrix-cell cell-empty"></td>';
+          continue;
+        }
+        const k = key(i, j);
+        let cls = 'cell-unvisited';
+        let label = '';
+        if (i === step.left && j === step.right) {
+          cls = 'cell-current';
+          label = '●';
+        } else if (i === step.bestL && j === step.bestR && step.best > 0) {
+          cls = 'cell-best';
+          label = '★';
+        } else if (step.prunedNow && step.prunedNow.has(k)) {
+          cls = 'cell-pruned-now';
+          label = '×';
+        } else if (step.checked.has(k)) {
+          cls = 'cell-checked';
+          label = '✓';
+        } else if (step.pruned.has(k)) {
+          cls = 'cell-pruned';
+          label = '·';
+        }
+        html += `<td class="matrix-cell ${cls}" title="(${i}, ${j}) 面积=${(j - i) * Math.min(heights[i], heights[j])}">${label}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function renderCode(step) {
+    const tpl = CODE_TEMPLATES[mode];
+    document.getElementById('codeTitle').textContent = tpl.title;
+    document.getElementById('codeNote').textContent = tpl.note;
+    const activeSet = new Set(step.activeLines || []);
+    const body = document.getElementById('codeBody');
+    body.innerHTML = tpl.lines.map((line, idx) => {
+      const ln = idx + 1;
+      const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<div class="code-line ${activeSet.has(ln) ? 'active' : ''}"><span class="line-no">${ln}</span><span>${escaped}</span></div>`;
+    }).join('');
+  }
+
+  function renderComparison() {
+    const n = heights.length;
+    const total = totalPairs(n);
+    const stdSteps = generateStandardSteps(heights);
+    const fastSteps = generateFastSkipSteps(heights);
+    const bfSteps = generateBruteForceSteps(heights);
+
+    const stdCalcs = stdSteps[stdSteps.length - 1].calcs;
+    const fastCalcs = fastSteps[fastSteps.length - 1].calcs;
+    const bfCalcs = bfSteps.length > 0 ? bfSteps[bfSteps.length - 1].calcs : 0;
+
+    const rows = [
+      { id: 'standard', name: '你的双指针（标准版）', comp: 'O(n) / O(1)', calcs: stdCalcs },
+      { id: 'fastskip', name: '跳跃剪枝 + 提前终止', comp: 'O(n) / O(1)', calcs: fastCalcs },
+      { id: 'bruteforce', name: '暴力枚举', comp: 'O(n²) / O(1)', calcs: bfCalcs }
+    ];
+
+    const tbody = document.getElementById('compareTbody');
+    tbody.innerHTML = rows.map(r => {
+      const saved = total > 0 ? Math.max(0, Math.round(((total - r.calcs) / total) * 100)) : 0;
+      return `<tr class="${r.id === mode ? 'active-row' : ''}">
+        <td>${r.name}</td>
+        <td class="mono">${r.comp}</td>
+        <td class="mono">${r.calcs} 次</td>
+        <td class="mono">${saved}%</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderCurrent() {
+    if (!steps.length) return;
+    const step = steps[currentStep];
+    const n = heights.length;
+
+    renderTank(step);
+    renderMatrix(step);
+    renderCode(step);
+
+    // Metrics
+    document.getElementById('mLeft').textContent = step.left;
+    document.getElementById('mLeftH').textContent = `height[${step.left}] = ${heights[step.left]}`;
+    document.getElementById('mRight').textContent = step.right;
+    document.getElementById('mRightH').textContent = `height[${step.right}] = ${heights[step.right]}`;
+    document.getElementById('mArea').textContent = step.area;
+    const w = Math.max(0, step.right - step.left);
+    const h = Math.min(heights[step.left], heights[step.right]);
+    document.getElementById('mFormula').textContent = `宽 ${w} × 高 ${h}`;
+    document.getElementById('mBest').textContent = step.best;
+    document.getElementById('mBestPair').textContent = `柱子 [${step.bestL}, ${step.bestR}]`;
+    document.getElementById('mCalcs').textContent = step.calcs;
+    document.getElementById('mTotalPairs').textContent = `总组合 ${totalPairs(n)}`;
+
+    // Narration
+    const box = document.getElementById('narrationBox');
+    box.className = 'narration-box' + (step.tone === 'best' ? ' is-best' : step.tone === 'skip' ? ' is-skip' : '');
+    document.getElementById('narrationBadge').textContent = step.badge;
+    document.getElementById('narrationText').textContent = step.text;
+
+    // Playback buttons & slider
+    const slider = document.getElementById('stepSlider');
+    slider.max = Math.max(0, steps.length - 1);
+    slider.value = currentStep;
+    document.getElementById('stepCounter').textContent = `步骤 ${currentStep + 1} / ${steps.length}`;
+    document.getElementById('prevBtn').disabled = currentStep === 0;
+    document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+    document.getElementById('playBtn').textContent = timerId ? '⏸ 暂停' : '▶ 播放';
+  }
+
+  // ===== Playback =====
+  function stopPlay() {
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+    document.getElementById('playBtn').textContent = '▶ 播放';
+  }
+
+  function startPlay() {
+    stopPlay();
+    if (currentStep >= steps.length - 1) {
+      currentStep = 0;
+    }
+    timerId = setInterval(() => {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        renderCurrent();
+      } else {
+        stopPlay();
+      }
+    }, SPEED_MS[speedLevel]);
+    renderCurrent();
+  }
+
+  function rebuildAndReset() {
+    stopPlay();
+    steps = buildSteps();
+    currentStep = 0;
+    renderComparison();
+    renderCurrent();
+  }
+
+  // ===== Toast =====
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  // ===== Event Wiring =====
+  // Motivation toggle
+  document.getElementById('motivationToggleRow').addEventListener('click', () => {
+    const body = document.getElementById('motivationBody');
+    const btn = document.getElementById('motivationToggleBtn');
+    const hidden = body.classList.toggle('hidden');
+    btn.textContent = hidden ? '展开' : '收起';
+  });
+
+  // Mode tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+      rebuildAndReset();
+    });
+  });
+
+  // Apply custom input
+  function applyInput(raw) {
+    const err = document.getElementById('inputError');
+    const parts = raw.trim().replace(/[\[\]]/g, '').split(/[\s,，]+/).filter(Boolean);
+    const nums = parts.map(Number);
+    if (nums.length < 2 || nums.length > 20 || nums.some(x => !Number.isInteger(x) || x < 0 || x > 99)) {
+      err.textContent = '请输入 2 到 20 个 0~99 之间的整数（用逗号或空格分隔）。';
+      err.classList.add('show');
+      return false;
+    }
+    err.classList.remove('show');
+    heights = nums;
+    rebuildAndReset();
+    return true;
+  }
+
+  document.getElementById('applyBtn').addEventListener('click', () => {
+    const val = document.getElementById('arrayInput').value;
+    if (applyInput(val)) {
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+    }
+  });
+
+  document.getElementById('arrayInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      document.getElementById('applyBtn').click();
+    }
+  });
+
+  // Random generator
+  document.getElementById('randomBtn').addEventListener('click', () => {
+    const len = Math.floor(Math.random() * 6) + 7; // 7..12
+    const arr = Array.from({ length: len }, () => Math.floor(Math.random() * 12) + 1);
+    document.getElementById('arrayInput').value = arr.join(', ');
+    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+    applyInput(arr.join(','));
+  });
+
+  // Presets
+  document.querySelectorAll('.preset-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const preset = chip.dataset.preset;
+      document.getElementById('arrayInput').value = preset.split(',').join(', ');
+      applyInput(preset);
+    });
+  });
+
+  // Playback buttons
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    stopPlay();
+    currentStep = 0;
+    renderCurrent();
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    stopPlay();
+    if (currentStep > 0) {
+      currentStep--;
+      renderCurrent();
+    }
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    stopPlay();
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+      renderCurrent();
+    }
+  });
+
+  document.getElementById('endBtn').addEventListener('click', () => {
+    stopPlay();
+    currentStep = Math.max(0, steps.length - 1);
+    renderCurrent();
+  });
+
+  document.getElementById('playBtn').addEventListener('click', () => {
+    if (timerId) stopPlay();
+    else startPlay();
+  });
+
+  document.getElementById('speedRange').addEventListener('input', (e) => {
+    speedLevel = Number(e.target.value);
+    document.getElementById('speedLabel').textContent = SPEED_TEXT[speedLevel];
+    if (timerId) startPlay();
+  });
+
+  document.getElementById('stepSlider').addEventListener('input', (e) => {
+    stopPlay();
+    currentStep = Number(e.target.value);
+    renderCurrent();
+  });
+
+  // Copy code with safe fallback
+  document.getElementById('copyCodeBtn').addEventListener('click', () => {
+    const code = CODE_TEMPLATES[mode].lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(() => showToast('代码已复制到剪贴板')).catch(() => fallbackCopy(code));
+    } else {
+      fallbackCopy(code);
+    }
+  });
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast('代码已复制到剪贴板');
+    } catch (e) {
+      showToast('复制失败，请手动选中复制');
+    }
+    document.body.removeChild(ta);
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      document.getElementById('playBtn').click();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      document.getElementById('nextBtn').click();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      document.getElementById('prevBtn').click();
+    } else if (e.key === 'r' || e.key === 'R') {
+      document.getElementById('resetBtn').click();
+    }
+  });
+
+  // Init
+  rebuildAndReset();
+})();
+</script>
+</body>
+</html>

@@ -121,6 +121,7 @@
 | **验证"是不是副本"不能只比内容** | 数组复制的校验只比 `farr[i] != arr[i]`——**如果两变量指向同一个数组，内容当然一样，校验照样通过**（11-13 `shuzuyuansufuzhi04`） | **改一个再看另一个**：`farr[0] = 999` 后 `arr[0]` 若不变 ⇒ 真副本。**测什么，比测出什么更要紧** |
 | **方法签名的返回类型 ≠ `return` 的类型**（**同一概念四次**） | ① `int` 方法 `return` 数组（11-12 我自己发现）；② 接收端漏 `[]`（11-13）；③ 抽奖里 `public static int check(...)` 却 `return boolean flag`（11-13） | **签名上的返回类型 = 每处 `return` 后面那个值的类型。** 写之前用方法三问第③问定类型：要判断 → `boolean`；要数组 → `int[]` |
 | **类声明的括号位置（`class` 是唯一不带括号的）** | `public class X() {` ❌ / `public X {` ❌（11-17 格斗游戏，改了一次还把括号挪反了） | **只有 `class` 那一行不带 `()`**；构造方法、普通方法都要 `()`。判据：看到 `class X(` 就是错 |
+| **工具类里放成员变量（职责混淆）** | `StudentTool01` 写了 `private StudentTool01(){}` 又放了 `name/age/gender` 三个字段 ⇒ 一个类既当工具又当实体；`getMaxAge(ArrayList<StudentTool01>)` 要传"工具对象的集合"，可实际该处理的是学生（11-27，**懒得改，留痕**） | **工具类 = 只有 static 方法、不持有状态**；实体类 = 持有数据 + get/set。判据：**这个类的字段是在描述"一个东西"还是在描述"一次操作"？** |
 | **语句写在类体里（缺 `main`）** | 把 `while` 循环、对象创建直接写在 `class { }` 里（11-17 `Gametest.java`） | 类体里只能放**字段**和**方法**。所有"要执行的动作"必须待在方法（通常是 `main`）里 |
 | **乱 import（IDE 自动补错）** | `import javax.management.relation.Role;` —— 完全无关的类，IDE 自动补的（11-17 `wenzigedoulianxi.java`） | **import 只留你真的用到的**；IDEA 弹"是否导入"时先看包名对不对（`java.util.*` 常见，`javax.management.*` 几乎不碰） |
 | **IDE 自动补全补错类型（第二次）** | 敲 `StringB` 让 IDEA 补全，补成了 `StringBuffer strr = new StringBuilder();` ⇒ **类型不匹配编译错误**（11-24 `luoma1.java`） | **补全后看一眼类型再按 Tab**。易混对：`StringBuffer`（老、线程安全、慢）vs `StringBuilder`（新、单线程快）；`ArrayList` vs `LinkedList`；`int` vs `Integer` |
